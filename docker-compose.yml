@@ -1,0 +1,12 @@
+version: '3.6'
+
+services:
+
+  netcheck-backend:
+    container_name: netcheck-backend
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
