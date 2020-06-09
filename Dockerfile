@@ -1,7 +1,7 @@
 FROM maven:3.6-adoptopenjdk-11-openj9 AS builder
 WORKDIR /var/app/src/netcheck/
 COPY ./ ./
-RUN mvn clean install
+RUN mvn clean install -DskipTests
 
 FROM adoptopenjdk:11-jre-openj9
 WORKDIR /var/app/netcheck/
