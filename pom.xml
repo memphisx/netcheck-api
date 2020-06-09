@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.bompotis</groupId>
 	<artifactId>netcheck</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>SET_BY_CI</version>
 	<name>netcheck</name>
 	<description>Netcheck Backend - Website performance and availability monitoring app</description>
 
@@ -40,9 +40,17 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.cryptacular</groupId>
 			<artifactId>cryptacular</artifactId>
 			<version>1.2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -53,6 +61,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<finalName>netcheck</finalName>
 	</build>
 
 </project>
