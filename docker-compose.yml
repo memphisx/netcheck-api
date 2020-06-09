@@ -4,6 +4,8 @@ services:
 
   netcheck-backend:
     container_name: netcheck-backend
+    env_file:
+      - database.env
     build:
       context: ./
       dockerfile: ./Dockerfile

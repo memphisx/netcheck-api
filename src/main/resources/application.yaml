@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+    url: jdbc:postgresql://db:5432/${postgres.db}
+    username: ${postgres.user}
+    password: ${postgres.password}
+  jpa:
+    hibernate:
+      ddl-auto: create
