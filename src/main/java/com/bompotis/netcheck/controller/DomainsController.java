@@ -2,7 +2,7 @@ package com.bompotis.netcheck.controller;
 
 import com.bompotis.netcheck.data.entities.DomainEntity;
 import com.bompotis.netcheck.data.entities.DomainHistoricEntryEntity;
-import com.bompotis.netcheck.data.repositories.DomainHistoryEntryRepository;
+import com.bompotis.netcheck.data.repositories.DomainHistoricEntryRepository;
 import com.bompotis.netcheck.data.repositories.DomainRepository;
 import com.bompotis.netcheck.models.Domain;
 import com.bompotis.netcheck.models.DomainHistoricEntry;
@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -31,12 +32,12 @@ public class DomainsController {
 
     private final DomainRepository domainRepository;
 
-    private final DomainHistoryEntryRepository domainHistoryEntryRepository;
+    private final DomainHistoricEntryRepository domainHistoricEntryRepository;
 
     @Autowired
-    public DomainsController(DomainRepository domainRepository, DomainHistoryEntryRepository domainHistoryEntryRepository) {
+    public DomainsController(DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository) {
         this.domainRepository = domainRepository;
-        this.domainHistoryEntryRepository = domainHistoryEntryRepository;
+        this.domainHistoricEntryRepository = domainHistoricEntryRepository;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -48,14 +49,17 @@ public class DomainsController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/{url}")
     public ResponseEntity getDomainStatus(@PathVariable("url") String url, @RequestParam(name = "store", required = false) Boolean store) throws IOException, URISyntaxException {
-        var domain = new DomainService(url, domainRepository, domainHistoryEntryRepository);
-        var result = domain.checkCerts(store);
-        return ok(result);
+        var domain = new DomainService(url, domainRepository, domainHistoricEntryRepository);
+        var status = domain.checkCerts();
+        if(Optional.ofNullable(store).isPresent() && store) {
+            status.storeResult();
+        }
+        return ok(status);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{url}/history")
     public CollectionModel<DomainHistoricEntry> getDomainsHistory(@PathVariable("url") String url) throws IOException, URISyntaxException {
-        var domain = new DomainService(url, domainRepository, domainHistoryEntryRepository);
+        var domain = new DomainService(url, domainRepository, domainHistoricEntryRepository);
         var collectionModel = CollectionModel.of(convertToDomainHistoricEntryModel(domain.getDomainHistory()));
         collectionModel.add(linkTo(methodOn(DomainsController.class).getDomainsHistory(url)).withSelfRel());
         return collectionModel;

@@ -6,6 +6,8 @@ spring:
     url: jdbc:postgresql://db:5432/${postgres.db}
     username: ${postgres.user}
     password: ${postgres.password}
+  batch:
+    initialize-schema: always
   jpa:
     hibernate:
       ddl-auto: create

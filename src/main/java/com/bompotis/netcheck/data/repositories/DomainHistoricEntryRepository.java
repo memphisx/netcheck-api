@@ -8,6 +8,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 /**
  * Created by Kyriakos Bompotis on 9/6/20.
  */
-public interface DomainHistoryEntryRepository extends PagingAndSortingRepository<DomainHistoricEntryEntity, String> {
+public interface DomainHistoricEntryRepository extends PagingAndSortingRepository<DomainHistoricEntryEntity, String> {
     Page<DomainHistoricEntryEntity> findAllByDomainEntityDomain(String domain, Pageable pageable);
 }
