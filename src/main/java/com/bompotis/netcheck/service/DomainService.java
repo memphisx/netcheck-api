@@ -1,14 +1,12 @@
 package com.bompotis.netcheck.service;
 
 import com.bompotis.netcheck.data.entities.DomainEntity;
-import com.bompotis.netcheck.data.entities.DomainHistoryEntry;
+import com.bompotis.netcheck.data.entities.DomainHistoricEntryEntity;
 import com.bompotis.netcheck.data.repositories.DomainHistoryEntryRepository;
 import com.bompotis.netcheck.data.repositories.DomainRepository;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.awt.print.Pageable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -23,7 +21,7 @@ import java.util.Optional;
 /**
  * Created by Kyriakos Bompotis on 30/11/18.
  */
-public class Domain {
+public class DomainService {
 
     private final String domain;
 
@@ -31,13 +29,13 @@ public class Domain {
 
     private final DomainHistoryEntryRepository domainHistoryEntryRepository;
 
-    public Domain(String domain, DomainRepository domainRepository, DomainHistoryEntryRepository domainHistoryEntryRepository) throws MalformedURLException {
+    public DomainService(String domain, DomainRepository domainRepository, DomainHistoryEntryRepository domainHistoryEntryRepository) throws MalformedURLException {
         this.domain = domain;
         this.domainRepository = domainRepository;
         this.domainHistoryEntryRepository = domainHistoryEntryRepository;
     }
 
-    public List<DomainHistoryEntry> getDomainHistory() {
+    public List<DomainHistoricEntryEntity> getDomainHistory() {
         var page = PageRequest.of(0,10);
         return domainHistoryEntryRepository.findAllByDomainEntityDomain(this.domain, page).getContent();
     }
@@ -134,7 +132,7 @@ public class Domain {
             } else {
                 domainEntity.setDomain(hostname);
             }
-            var domainHistoryEntity = new DomainHistoryEntry();
+            var domainHistoryEntity = new DomainHistoricEntryEntity();
             domainHistoryEntity.setCertificateExpiresOn(issuerCertificate.getNotAfter());
             domainHistoryEntity.setCertificateIsValid(issuerCertificate.isValid());
             domainHistoryEntity.setDnsResolves(dnsResolved);

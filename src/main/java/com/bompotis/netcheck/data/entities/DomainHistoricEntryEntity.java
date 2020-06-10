@@ -10,7 +10,7 @@ import java.util.Date;
  * Created by Kyriakos Bompotis on 8/6/20.
  */
 @Entity
-public class DomainHistoryEntry {
+public class DomainHistoricEntryEntity {
 
     @Id
     @GeneratedValue(generator="uuid")
@@ -22,7 +22,7 @@ public class DomainHistoryEntry {
     private Date timeCheckedOn;
     private Boolean dnsResolves;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private DomainEntity domainEntity;
 
 
