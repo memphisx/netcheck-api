@@ -83,6 +83,7 @@ workflows:
   version: 2
   build-master:
     jobs:
+      - maven-test
       - publish-github-release:
           requires:
             - maven-test
@@ -102,4 +103,8 @@ workflows:
               only: master
   maven-test:
     jobs:
-      - maven-test
+      - maven-test:
+          filters:
+            branches:
+              ignore: master
+
