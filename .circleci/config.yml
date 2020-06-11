@@ -11,7 +11,7 @@ executors:
       - image: csanchez/maven:adoptopenjdk-11-openj9
 
 jobs:
-  mvn-install:
+  maven-test:
     executor: docker-maven
     steps:
       - checkout
@@ -37,7 +37,7 @@ jobs:
           root: .
           paths:
             - ./image.tar
-  publish-latest:
+  publish-latest-docker-image:
     executor: docker-publisher
     steps:
       - attach_workspace:
@@ -69,6 +69,6 @@ workflows:
           filters:
             branches:
               only: master
-  maven_test:
+  maven-test:
     jobs:
-      - mvn-install
+      - maven-test
