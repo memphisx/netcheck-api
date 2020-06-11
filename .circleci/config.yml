@@ -1,17 +1,27 @@
 version: 2.1
 
-orbs:
-  maven: benefex/docker@1.0.7
-
 executors:
   docker-publisher:
     environment:
       IMAGE_NAME: memphisx/netcheck
     docker:
       - image: circleci/buildpack-deps:stretch
+  docker-maven:
+    docker:
+      - image: csanchez/maven:adoptopenjdk-11-openj9
 
 jobs:
-  build:
+  mvn-install:
+    executor: docker-maven
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Run mvn install
+          command: |
+            mvn install
+
+  build-docker-image:
     executor: docker-publisher
     steps:
       - checkout
@@ -49,11 +59,11 @@ workflows:
   version: 2
   build-master:
     jobs:
-      - build:
+      - build-docker-image:
           filters:
             branches:
               only: master
-      - publish-latest:
+      - publish-latest-docker-image:
           requires:
             - build
           filters:
@@ -61,4 +71,4 @@ workflows:
               only: master
   maven_test:
     jobs:
-      - maven/test # checkout, build, test, and upload test results
+      - mvn-install
