@@ -24,6 +24,14 @@ jobs:
           name: Run mvn install
           command: |
             mvn clean install
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./version.txt
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./target/netcheck.jar
 
   build-docker-image:
     executor: docker-publisher
@@ -54,21 +62,40 @@ jobs:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=`cat version.txt`
+            IMAGE_TAG=`cat /tmp/workspace/version.txt`
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
             docker push $IMAGE_NAME:latest
             docker push $IMAGE_NAME:$IMAGE_TAG
+  publish-github-release:
+    docker:
+      - image: circleci/golang:1.8
+    steps:
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            go get github.com/tcnksm/ghr
+            VERSION=`cat ./artifacts/version.txt`
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
 
 workflows:
   version: 2
   build-master:
     jobs:
+      - publish-github-release:
+          requires:
+            - maven-test
+          filters:
+            branches:
+              only: master
       - build-docker-image:
           filters:
             branches:
               only: master
       - publish-latest-docker-image:
           requires:
+            - maven-test
             - build-docker-image
           filters:
             branches:
