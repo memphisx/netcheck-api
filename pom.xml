@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.bompotis</groupId>
 	<artifactId>netcheck</artifactId>
-	<version>SET_BY_CI</version>
+	<version>0.1.2</version>
 	<name>netcheck</name>
 	<description>Netcheck Backend - Website performance and availability monitoring app</description>
 
@@ -63,6 +63,22 @@
 		<dependency>
 			<groupId>org.springframework.batch</groupId>
 			<artifactId>spring-batch-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter</artifactId>
+			<version>2.2.3.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.playtika.testcontainers</groupId>
+			<artifactId>embedded-postgresql</artifactId>
+			<version>1.73</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

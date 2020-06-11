@@ -1,7 +1,7 @@
 FROM maven:3.6-adoptopenjdk-11-openj9 AS builder
 WORKDIR /var/app/src/netcheck/
 COPY ./ ./
-RUN sed -i -e "/<version>/,/<\/version>/ s|SET_BY_CI|`cat ./version.txt`|g" ./pom.xml
+RUN mvn versions:set -DnewVersion=`cat ./version.txt` && mvn versions:commit
 RUN mvn clean install -DskipTests
 
 FROM adoptopenjdk:11-jre-openj9
