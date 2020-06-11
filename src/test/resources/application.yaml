@@ -8,8 +8,8 @@ embedded:
 spring:
   datasource:
     url: jdbc:postgresql://${embedded.postgresql.host}:${embedded.postgresql.port}/test_db
-    username: ${embedded.postgresql.user}
-    password: ${embedded.postgresql.password}
+    username: postgresql
+    password: letmein
   batch:
     initialize-schema: always
   jpa:
