@@ -68,7 +68,7 @@ jobs:
             docker push $IMAGE_NAME:$IMAGE_TAG
   publish-github-release:
     docker:
-      - image: circleci/golang:1.8
+      - image: circleci/golang
     steps:
       - attach_workspace:
           at: ./artifacts
@@ -94,6 +94,8 @@ workflows:
             branches:
               only: master
       - build-docker-image:
+          requires:
+            - maven-test
           filters:
             branches:
               only: master
