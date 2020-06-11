@@ -1,3 +1,10 @@
+embedded:
+  postgresql:
+    enabled: true
+    database: test_db
+    user: postgresql
+    password: letmein
+
 spring:
   datasource:
     url: jdbc:postgresql://${embedded.postgresql.host}:${embedded.postgresql.port}/test_db
