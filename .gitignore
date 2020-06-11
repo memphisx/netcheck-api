@@ -2,7 +2,6 @@ HELP.md
 database.env
 .env
 target/
-.mvn
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**

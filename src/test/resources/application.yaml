@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test_db
+    username: postgresql
+    password: letmein
+  batch:
+    initialize-schema: always
+  jpa:
+    hibernate:
+      ddl-auto: create

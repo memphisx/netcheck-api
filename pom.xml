@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.bompotis</groupId>
 	<artifactId>netcheck</artifactId>
-	<version>SET_BY_CI</version>
+	<version>0.1.2</version>
 	<name>netcheck</name>
 	<description>Netcheck Backend - Website performance and availability monitoring app</description>
 

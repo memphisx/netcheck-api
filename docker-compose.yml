@@ -6,6 +6,7 @@ services:
     container_name: netcheck-backend
     env_file:
       - database.env
+      - .env
     build:
       context: ./
       dockerfile: ./Dockerfile
@@ -20,7 +21,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - 4000:5432
 
 volumes:
   db-data:
