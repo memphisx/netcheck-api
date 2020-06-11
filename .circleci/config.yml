@@ -24,14 +24,14 @@ jobs:
           name: Run mvn install
           command: |
             mvn clean install
+      - run:
+          name: Copy jar file
+          command: |
+            cp target/*.jar ./
       - persist_to_workspace:
           root: .
           paths:
-            - ./version.txt
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./target/netcheck.jar
+            - ./netcheck.jar
 
   build-docker-image:
     executor: docker-publisher
@@ -52,6 +52,7 @@ jobs:
   publish-latest-docker-image:
     executor: docker-publisher
     steps:
+      - checkout
       - attach_workspace:
           at: /tmp/workspace
       - setup_remote_docker
@@ -62,7 +63,7 @@ jobs:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=`cat /tmp/workspace/version.txt`
+            IMAGE_TAG=`cat version.txt`
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
             docker push $IMAGE_NAME:latest
             docker push $IMAGE_NAME:$IMAGE_TAG
@@ -70,13 +71,14 @@ jobs:
     docker:
       - image: circleci/golang
     steps:
+      - checkout
       - attach_workspace:
           at: ./artifacts
       - run:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            VERSION=`cat ./artifacts/version.txt`
+            VERSION=`cat ./version.txt`
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
 
 workflows:
@@ -95,13 +97,12 @@ workflows:
               only: master
       - build-docker-image:
           requires:
-            - maven-test
+            - publish-github-release
           filters:
             branches:
               only: master
       - publish-latest-docker-image:
           requires:
-            - maven-test
             - build-docker-image
           filters:
             branches:
