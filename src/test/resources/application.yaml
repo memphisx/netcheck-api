@@ -7,7 +7,7 @@ embedded:
 
 spring:
   datasource:
-    url: jdbc:postgresql://${embedded.postgresql.host}:${embedded.postgresql.port}/test_db
+    url: jdbc:postgresql://localhost:5432/test_db
     username: postgresql
     password: letmein
   batch:
