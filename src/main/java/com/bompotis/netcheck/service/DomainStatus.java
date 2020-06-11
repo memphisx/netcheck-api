@@ -13,8 +13,8 @@ import java.util.List;
  * Created by Kyriakos Bompotis on 10/6/20.
  */
 public class DomainStatus {
-    private final List<CertDetails> caCertificates = new ArrayList<>();
-    private CertDetails issuerCertificate = null;
+    private final List<CertificateDetails> caCertificates = new ArrayList<>();
+    private CertificateDetails issuerCertificate = null;
     private Integer statusCode;
     private Boolean dnsResolved = true;
     private String ipAddress;
@@ -28,7 +28,7 @@ public class DomainStatus {
         this.domainHistoricEntryRepository = domainHistoricEntryRepository;
     }
 
-    DomainStatus(String hostname, String ipAddress, Integer statusCode, List<CertDetails> certificates, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository) {
+    DomainStatus(String hostname, String ipAddress, Integer statusCode, List<CertificateDetails> certificates, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository) {
         this.ipAddress = ipAddress;
         this.domainRepository = domainRepository;
         this.domainHistoricEntryRepository = domainHistoricEntryRepository;
@@ -43,7 +43,7 @@ public class DomainStatus {
         this.statusCode = statusCode;
     }
 
-    public List<CertDetails> getCaCertificates() {
+    public List<CertificateDetails> getCaCertificates() {
         return caCertificates;
     }
 
@@ -51,7 +51,7 @@ public class DomainStatus {
         return statusCode;
     }
 
-    public CertDetails getIssuerCertificate() {
+    public CertificateDetails getIssuerCertificate() {
         return issuerCertificate;
     }
 

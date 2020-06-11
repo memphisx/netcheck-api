@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.models;
+package com.bompotis.netcheck.api.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

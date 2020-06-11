@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * Created by Kyriakos Bompotis on 4/6/20.
  */
-public class CertDetails {
+public class CertificateDetails {
     private final Integer basicConstraints;
     private final String issuedBy;
     private final String issuedFor;
@@ -17,7 +17,7 @@ public class CertDetails {
     private Boolean isValid;
     private Boolean expired;
 
-    public CertDetails(X509Certificate certificate) {
+    public CertificateDetails(X509Certificate certificate) {
         this.basicConstraints = certificate.getBasicConstraints();
         this.issuedFor = certificate.getSubjectX500Principal().getName();
         this.issuedBy = certificate.getIssuerX500Principal().getName();

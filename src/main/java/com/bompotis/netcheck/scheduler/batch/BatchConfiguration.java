@@ -1,9 +1,8 @@
-package com.bompotis.netcheck.batch;
+package com.bompotis.netcheck.scheduler.batch;
 
 import com.bompotis.netcheck.data.entities.DomainEntity;
 import com.bompotis.netcheck.data.entities.DomainHistoricEntryEntity;
-import com.bompotis.netcheck.data.repositories.DomainHistoricEntryRepository;
-import com.bompotis.netcheck.data.repositories.DomainRepository;
+import com.bompotis.netcheck.service.DomainService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -29,23 +28,19 @@ public class BatchConfiguration {
 
     private final StepBuilderFactory stepBuilderFactory;
 
-    private final DomainRepository domainRepository;
-
-    private final DomainHistoricEntryRepository domainHistoricEntryRepository;
-
     private final EntityManagerFactory entityManagerFactory;
+
+    private final DomainService domainService;
 
     @Autowired
     public BatchConfiguration(JobBuilderFactory jobBuilderFactory,
                               StepBuilderFactory stepBuilderFactory,
-                              DomainRepository domainRepository,
-                              DomainHistoricEntryRepository domainHistoricEntryRepository,
+                              DomainService domainService,
                               EntityManagerFactory entityManagerFactory) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
-        this.domainRepository = domainRepository;
-        this.domainHistoricEntryRepository = domainHistoricEntryRepository;
         this.entityManagerFactory = entityManagerFactory;
+        this.domainService = domainService;
     }
 
     @Bean
@@ -59,7 +54,7 @@ public class BatchConfiguration {
 
     @Bean
     public DomainEntryProcessor processor() {
-        return new DomainEntryProcessor(domainRepository,domainHistoricEntryRepository);
+        return new DomainEntryProcessor(domainService);
     }
 
     @Bean
