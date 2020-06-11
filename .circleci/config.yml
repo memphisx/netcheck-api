@@ -1,17 +1,18 @@
 version: 2.1
 
-orbs:
-  maven: circleci/maven@1.0.1
-
 executors:
   docker-publisher:
     environment:
       IMAGE_NAME: memphisx/netcheck
     docker:
       - image: circleci/buildpack-deps:stretch
+  docker-maven:
+    docker:
+      - image: circleci/openjdk:11.0.6-jdk-stretch
 
 jobs:
   maven-test:
+    executor: docker-maven
     steps:
       - checkout
       - setup_remote_docker
