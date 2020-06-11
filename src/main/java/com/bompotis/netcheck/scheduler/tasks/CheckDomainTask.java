@@ -1,10 +1,5 @@
-package com.bompotis.netcheck.tasks;
+package com.bompotis.netcheck.scheduler.tasks;
 
-import com.bompotis.netcheck.data.repositories.DomainHistoricEntryRepository;
-import com.bompotis.netcheck.data.repositories.DomainRepository;
-import com.bompotis.netcheck.service.DomainService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -16,11 +11,6 @@ import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Created by Kyriakos Bompotis on 9/6/20.
