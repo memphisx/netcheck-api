@@ -18,6 +18,7 @@ public class DomainStatusModel extends RepresentationModel<DomainStatusModel> {
     private final Boolean dnsResolved;
     private final String ipAddress;
     private final String hostname;
+    private final Long responseTime;
 
     @JsonCreator
     public DomainStatusModel(
@@ -26,6 +27,7 @@ public class DomainStatusModel extends RepresentationModel<DomainStatusModel> {
             @JsonProperty("ipAddress") String ipAddress,
             @JsonProperty("statusCode") Integer statusCode,
             @JsonProperty("dnsResolved") Boolean dnsResolved,
+            @JsonProperty("responseTimeNs") Long responseTime,
             @JsonProperty("issuerCertificate") CertificateModel issuerCertificate) {
         this.caCertificates = caCertificates;
         this.hostname = hostname;
@@ -33,6 +35,7 @@ public class DomainStatusModel extends RepresentationModel<DomainStatusModel> {
         this.ipAddress = ipAddress;
         this.dnsResolved = dnsResolved;
         this.issuerCertificate = issuerCertificate;
+        this.responseTime = responseTime;
     }
 
     public Integer getStatusCode() {
@@ -57,5 +60,9 @@ public class DomainStatusModel extends RepresentationModel<DomainStatusModel> {
 
     public List<CertificateModel> getCaCertificates() {
         return caCertificates;
+    }
+
+    public Long getResponseTime() {
+        return responseTime;
     }
 }

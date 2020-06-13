@@ -12,6 +12,7 @@ public class DomainCheckDto {
     private final Boolean certificateIsValid;
     private final Date certificateExpiresOn;
     private final Date timeCheckedOn;
+    private final Long responseTimeNs;
     private final Boolean dnsResolves;
 
     public DomainCheckDto(String id,
@@ -20,10 +21,12 @@ public class DomainCheckDto {
                           Boolean certificateIsValid,
                           Date certificateExpiresOn,
                           Date timeCheckedOn,
+                          Long responseTimeNs,
                           Boolean dnsResolves) {
         this.id = id;
         this.domain = domain;
         this.statusCode = statusCode;
+        this.responseTimeNs = responseTimeNs;
         this.certificateIsValid = certificateIsValid;
         this.certificateExpiresOn = certificateExpiresOn;
         this.timeCheckedOn = timeCheckedOn;
@@ -56,5 +59,9 @@ public class DomainCheckDto {
 
     public String getDomain() {
         return domain;
+    }
+
+    public Long getResponseTimeNs() {
+        return responseTimeNs;
     }
 }

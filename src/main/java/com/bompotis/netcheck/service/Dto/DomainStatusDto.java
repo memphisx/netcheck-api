@@ -19,24 +19,27 @@ public class DomainStatusDto {
     private Integer statusCode;
     private Boolean dnsResolved = true;
     private String ipAddress;
+    private final Long responseTimeNs;
     private final String hostname;
     private final DomainRepository domainRepository;
     private final DomainHistoricEntryRepository domainHistoricEntryRepository;
 
-    public DomainStatusDto(String hostname, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository) {
+    public DomainStatusDto(String hostname, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository, Long responseTimeNs) {
         this.dnsResolved = false;
         this.hostname = hostname;
         this.domainRepository = domainRepository;
         this.domainHistoricEntryRepository = domainHistoricEntryRepository;
         this.issuerCertificate = null;
+        this.responseTimeNs = responseTimeNs;
     }
 
-    public DomainStatusDto(String hostname, String ipAddress, Integer statusCode, List<CertificateDetailsDto> certificates, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository) {
+    public DomainStatusDto(String hostname, String ipAddress, Integer statusCode, List<CertificateDetailsDto> certificates, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository, Long responseTimeNs) {
         CertificateDetailsDto issuerCert = null;
         this.ipAddress = ipAddress;
         this.domainRepository = domainRepository;
         this.domainHistoricEntryRepository = domainHistoricEntryRepository;
         this.hostname = hostname;
+        this.responseTimeNs = responseTimeNs;
         for (var cert: certificates) {
             if (cert.getBasicConstraints() < 0) {
                 issuerCert = cert;
@@ -93,7 +96,12 @@ public class DomainStatusDto {
         }
         domainHistoryEntity.setDnsResolves(dnsResolved);
         domainHistoryEntity.setStatusCode(statusCode);
+        domainHistoryEntity.setResponseTimeNs(responseTimeNs);
         domainHistoryEntity.setTimeCheckedOn(new Date());
         return domainHistoryEntity;
+    }
+
+    public Long getResponseTimeNs() {
+        return responseTimeNs;
     }
 }
