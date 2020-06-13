@@ -3,15 +3,17 @@ package com.bompotis.netcheck.api.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 /**
  * Created by Kyriakos Bompotis on 9/6/20.
  */
-public class Domain extends RepresentationModel<Domain> {
+@Relation(collectionRelation = "domains", itemRelation = "domain")
+public class DomainModel extends RepresentationModel<DomainModel> {
     private final String domain;
 
     @JsonCreator
-    public Domain(@JsonProperty("domain") String domain) {
+    public DomainModel(@JsonProperty("domain") String domain) {
         this.domain = domain;
     }
 

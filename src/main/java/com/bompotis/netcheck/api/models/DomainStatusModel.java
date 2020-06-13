@@ -3,12 +3,14 @@ package com.bompotis.netcheck.api.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.util.List;
 
 /**
  * Created by Kyriakos Bompotis on 11/6/20.
  */
+@Relation(collectionRelation = "domainStatuses", itemRelation = "domainStatus")
 public class DomainStatusModel extends RepresentationModel<DomainStatusModel> {
     private final List<CertificateModel> caCertificates;
     private final CertificateModel issuerCertificate;

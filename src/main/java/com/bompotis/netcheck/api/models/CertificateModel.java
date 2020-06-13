@@ -2,12 +2,14 @@ package com.bompotis.netcheck.api.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.util.Date;
 
 /**
  * Created by Kyriakos Bompotis on 11/6/20.
  */
+@Relation(collectionRelation = "certificates", itemRelation = "certificate")
 public class CertificateModel extends RepresentationModel<CertificateModel> {
     private final String issuedBy;
     private final String issuedFor;

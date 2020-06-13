@@ -3,22 +3,24 @@ package com.bompotis.netcheck.api.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.util.Date;
 
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
  */
-public class DomainHistoricEntry extends RepresentationModel<DomainHistoricEntry> {
-    private Integer statusCode;
-    private Boolean certificateIsValid;
-    private Date certificateExpiresOn;
-    private Date timeCheckedOn;
-    private Boolean dnsResolves;
-    private String domain;
+@Relation(collectionRelation = "historicEntries", itemRelation = "historicEntry")
+public class DomainHistoricEntryModel extends RepresentationModel<DomainHistoricEntryModel> {
+    private final Integer statusCode;
+    private final Boolean certificateIsValid;
+    private final Date certificateExpiresOn;
+    private final Date timeCheckedOn;
+    private final Boolean dnsResolves;
+    private final String domain;
 
     @JsonCreator
-    public DomainHistoricEntry(
+    public DomainHistoricEntryModel(
             @JsonProperty("domain") String domain,
             @JsonProperty("statusCode") Integer statusCode,
             @JsonProperty("certificateIsValid") Boolean certificateIsValid,
@@ -52,5 +54,9 @@ public class DomainHistoricEntry extends RepresentationModel<DomainHistoricEntry
 
     public Date getTimeCheckedOn() {
         return timeCheckedOn;
+    }
+
+    public String getDomain() {
+        return domain;
     }
 }

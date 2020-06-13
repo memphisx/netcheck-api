@@ -2,26 +2,25 @@ package com.bompotis.netcheck.api.controller;
 
 import com.bompotis.netcheck.api.models.CertificateModel;
 import com.bompotis.netcheck.api.models.DomainStatusModel;
-import com.bompotis.netcheck.data.entities.DomainEntity;
-import com.bompotis.netcheck.data.entities.DomainHistoricEntryEntity;
-import com.bompotis.netcheck.data.repositories.DomainRepository;
-import com.bompotis.netcheck.api.models.Domain;
-import com.bompotis.netcheck.api.models.DomainHistoricEntry;
-import com.bompotis.netcheck.service.CertificateDetails;
+import com.bompotis.netcheck.api.models.DomainModel;
+import com.bompotis.netcheck.api.models.DomainHistoricEntryModel;
+import com.bompotis.netcheck.service.Dto.*;
 import com.bompotis.netcheck.service.DomainService;
-import com.bompotis.netcheck.service.DomainStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.ok;
 
 /**
@@ -32,98 +31,185 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping(value = "/domains")
 public class DomainsController {
 
-    private final DomainRepository domainRepository;
-
     private final DomainService domainService;
 
     @Autowired
-    public DomainsController(DomainRepository domainRepository, DomainService domainService) {
-        this.domainRepository = domainRepository;
+    public DomainsController(DomainService domainService) {
         this.domainService = domainService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public CollectionModel<Domain> getDomains() throws IOException {
-        var collectionModel = CollectionModel.of(convertToDomainModel(domainRepository.findAll()));
-        collectionModel.add(linkTo(methodOn(DomainsController.class).getDomains()).withSelfRel());
-        return collectionModel;
+    public ResponseEntity<CollectionModel<DomainModel>> getDomains(
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "size", required = false) Integer size) throws IOException {
+        return ok(convertToPagedDomainModels(domainService.getPaginatedDomains(page,size)));
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{url}")
-    public DomainStatusModel getDomainStatus(@PathVariable("url") String url, @RequestParam(name = "store", required = false) Boolean store) throws IOException {
-        var status = domainService.buildAndCheck(url);
+    @RequestMapping(method = RequestMethod.GET, path = "/{domain}")
+    public ResponseEntity<DomainStatusModel> getDomainStatus(
+            @PathVariable("domain") String domain,
+            @RequestParam(name = "store", required = false) Boolean store) throws IOException {
+        var status = domainService.buildAndCheck(domain);
         if(Optional.ofNullable(store).isPresent() && store) {
             status.storeResult();
         }
         var domainStatusModel = convertToDomainStatusModel(status);
-        domainStatusModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(url,store)).withSelfRel());
-        return domainStatusModel;
+        domainStatusModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain,store)).withSelfRel());
+        return ok(domainStatusModel);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, path = "/{url}")
-    public ResponseEntity<Object> addDomainToScheduler(@PathVariable("url") String url) {
-        domainService.scheduleDomainToCheck(url);
+    @RequestMapping(method = RequestMethod.PUT, path = "/{domain}")
+    public ResponseEntity<Object> addDomainToScheduler(@PathVariable("domain") String domain) {
+        domainService.scheduleDomainToCheck(domain);
         return ok().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{url}/history")
-    public CollectionModel<DomainHistoricEntry> getDomainsHistory(@PathVariable("url") String url) {
-        var collectionModel = CollectionModel.of(convertToDomainHistoricEntryModel(domainService.getDomainHistory(url)));
-        collectionModel.add(linkTo(methodOn(DomainsController.class).getDomainsHistory(url)).withSelfRel());
-        return collectionModel;
+    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history")
+    public ResponseEntity<CollectionModel<DomainHistoricEntryModel>> getDomainsHistory(@PathVariable("domain") String domain,
+                                                                                       @RequestParam(name = "page", required = false) Integer page,
+                                                                                       @RequestParam(name = "size", required = false) Integer size) {
+        return ok(convertToPagedDomainHistoricEntryModel(domainService.getDomainHistory(domain,page,size), domain));
     }
 
-    private List<Domain> convertToDomainModel(Iterable<DomainEntity> domainEntities) throws IOException {
-        ArrayList<Domain> domains = new ArrayList<>();
-        for (DomainEntity domainEntity : domainEntities) {
-            Domain domain = new Domain(domainEntity.getDomain());
-            domain.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain.getDomain(),false)).withSelfRel());
-            domains.add(domain);
+    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history/{id}")
+    public ResponseEntity<DomainHistoricEntryModel> getDomainsHistoricEntry(@PathVariable("domain") String domain, @PathVariable("id") String id) {
+        var optionalEntity = domainService.getDomainHistoricEntry(domain,id);
+        if (optionalEntity.isEmpty()) {
+            return notFound().build();
         }
-        return domains;
+        return ok(convertToDomainHistoricEntry(optionalEntity.get()));
     }
 
-    private List<DomainHistoricEntry> convertToDomainHistoricEntryModel(Iterable<DomainHistoricEntryEntity> domainEntities) {
-        ArrayList<DomainHistoricEntry> historicEntries = new ArrayList<>();
-        for (DomainHistoricEntryEntity domainEntity : domainEntities) {
-            DomainHistoricEntry historicEntry = new DomainHistoricEntry(
-                    domainEntity.getDomainEntity().getDomain(),
-                    domainEntity.getStatusCode(),
-                    domainEntity.getCertificateIsValid(),
-                    domainEntity.getCertificateExpiresOn(),
-                    domainEntity.getTimeCheckedOn(),
-                    domainEntity.getDnsResolves()
+    private CollectionModel<DomainModel> convertToPagedDomainModels(PaginatedDomainsDto paginatedDomainsDto) throws IOException {
+        var domainModels = new ArrayList<DomainModel>();
+        for (String domain : paginatedDomainsDto.getDomains()) {
+            var domainModel = new DomainModel(domain);
+            domainModel.add(
+                    linkTo(methodOn(DomainsController.class).getDomainStatus(domainModel.getDomain(), false)).withSelfRel()
             );
-            historicEntries.add(historicEntry);
+            domainModels.add(domainModel);
         }
-        return historicEntries;
+        var links = new ArrayList<Link>();
+        links.add(linkTo(methodOn(DomainsController.class)
+                .getDomains(paginatedDomainsDto.getNumber(), paginatedDomainsDto.getSize()))
+                .withSelfRel()
+        );
+        if (isValidPage(paginatedDomainsDto.getNumber(),paginatedDomainsDto.getTotalPages())) {
+            if (!isLastPage(paginatedDomainsDto.getNumber(),paginatedDomainsDto.getTotalPages())) {
+                links.add(linkTo(methodOn(DomainsController.class)
+                        .getDomains(paginatedDomainsDto.getNumber()+1, paginatedDomainsDto.getSize()))
+                        .withRel(IanaLinkRelations.NEXT)
+                );
+            }
+            if (!isFirstPage(paginatedDomainsDto.getNumber())) {
+                links.add(linkTo(methodOn(DomainsController.class)
+                        .getDomains(paginatedDomainsDto.getNumber()-1, paginatedDomainsDto.getSize()))
+                        .withRel(IanaLinkRelations.PREVIOUS)
+                );
+            }
+        }
+        return PagedModel.of(
+                domainModels,
+                new PagedModel.PageMetadata(
+                        domainModels.size(),
+                        paginatedDomainsDto.getNumber(),
+                        paginatedDomainsDto.getTotalElements(),
+                        paginatedDomainsDto.getTotalPages()
+                ),
+                links
+        );
     }
 
-    private DomainStatusModel convertToDomainStatusModel(DomainStatus domainStatus) {
-        var issuerCertificate = convertToCertificateModel(domainStatus.getIssuerCertificate());
+    private boolean isValidPage(int pageNumber, int totalPages) {
+        return pageNumber+1 <= totalPages;
+    }
+
+    private boolean isFirstPage(int pageNumber) {
+        return pageNumber == 0;
+    }
+
+    private boolean isLastPage(int pageNumber, int totalPages) {
+        return (pageNumber+1 == totalPages);
+    }
+
+    private CollectionModel<DomainHistoricEntryModel> convertToPagedDomainHistoricEntryModel(PaginatedDomainCheckDto paginatedDomainCheckDto, String domain) {
+        var historicEntries = new ArrayList<DomainHistoricEntryModel>();
+        for (var domainEntity : paginatedDomainCheckDto.getDomainChecks()) {
+            historicEntries.add(convertToDomainHistoricEntry(domainEntity));
+        }
+        var links = new ArrayList<Link>();
+        links.add(linkTo(methodOn(DomainsController.class)
+                .getDomainsHistory(domain, paginatedDomainCheckDto.getNumber(), paginatedDomainCheckDto.getSize())
+        ).withSelfRel());
+        if (isValidPage(paginatedDomainCheckDto.getNumber(),paginatedDomainCheckDto.getTotalPages())) {
+            if (!isLastPage(paginatedDomainCheckDto.getNumber(),paginatedDomainCheckDto.getTotalPages())) {
+                links.add(linkTo(methodOn(DomainsController.class)
+                        .getDomainsHistory(domain,paginatedDomainCheckDto.getNumber()+1, paginatedDomainCheckDto.getSize()))
+                        .withRel(IanaLinkRelations.NEXT)
+                );
+            }
+            if (!isFirstPage(paginatedDomainCheckDto.getNumber())) {
+                links.add(linkTo(methodOn(DomainsController.class)
+                        .getDomainsHistory(domain,paginatedDomainCheckDto.getNumber()-1, paginatedDomainCheckDto.getSize()))
+                        .withRel(IanaLinkRelations.PREVIOUS)
+                );
+            }
+        }
+        return PagedModel.of(
+                historicEntries,
+                new PagedModel.PageMetadata(
+                        historicEntries.size(),
+                        paginatedDomainCheckDto.getNumber(),
+                        paginatedDomainCheckDto.getTotalElements(),
+                        paginatedDomainCheckDto.getTotalPages()),
+                links
+        );
+    }
+
+    private DomainHistoricEntryModel convertToDomainHistoricEntry(DomainCheckDto domainCheckDto) {
+        var entry = new DomainHistoricEntryModel(
+                domainCheckDto.getDomain(),
+                domainCheckDto.getStatusCode(),
+                domainCheckDto.getCertificateIsValid(),
+                domainCheckDto.getCertificateExpiresOn(),
+                domainCheckDto.getTimeCheckedOn(),
+                domainCheckDto.getDnsResolves()
+        );
+        entry.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
+                domainCheckDto.getDomain(),
+                domainCheckDto.getId())).withSelfRel()
+        );
+        return entry;
+    }
+
+    private DomainStatusModel convertToDomainStatusModel(DomainStatusDto domainStatusDto) {
+        CertificateModel issuerCertificate = convertToCertificateModel(domainStatusDto.getIssuerCertificate());
         var caCertificates = new ArrayList<CertificateModel>();
-        for (var certificate : domainStatus.getCaCertificates()) {
+        for (var certificate : domainStatusDto.getCaCertificates()) {
             caCertificates.add(convertToCertificateModel(certificate));
         }
         return new DomainStatusModel(
                 caCertificates,
-                domainStatus.getHostname(),
-                domainStatus.getIpAddress(),
-                domainStatus.getStatusCode(),
-                domainStatus.getDnsResolved(),
+                domainStatusDto.getHostname(),
+                domainStatusDto.getIpAddress(),
+                domainStatusDto.getStatusCode(),
+                domainStatusDto.getDnsResolved(),
                 issuerCertificate
         );
 
     }
 
-    private CertificateModel convertToCertificateModel(CertificateDetails certificateDetails) {
+    private CertificateModel convertToCertificateModel(CertificateDetailsDto certificateDetailsDto) {
+        if (Optional.ofNullable(certificateDetailsDto).isEmpty()) {
+            return null;
+        }
         return new CertificateModel(
-                certificateDetails.getIssuedBy(),
-                certificateDetails.getIssuedFor(),
-                certificateDetails.getNotBefore(),
-                certificateDetails.getNotAfter(),
-                certificateDetails.isValid(),
-                certificateDetails.getExpired()
+                certificateDetailsDto.getIssuedBy(),
+                certificateDetailsDto.getIssuedFor(),
+                certificateDetailsDto.getNotBefore(),
+                certificateDetailsDto.getNotAfter(),
+                certificateDetailsDto.isValid(),
+                certificateDetailsDto.getExpired()
         );
     }
 }
