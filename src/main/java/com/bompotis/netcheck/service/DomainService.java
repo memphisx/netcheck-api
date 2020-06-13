@@ -48,7 +48,6 @@ public class DomainService {
             var ipAddress = InetAddress.getByName(hostname).getHostAddress();
             var statusCode = conn.getResponseCode();
             var responseTime = endtime - beginTime;
-            conn.connect();
             var serverCerts = conn.getServerCertificates();
             for (var cert : serverCerts) {
                 if(cert instanceof X509Certificate) {
