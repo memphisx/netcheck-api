@@ -1,12 +1,10 @@
 package com.bompotis.netcheck.service;
 
 import com.bompotis.netcheck.data.entities.DomainEntity;
-import com.bompotis.netcheck.data.entities.DomainHistoricEntryEntity;
 import com.bompotis.netcheck.data.repositories.DomainHistoricEntryRepository;
 import com.bompotis.netcheck.data.repositories.DomainRepository;
 import com.bompotis.netcheck.service.Dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +16,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -44,10 +41,13 @@ public class DomainService {
     public DomainStatusDto buildAndCheck(String domain) throws IOException {
         var certificates = new ArrayList<CertificateDetailsDto>();
         try {
+            var beginTime = System.nanoTime();
             var conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
+            var endtime = System.nanoTime();
             var hostname = conn.getURL().getHost();
             var ipAddress = InetAddress.getByName(hostname).getHostAddress();
             var statusCode = conn.getResponseCode();
+            var responseTime = endtime - beginTime;
             conn.connect();
             var serverCerts = conn.getServerCertificates();
             for (var cert : serverCerts) {
@@ -56,9 +56,9 @@ public class DomainService {
                     certificates.add(new CertificateDetailsDto(x));
                 }
             }
-            return new DomainStatusDto(hostname, ipAddress, statusCode, certificates, domainRepository, domainHistoricEntryRepository);
+            return new DomainStatusDto(hostname, ipAddress, statusCode, certificates, domainRepository, domainHistoricEntryRepository, responseTime);
         } catch (UnknownHostException e) {
-            return new DomainStatusDto(domain, domainRepository, domainHistoricEntryRepository);
+            return new DomainStatusDto(domain, domainRepository, domainHistoricEntryRepository, null);
         }
     }
 
@@ -78,6 +78,7 @@ public class DomainService {
                             domainStatusEntry.getCertificateIsValid(),
                             domainStatusEntry.getCertificateExpiresOn(),
                             domainStatusEntry.getTimeCheckedOn(),
+                            domainStatusEntry.getResponseTimeNs(),
                             domainStatusEntry.getDnsResolves()
                     )
             );
@@ -104,6 +105,7 @@ public class DomainService {
                 domainHistoricEntryEntity.getCertificateIsValid(),
                 domainHistoricEntryEntity.getCertificateExpiresOn(),
                 domainHistoricEntryEntity.getTimeCheckedOn(),
+                domainHistoricEntryEntity.getResponseTimeNs(),
                 domainHistoricEntryEntity.getDnsResolves()
         );
         return Optional.of(domainCheckDto);

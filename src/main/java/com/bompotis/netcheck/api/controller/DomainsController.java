@@ -173,6 +173,7 @@ public class DomainsController {
                 domainCheckDto.getCertificateIsValid(),
                 domainCheckDto.getCertificateExpiresOn(),
                 domainCheckDto.getTimeCheckedOn(),
+                domainCheckDto.getResponseTimeNs(),
                 domainCheckDto.getDnsResolves()
         );
         entry.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
@@ -194,6 +195,7 @@ public class DomainsController {
                 domainStatusDto.getIpAddress(),
                 domainStatusDto.getStatusCode(),
                 domainStatusDto.getDnsResolved(),
+                domainStatusDto.getResponseTimeNs(),
                 issuerCertificate
         );
 

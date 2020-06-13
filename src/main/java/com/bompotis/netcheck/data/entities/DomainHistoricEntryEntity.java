@@ -34,6 +34,9 @@ public class DomainHistoricEntryEntity {
     @Column(name = "dns_resolves")
     private Boolean dnsResolves;
 
+    @Column(name = "response_time_ns")
+    private Long responseTimeNs;
+
     @Column(name = "domain", insertable = false, updatable = false)
     private String domain;
 
@@ -103,5 +106,13 @@ public class DomainHistoricEntryEntity {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public Long getResponseTimeNs() {
+        return responseTimeNs;
+    }
+
+    public void setResponseTimeNs(Long responseTimeNs) {
+        this.responseTimeNs = responseTimeNs;
     }
 }

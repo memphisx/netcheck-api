@@ -18,6 +18,7 @@ public class DomainHistoricEntryModel extends RepresentationModel<DomainHistoric
     private final Date timeCheckedOn;
     private final Boolean dnsResolves;
     private final String domain;
+    private final Long responseTimeMs;
 
     @JsonCreator
     public DomainHistoricEntryModel(
@@ -26,6 +27,7 @@ public class DomainHistoricEntryModel extends RepresentationModel<DomainHistoric
             @JsonProperty("certificateIsValid") Boolean certificateIsValid,
             @JsonProperty("certificateExpiresOn") Date certificateExpiresOn,
             @JsonProperty("checkedOn") Date timeCheckedOn,
+            @JsonProperty("responseTimeMs") Long responseTimeMs,
             @JsonProperty("dnsResolves") Boolean dnsResolves
     ) {
         this.domain = domain;
@@ -33,6 +35,7 @@ public class DomainHistoricEntryModel extends RepresentationModel<DomainHistoric
         this.certificateExpiresOn = certificateExpiresOn;
         this.certificateIsValid = certificateIsValid;
         this.timeCheckedOn = timeCheckedOn;
+        this.responseTimeMs = responseTimeMs;
         this.dnsResolves = dnsResolves;
     }
 
@@ -58,5 +61,9 @@ public class DomainHistoricEntryModel extends RepresentationModel<DomainHistoric
 
     public String getDomain() {
         return domain;
+    }
+
+    public Long getResponseTimeMs() {
+        return responseTimeMs;
     }
 }
