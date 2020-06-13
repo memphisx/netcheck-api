@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.service;
+package com.bompotis.netcheck.service.Dto;
 
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * Created by Kyriakos Bompotis on 4/6/20.
  */
-public class CertificateDetails {
+public class CertificateDetailsDto {
     private final Integer basicConstraints;
     private final String issuedBy;
     private final String issuedFor;
@@ -17,7 +17,7 @@ public class CertificateDetails {
     private Boolean isValid;
     private Boolean expired;
 
-    public CertificateDetails(X509Certificate certificate) {
+    public CertificateDetailsDto(X509Certificate certificate) {
         this.basicConstraints = certificate.getBasicConstraints();
         this.issuedFor = certificate.getSubjectX500Principal().getName();
         this.issuedBy = certificate.getIssuerX500Principal().getName();

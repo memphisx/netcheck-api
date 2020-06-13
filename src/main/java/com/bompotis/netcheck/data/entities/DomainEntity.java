@@ -7,12 +7,14 @@ import java.util.List;
  * Created by Kyriakos Bompotis on 8/6/20.
  */
 @Entity
+@Table(name = "domain")
 public class DomainEntity {
 
     @Id
+    @Column(name = "domain")
     private String domain;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy="domainEntity", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy="domainEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DomainHistoricEntryEntity> domainHistoryEntries;
 
     public List<DomainHistoricEntryEntity> getDomainHistoryEntries() {

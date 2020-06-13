@@ -10,21 +10,36 @@ import java.util.Date;
  * Created by Kyriakos Bompotis on 8/6/20.
  */
 @Entity
+@Table(name = "domain_historic_entry")
 public class DomainHistoricEntryEntity {
 
     @Id
     @GeneratedValue(generator="uuid")
     @GenericGenerator(name="uuid", strategy = "uuid2")
+    @Column(name = "id")
     private String id;
+
+    @Column(name = "status_code")
     private Integer statusCode;
+
+    @Column(name = "valid_certificate")
     private Boolean certificateIsValid;
+
+    @Column(name = "cert_expiration_date")
     private Date certificateExpiresOn;
+
+    @Column(name = "check_date")
     private Date timeCheckedOn;
+
+    @Column(name = "dns_resolves")
     private Boolean dnsResolves;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private DomainEntity domainEntity;
+    @Column(name = "domain", insertable = false, updatable = false)
+    private String domain;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "domain")
+    private DomainEntity domainEntity;
 
     public void setId(String id) {
         this.id = id;
@@ -80,5 +95,13 @@ public class DomainHistoricEntryEntity {
 
     public void setTimeCheckedOn(Date timeCheckedOn) {
         this.timeCheckedOn = timeCheckedOn;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }
