@@ -1,8 +1,7 @@
-package com.bompotis.netcheck.service.Dto;
+package com.bompotis.netcheck.service.dto;
 
-import com.bompotis.netcheck.data.entities.DomainEntity;
-import com.bompotis.netcheck.data.entities.DomainHistoricEntryEntity;
-import com.bompotis.netcheck.data.repositories.DomainHistoricEntryRepository;
+import com.bompotis.netcheck.data.entities.*;
+import com.bompotis.netcheck.data.repositories.DomainCheckRepository;
 import com.bompotis.netcheck.data.repositories.DomainRepository;
 
 import java.util.ArrayList;
@@ -22,22 +21,22 @@ public class DomainStatusDto {
     private final Long responseTimeNs;
     private final String hostname;
     private final DomainRepository domainRepository;
-    private final DomainHistoricEntryRepository domainHistoricEntryRepository;
+    private final DomainCheckRepository domainCheckRepository;
 
-    public DomainStatusDto(String hostname, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository, Long responseTimeNs) {
+    public DomainStatusDto(String hostname, DomainRepository domainRepository, DomainCheckRepository domainCheckRepository, Long responseTimeNs) {
         this.dnsResolved = false;
         this.hostname = hostname;
         this.domainRepository = domainRepository;
-        this.domainHistoricEntryRepository = domainHistoricEntryRepository;
+        this.domainCheckRepository = domainCheckRepository;
         this.issuerCertificate = null;
         this.responseTimeNs = responseTimeNs;
     }
 
-    public DomainStatusDto(String hostname, String ipAddress, Integer statusCode, List<CertificateDetailsDto> certificates, DomainRepository domainRepository, DomainHistoricEntryRepository domainHistoricEntryRepository, Long responseTimeNs) {
+    public DomainStatusDto(String hostname, String ipAddress, Integer statusCode, List<CertificateDetailsDto> certificates, DomainRepository domainRepository, DomainCheckRepository domainCheckRepository, Long responseTimeNs) {
         CertificateDetailsDto issuerCert = null;
         this.ipAddress = ipAddress;
         this.domainRepository = domainRepository;
-        this.domainHistoricEntryRepository = domainHistoricEntryRepository;
+        this.domainCheckRepository = domainCheckRepository;
         this.hostname = hostname;
         this.responseTimeNs = responseTimeNs;
         for (var cert: certificates) {
@@ -83,22 +82,30 @@ public class DomainStatusDto {
         } else {
             domainEntity.setDomain(hostname);
         }
-        var domainHistoricEntity = getHistoricEntry();
-        domainHistoricEntity.setDomainEntity(domainEntity);
-        domainHistoricEntryRepository.save(domainHistoricEntity);
+        var domainCheckEntity = getDomainCheckEntity();
+        domainCheckEntity.setDomainEntity(domainEntity);
+        domainCheckRepository.save(domainCheckEntity);
     }
 
-    public DomainHistoricEntryEntity getHistoricEntry() {
-        var domainHistoryEntity = new DomainHistoricEntryEntity();
+    public DomainCheckEntity getDomainCheckEntity() {
+        var domainCheckEntity = new DomainCheckEntity();
+        var httpsCheckEntity = new HttpsCheckEntity();
+        httpsCheckEntity.setDnsResolves(dnsResolved);
+        httpsCheckEntity.setStatusCode(statusCode);
+
+        DomainCertificateEntity issuerCertificateEntity = null;
         if(Optional.ofNullable(issuerCertificate).isPresent()) {
-            domainHistoryEntity.setCertificateExpiresOn(issuerCertificate.getNotAfter());
-            domainHistoryEntity.setCertificateIsValid(issuerCertificate.isValid());
+            issuerCertificateEntity = new DomainCertificateEntity();
+            issuerCertificateEntity.setCertificateExpiresOn(issuerCertificate.getNotAfter());
+            issuerCertificateEntity.setCertificateIsValid(issuerCertificate.isValid());
+            httpsCheckEntity.setIssuerCertificate(issuerCertificateEntity);
         }
-        domainHistoryEntity.setDnsResolves(dnsResolved);
-        domainHistoryEntity.setStatusCode(statusCode);
-        domainHistoryEntity.setResponseTimeNs(responseTimeNs);
-        domainHistoryEntity.setTimeCheckedOn(new Date());
-        return domainHistoryEntity;
+
+        domainCheckEntity.setHttpsCheckEntity(httpsCheckEntity);
+
+        domainCheckEntity.setHttpsResponseTimeNs(responseTimeNs);
+        domainCheckEntity.setTimeCheckedOn(new Date());
+        return domainCheckEntity;
     }
 
     public Long getResponseTimeNs() {

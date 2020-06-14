@@ -1,11 +1,11 @@
 package com.bompotis.netcheck.api.controller;
 
 import com.bompotis.netcheck.api.models.CertificateModel;
-import com.bompotis.netcheck.api.models.DomainStatusModel;
+import com.bompotis.netcheck.api.models.DomainCheckModel;
 import com.bompotis.netcheck.api.models.DomainModel;
-import com.bompotis.netcheck.api.models.DomainHistoricEntryModel;
-import com.bompotis.netcheck.service.Dto.*;
+import com.bompotis.netcheck.api.models.DomainStatusModel;
 import com.bompotis.netcheck.service.DomainService;
+import com.bompotis.netcheck.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -65,15 +65,15 @@ public class DomainsController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history")
-    public ResponseEntity<CollectionModel<DomainHistoricEntryModel>> getDomainsHistory(@PathVariable("domain") String domain,
-                                                                                       @RequestParam(name = "page", required = false) Integer page,
-                                                                                       @RequestParam(name = "size", required = false) Integer size) {
+    public ResponseEntity<CollectionModel<DomainCheckModel>> getDomainsHistory(@PathVariable("domain") String domain,
+                                                                               @RequestParam(name = "page", required = false) Integer page,
+                                                                               @RequestParam(name = "size", required = false) Integer size) {
         return ok(convertToPagedDomainHistoricEntryModel(domainService.getDomainHistory(domain,page,size), domain));
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history/{id}")
-    public ResponseEntity<DomainHistoricEntryModel> getDomainsHistoricEntry(@PathVariable("domain") String domain, @PathVariable("id") String id) {
-        var optionalEntity = domainService.getDomainHistoricEntry(domain,id);
+    public ResponseEntity<DomainCheckModel> getDomainsHistoricEntry(@PathVariable("domain") String domain, @PathVariable("id") String id) {
+        var optionalEntity = domainService.getDomainCheck(domain,id);
         if (optionalEntity.isEmpty()) {
             return notFound().build();
         }
@@ -95,13 +95,13 @@ public class DomainsController {
                 .withSelfRel()
         );
         if (isValidPage(paginatedDomainsDto.getNumber(),paginatedDomainsDto.getTotalPages())) {
-            if (!isLastPage(paginatedDomainsDto.getNumber(),paginatedDomainsDto.getTotalPages())) {
+            if (isNotLastPage(paginatedDomainsDto.getNumber(), paginatedDomainsDto.getTotalPages())) {
                 links.add(linkTo(methodOn(DomainsController.class)
                         .getDomains(paginatedDomainsDto.getNumber()+1, paginatedDomainsDto.getSize()))
                         .withRel(IanaLinkRelations.NEXT)
                 );
             }
-            if (!isFirstPage(paginatedDomainsDto.getNumber())) {
+            if (isNotFirstPage(paginatedDomainsDto.getNumber())) {
                 links.add(linkTo(methodOn(DomainsController.class)
                         .getDomains(paginatedDomainsDto.getNumber()-1, paginatedDomainsDto.getSize()))
                         .withRel(IanaLinkRelations.PREVIOUS)
@@ -124,16 +124,16 @@ public class DomainsController {
         return pageNumber+1 <= totalPages;
     }
 
-    private boolean isFirstPage(int pageNumber) {
-        return pageNumber == 0;
+    private boolean isNotFirstPage(int pageNumber) {
+        return pageNumber != 0;
     }
 
-    private boolean isLastPage(int pageNumber, int totalPages) {
-        return (pageNumber+1 == totalPages);
+    private boolean isNotLastPage(int pageNumber, int totalPages) {
+        return (pageNumber + 1 != totalPages);
     }
 
-    private CollectionModel<DomainHistoricEntryModel> convertToPagedDomainHistoricEntryModel(PaginatedDomainCheckDto paginatedDomainCheckDto, String domain) {
-        var historicEntries = new ArrayList<DomainHistoricEntryModel>();
+    private CollectionModel<DomainCheckModel> convertToPagedDomainHistoricEntryModel(PaginatedDomainCheckDto paginatedDomainCheckDto, String domain) {
+        var historicEntries = new ArrayList<DomainCheckModel>();
         for (var domainEntity : paginatedDomainCheckDto.getDomainChecks()) {
             historicEntries.add(convertToDomainHistoricEntry(domainEntity));
         }
@@ -142,13 +142,13 @@ public class DomainsController {
                 .getDomainsHistory(domain, paginatedDomainCheckDto.getNumber(), paginatedDomainCheckDto.getSize())
         ).withSelfRel());
         if (isValidPage(paginatedDomainCheckDto.getNumber(),paginatedDomainCheckDto.getTotalPages())) {
-            if (!isLastPage(paginatedDomainCheckDto.getNumber(),paginatedDomainCheckDto.getTotalPages())) {
+            if (isNotLastPage(paginatedDomainCheckDto.getNumber(), paginatedDomainCheckDto.getTotalPages())) {
                 links.add(linkTo(methodOn(DomainsController.class)
                         .getDomainsHistory(domain,paginatedDomainCheckDto.getNumber()+1, paginatedDomainCheckDto.getSize()))
                         .withRel(IanaLinkRelations.NEXT)
                 );
             }
-            if (!isFirstPage(paginatedDomainCheckDto.getNumber())) {
+            if (isNotFirstPage(paginatedDomainCheckDto.getNumber())) {
                 links.add(linkTo(methodOn(DomainsController.class)
                         .getDomainsHistory(domain,paginatedDomainCheckDto.getNumber()-1, paginatedDomainCheckDto.getSize()))
                         .withRel(IanaLinkRelations.PREVIOUS)
@@ -166,8 +166,8 @@ public class DomainsController {
         );
     }
 
-    private DomainHistoricEntryModel convertToDomainHistoricEntry(DomainCheckDto domainCheckDto) {
-        var entry = new DomainHistoricEntryModel(
+    private DomainCheckModel convertToDomainHistoricEntry(DomainCheckDto domainCheckDto) {
+        var entry = new DomainCheckModel(
                 domainCheckDto.getDomain(),
                 domainCheckDto.getStatusCode(),
                 domainCheckDto.getCertificateIsValid(),

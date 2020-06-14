@@ -12,25 +12,25 @@ import java.util.List;
  */
 @Relation(collectionRelation = "domainStatuses", itemRelation = "domainStatus")
 public class DomainStatusModel extends RepresentationModel<DomainStatusModel> {
-    private final List<CertificateModel> caCertificates;
-    private final CertificateModel issuerCertificate;
     private final Integer statusCode;
     private final Boolean dnsResolved;
+    private final List<CertificateModel> caCertificates;
+    private final CertificateModel issuerCertificate;
     private final String ipAddress;
-    private final String hostname;
+    private final String domain;
     private final Long responseTime;
 
     @JsonCreator
     public DomainStatusModel(
             @JsonProperty("caCertificates") List<CertificateModel> caCertificates,
-            @JsonProperty("hostname") String hostname,
+            @JsonProperty("domain") String domain,
             @JsonProperty("ipAddress") String ipAddress,
             @JsonProperty("statusCode") Integer statusCode,
             @JsonProperty("dnsResolved") Boolean dnsResolved,
             @JsonProperty("responseTimeNs") Long responseTime,
             @JsonProperty("issuerCertificate") CertificateModel issuerCertificate) {
         this.caCertificates = caCertificates;
-        this.hostname = hostname;
+        this.domain = domain;
         this.statusCode = statusCode;
         this.ipAddress = ipAddress;
         this.dnsResolved = dnsResolved;
@@ -42,8 +42,8 @@ public class DomainStatusModel extends RepresentationModel<DomainStatusModel> {
         return statusCode;
     }
 
-    public String getHostname() {
-        return hostname;
+    public String getDomain() {
+        return domain;
     }
 
     public Boolean getDnsResolved() {

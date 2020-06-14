@@ -8,6 +8,4 @@ import org.springframework.stereotype.Repository;
  * Created by Kyriakos Bompotis on 8/6/20.
  */
 @Repository
-public interface DomainRepository extends JpaRepository<DomainEntity, String> {
-
-}
+public interface DomainRepository extends JpaRepository<DomainEntity, String> {}

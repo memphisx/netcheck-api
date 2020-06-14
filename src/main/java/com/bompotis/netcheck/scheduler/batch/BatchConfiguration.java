@@ -1,7 +1,7 @@
 package com.bompotis.netcheck.scheduler.batch;
 
+import com.bompotis.netcheck.data.entities.DomainCheckEntity;
 import com.bompotis.netcheck.data.entities.DomainEntity;
-import com.bompotis.netcheck.data.entities.DomainHistoricEntryEntity;
 import com.bompotis.netcheck.service.DomainService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -58,8 +58,8 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public JpaItemWriter<DomainHistoricEntryEntity> writer() {
-        var writer = new JpaItemWriter<DomainHistoricEntryEntity>();
+    public JpaItemWriter<DomainCheckEntity> writer() {
+        var writer = new JpaItemWriter<DomainCheckEntity>();
         writer.setEntityManagerFactory(entityManagerFactory);
         return writer;
     }
@@ -75,9 +75,9 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step step1(JpaItemWriter<DomainHistoricEntryEntity> writer) {
+    public Step step1(JpaItemWriter<DomainCheckEntity> writer) {
         return stepBuilderFactory.get("step1")
-                .<DomainEntity, DomainHistoricEntryEntity> chunk(10)
+                .<DomainEntity, DomainCheckEntity> chunk(10)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer)

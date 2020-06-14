@@ -15,13 +15,13 @@ public class DomainEntity {
     private String domain;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy="domainEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DomainHistoricEntryEntity> domainHistoryEntries;
+    private List<DomainCheckEntity> domainHistoryEntries;
 
-    public List<DomainHistoricEntryEntity> getDomainHistoryEntries() {
+    public List<DomainCheckEntity> getDomainHistoryEntries() {
         return domainHistoryEntries;
     }
 
-    public void setDomainHistoryEntries(List<DomainHistoricEntryEntity> domainHistoryEntries) {
+    public void setDomainHistoryEntries(List<DomainCheckEntity> domainHistoryEntries) {
         this.domainHistoryEntries = domainHistoryEntries;
     }
 

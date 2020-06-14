@@ -11,7 +11,7 @@ import java.util.Date;
  * Created by Kyriakos Bompotis on 10/6/20.
  */
 @Relation(collectionRelation = "historicEntries", itemRelation = "historicEntry")
-public class DomainHistoricEntryModel extends RepresentationModel<DomainHistoricEntryModel> {
+public class DomainCheckModel extends RepresentationModel<DomainCheckModel> {
     private final Integer statusCode;
     private final Boolean certificateIsValid;
     private final Date certificateExpiresOn;
@@ -21,7 +21,7 @@ public class DomainHistoricEntryModel extends RepresentationModel<DomainHistoric
     private final Long responseTimeMs;
 
     @JsonCreator
-    public DomainHistoricEntryModel(
+    public DomainCheckModel(
             @JsonProperty("domain") String domain,
             @JsonProperty("statusCode") Integer statusCode,
             @JsonProperty("certificateIsValid") Boolean certificateIsValid,

@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.service.Dto;
+package com.bompotis.netcheck.service.dto;
 
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
