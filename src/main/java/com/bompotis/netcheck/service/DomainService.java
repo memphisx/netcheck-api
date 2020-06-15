@@ -78,23 +78,19 @@ public class DomainService {
         } else {
             domainEntity.setDomain(domainStatusDto.getHostname());
         }
-        var domainCheckEntity = getDomainCheckEntity(domainStatusDto);
+        var domainCheckEntity = convertToDomainCheckEntity(domainStatusDto);
         domainCheckEntity.setDomainEntity(domainEntity);
         domainCheckRepository.save(domainCheckEntity);
     }
 
-    public DomainCheckEntity getDomainCheckEntity(DomainStatusDto domainStatusDto) {
+    public DomainCheckEntity convertToDomainCheckEntity(DomainStatusDto domainStatusDto) {
         var domainCheckEntity = new DomainCheckEntity();
         var httpsCheckEntity = new HttpsCheckEntity();
         httpsCheckEntity.setDnsResolves(domainStatusDto.getDnsResolved());
         httpsCheckEntity.setStatusCode(domainStatusDto.getStatusCode());
 
-        DomainCertificateEntity issuerCertificateEntity;
         if(Optional.ofNullable(domainStatusDto.getIssuerCertificate()).isPresent()) {
-            issuerCertificateEntity = new DomainCertificateEntity();
-            issuerCertificateEntity.setCertificateExpiresOn(domainStatusDto.getIssuerCertificate().getNotAfter());
-            issuerCertificateEntity.setCertificateIsValid(domainStatusDto.getIssuerCertificate().isValid());
-            httpsCheckEntity.setIssuerCertificate(issuerCertificateEntity);
+            httpsCheckEntity.setIssuerCertificate(convertToDomainCertificateEntity(domainStatusDto.getIssuerCertificate()));
         }
 
         domainCheckEntity.setHttpsCheckEntity(httpsCheckEntity);
@@ -104,25 +100,49 @@ public class DomainService {
         return domainCheckEntity;
     }
 
+    private DomainCertificateEntity convertToDomainCertificateEntity(CertificateDetailsDto certificateDetailsDto) {
+        var issuerCertificateEntity = new DomainCertificateEntity();
+        issuerCertificateEntity.setBasicConstraints(certificateDetailsDto.getBasicConstraints());
+        issuerCertificateEntity.setValid(certificateDetailsDto.isValid());
+        issuerCertificateEntity.setExpired(certificateDetailsDto.getExpired());
+        issuerCertificateEntity.setNotYetValid(certificateDetailsDto.getNotYetValid());
+        issuerCertificateEntity.setCertificateIsValid(certificateDetailsDto.isValid());
+        issuerCertificateEntity.setIssuedBy(certificateDetailsDto.getIssuedBy());
+        issuerCertificateEntity.setIssuedFor(certificateDetailsDto.getIssuedFor());
+        issuerCertificateEntity.setNotAfter(certificateDetailsDto.getNotAfter());
+        issuerCertificateEntity.setNotBefore(certificateDetailsDto.getNotBefore());
+        return issuerCertificateEntity;
+    }
+
     public PaginatedDomainCheckDto getDomainHistory(String domain, Integer page, Integer size) {
-        var domainCheckList = new ArrayList<DomainCheckDto>();
+        var domainCheckList = new ArrayList<DomainStatusDto>();
         var pageRequest = PageRequest.of(
                 Optional.ofNullable(page).orElse(0),
                 Optional.ofNullable(size).orElse(10)
         );
         var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
         for (var domainCheckEntity : domainCheckEntities) {
+            var httpsCheckEntity = domainCheckEntity.getHttpsCheckEntity();
+            var issuerCertificate = httpsCheckEntity.getIssuerCertificate();
             domainCheckList.add(
-                    new DomainCheckDto(
-                            domainCheckEntity.getId(),
-                            domain,
-                            domainCheckEntity.getHttpsCheckEntity().getStatusCode(),
-                            domainCheckEntity.getHttpsCheckEntity().getIssuerCertificate().getCertificateIsValid(),
-                            domainCheckEntity.getHttpsCheckEntity().getIssuerCertificate().getCertificateExpiresOn(),
-                            domainCheckEntity.getTimeCheckedOn(),
-                            domainCheckEntity.getHttpsResponseTimeNs(),
-                            domainCheckEntity.getHttpsCheckEntity().getDnsResolves()
-                    )
+                    new DomainStatusDto.Builder()
+                            .domain(domain)
+                            .statusCode(httpsCheckEntity.getStatusCode())
+                            .id(domainCheckEntity.getId())
+                            .responseTimeNs(domainCheckEntity.getHttpsResponseTimeNs())
+                            .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
+                            .dnsResolved(httpsCheckEntity.getDnsResolves())
+                            .certificate(new CertificateDetailsDto.Builder()
+                                    .valid(issuerCertificate.getCertificateIsValid())
+                                    .notAfter(issuerCertificate.getNotAfter())
+                                    .notBefore(issuerCertificate.getNotBefore())
+                                    .expired(issuerCertificate.getExpired())
+                                    .basicConstraints(issuerCertificate.getBasicConstraints())
+                                    .issuedBy(issuerCertificate.getIssuedBy())
+                                    .issuedFor(issuerCertificate.getIssuedFor())
+                                    .notYetValid(issuerCertificate.getNotYetValid())
+                                    .build())
+                            .build()
             );
         }
         return new PaginatedDomainCheckDto(
@@ -134,22 +154,33 @@ public class DomainService {
         );
     }
 
-    public Optional<DomainCheckDto> getDomainCheck(String domain, String id) {
+    public Optional<DomainStatusDto> getDomainCheck(String domain, String id) {
         var queryResult = domainCheckRepository.findById(id);
         if (queryResult.isEmpty()) {
             return Optional.empty();
         }
         var domainCheckEntity = queryResult.get();
-        var domainCheckDto = new DomainCheckDto(
-                domainCheckEntity.getId(),
-                domain,
-                domainCheckEntity.getHttpsCheckEntity().getStatusCode(),
-                domainCheckEntity.getHttpsCheckEntity().getIssuerCertificate().getCertificateIsValid(),
-                domainCheckEntity.getHttpsCheckEntity().getIssuerCertificate().getCertificateExpiresOn(),
-                domainCheckEntity.getTimeCheckedOn(),
-                domainCheckEntity.getHttpsResponseTimeNs(),
-                domainCheckEntity.getHttpsCheckEntity().getDnsResolves()
-        );
+        var httpsEntity = domainCheckEntity.getHttpsCheckEntity();
+        var issuerCertificate = httpsEntity.getIssuerCertificate();
+        var domainCheckDto = new DomainStatusDto.Builder()
+                .domain(domain)
+                .id(domainCheckEntity.getId())
+                .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
+                .responseTimeNs(domainCheckEntity.getHttpsResponseTimeNs())
+                .dnsResolved(httpsEntity.getDnsResolves())
+                .statusCode(httpsEntity.getStatusCode())
+                .certificate(new CertificateDetailsDto.Builder()
+                        .valid(issuerCertificate.getCertificateIsValid())
+                        .notAfter(issuerCertificate.getNotAfter())
+                        .notBefore(issuerCertificate.getNotBefore())
+                        .expired(issuerCertificate.getExpired())
+                        .basicConstraints(issuerCertificate.getBasicConstraints())
+                        .issuedBy(issuerCertificate.getIssuedBy())
+                        .issuedFor(issuerCertificate.getIssuedFor())
+                        .notYetValid(issuerCertificate.getNotYetValid())
+                        .build())
+                .build();
+
         return Optional.of(domainCheckDto);
     }
 

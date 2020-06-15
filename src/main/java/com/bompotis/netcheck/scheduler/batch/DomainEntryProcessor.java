@@ -24,7 +24,7 @@ public class DomainEntryProcessor implements ItemProcessor<DomainEntity, DomainC
     public DomainCheckEntity process(DomainEntity domainEntity) throws Exception {
         var status = domainService.check(domainEntity.getDomain());
         log.info("Checking {}",domainEntity.getDomain());
-        var historicEntry = domainService.getDomainCheckEntity(status);
+        var historicEntry = domainService.convertToDomainCheckEntity(status);
         log.info("Successfully checked {}. Passing to writer", domainEntity.getDomain());
         historicEntry.setDomainEntity(domainEntity);
         return historicEntry;

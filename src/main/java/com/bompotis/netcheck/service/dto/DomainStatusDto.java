@@ -2,12 +2,14 @@ package com.bompotis.netcheck.service.dto;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
  */
 public class DomainStatusDto {
+    private final String id;
     private final List<CertificateDetailsDto> caCertificates;
     private final CertificateDetailsDto issuerCertificate;
     private final Long responseTimeNs;
@@ -16,6 +18,7 @@ public class DomainStatusDto {
     private final Integer statusCode;
     private final Boolean dnsResolved;
     private final String ipAddress;
+    private final Date timeCheckedOn;
 
     public List<CertificateDetailsDto> getCaCertificates() {
         return caCertificates;
@@ -49,6 +52,14 @@ public class DomainStatusDto {
         return domain;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public Date getTimeCheckedOn() {
+        return timeCheckedOn;
+    }
+
     public static class Builder {
         private List<CertificateDetailsDto> caCertificates = new ArrayList<>();
         private CertificateDetailsDto issuerCertificate;
@@ -58,6 +69,8 @@ public class DomainStatusDto {
         private Integer statusCode;
         private Boolean dnsResolved;
         private String ipAddress;
+        private String id;
+        private Date timeCheckedOn;
 
         public Builder certificate(CertificateDetailsDto cert) {
             if (cert.getBasicConstraints() < 0) {
@@ -73,6 +86,11 @@ public class DomainStatusDto {
             return this;
         }
 
+        public Builder timeCheckedOn(Date timeCheckedOn) {
+            this.timeCheckedOn = timeCheckedOn;
+            return this;
+        }
+
         public Builder responseTimeNs(Long responseTimeNs) {
             this.responseTimeNs = responseTimeNs;
             return this;
@@ -85,6 +103,11 @@ public class DomainStatusDto {
 
         public Builder domain(String domain) {
             this.domain = domain;
+            return this;
+        }
+
+        public Builder id(String id) {
+            this.id = id;
             return this;
         }
 
@@ -112,5 +135,7 @@ public class DomainStatusDto {
         this.caCertificates = Collections.unmodifiableList(b.caCertificates);
         this.issuerCertificate = b.issuerCertificate;
         this.statusCode = b.statusCode;
+        this.timeCheckedOn = b.timeCheckedOn;
+        this.id = b.id;
     }
 }

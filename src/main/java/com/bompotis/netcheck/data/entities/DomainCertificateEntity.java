@@ -19,22 +19,35 @@ public class DomainCertificateEntity {
     @Column(name = "id")
     private String id;
 
-    @OneToMany(targetEntity = HttpsCheckEntity.class, fetch = FetchType.LAZY, mappedBy="issuerCertificate", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy="issuerCertificate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HttpsCheckEntity> httpsCheckEntities;
 
     @Column(name = "valid_certificate")
     private Boolean certificateIsValid;
 
-    @Column(name = "cert_expiration_date")
-    private Date certificateExpiresOn;
+    @Column(name = "basic_constraints")
+    private Integer basicConstraints;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    @Column(name = "issued_by")
+    private String issuedBy;
 
-    public String getId() {
-        return id;
-    }
+    @Column(name = "issued_for")
+    private String issuedFor;
+
+    @Column(name = "not_before")
+    private Date notBefore;
+
+    @Column(name = "not_after")
+    private Date notAfter;
+
+    @Column(name = "is_valid")
+    private Boolean isValid;
+
+    @Column(name = "expired")
+    private Boolean expired;
+
+    @Column(name = "not_yet_valid")
+    private Boolean notYetValid;
 
     public Boolean getCertificateIsValid() {
         return certificateIsValid;
@@ -44,12 +57,12 @@ public class DomainCertificateEntity {
         this.certificateIsValid = certificateIsValid;
     }
 
-    public Date getCertificateExpiresOn() {
-        return certificateExpiresOn;
+    public Integer getBasicConstraints() {
+        return basicConstraints;
     }
 
-    public void setCertificateExpiresOn(Date certificateExpiresOn) {
-        this.certificateExpiresOn = certificateExpiresOn;
+    public void setBasicConstraints(Integer basicConstraints) {
+        this.basicConstraints = basicConstraints;
     }
 
     public List<HttpsCheckEntity> getHttpsCheckEntities() {
@@ -58,5 +71,69 @@ public class DomainCertificateEntity {
 
     public void setHttpsCheckEntities(List<HttpsCheckEntity> httpsCheckEntities) {
         this.httpsCheckEntities = httpsCheckEntities;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getIssuedBy() {
+        return issuedBy;
+    }
+
+    public void setIssuedBy(String issuedBy) {
+        this.issuedBy = issuedBy;
+    }
+
+    public String getIssuedFor() {
+        return issuedFor;
+    }
+
+    public void setIssuedFor(String issuedFor) {
+        this.issuedFor = issuedFor;
+    }
+
+    public Date getNotBefore() {
+        return notBefore;
+    }
+
+    public void setNotBefore(Date notBefore) {
+        this.notBefore = notBefore;
+    }
+
+    public Date getNotAfter() {
+        return notAfter;
+    }
+
+    public void setNotAfter(Date notAfter) {
+        this.notAfter = notAfter;
+    }
+
+    public Boolean getValid() {
+        return isValid;
+    }
+
+    public void setValid(Boolean valid) {
+        isValid = valid;
+    }
+
+    public Boolean getExpired() {
+        return expired;
+    }
+
+    public void setExpired(Boolean expired) {
+        this.expired = expired;
+    }
+
+    public Boolean getNotYetValid() {
+        return notYetValid;
+    }
+
+    public void setNotYetValid(Boolean notYetValid) {
+        this.notYetValid = notYetValid;
     }
 }

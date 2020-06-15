@@ -166,15 +166,15 @@ public class DomainsController {
         );
     }
 
-    private DomainCheckModel convertToDomainHistoricEntry(DomainCheckDto domainCheckDto) {
+    private DomainCheckModel convertToDomainHistoricEntry(DomainStatusDto domainCheckDto) {
         var entry = new DomainCheckModel(
                 domainCheckDto.getDomain(),
                 domainCheckDto.getStatusCode(),
-                domainCheckDto.getCertificateIsValid(),
-                domainCheckDto.getCertificateExpiresOn(),
+                domainCheckDto.getIssuerCertificate().isValid(),
+                domainCheckDto.getIssuerCertificate().getNotAfter(),
                 domainCheckDto.getTimeCheckedOn(),
                 domainCheckDto.getResponseTimeNs(),
-                domainCheckDto.getDnsResolves()
+                domainCheckDto.getDnsResolved()
         );
         entry.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
                 domainCheckDto.getDomain(),

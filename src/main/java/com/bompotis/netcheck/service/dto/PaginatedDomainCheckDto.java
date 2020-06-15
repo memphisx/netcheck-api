@@ -7,9 +7,9 @@ import java.util.List;
  */
 public class PaginatedDomainCheckDto extends PaginatedDto {
 
-    private final List<DomainCheckDto> domainChecks;
+    private final List<DomainStatusDto> domainChecks;
 
-    public PaginatedDomainCheckDto(List<DomainCheckDto> domainChecks,
+    public PaginatedDomainCheckDto(List<DomainStatusDto> domainChecks,
                                    long totalElements,
                                    int totalPages,
                                    int number,
@@ -18,7 +18,7 @@ public class PaginatedDomainCheckDto extends PaginatedDto {
         this.domainChecks = domainChecks;
     }
 
-    public List<DomainCheckDto> getDomainChecks() {
+    public List<DomainStatusDto> getDomainChecks() {
         return domainChecks;
     }
 }

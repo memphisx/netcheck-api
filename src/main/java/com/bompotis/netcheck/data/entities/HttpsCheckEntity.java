@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Table(name = "https_check")
 public class HttpsCheckEntity extends HttpCheckEntity{
 
-    @ManyToOne(targetEntity = DomainCertificateEntity.class, fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "issuerCertificate_id")
     private DomainCertificateEntity issuerCertificate;
 
