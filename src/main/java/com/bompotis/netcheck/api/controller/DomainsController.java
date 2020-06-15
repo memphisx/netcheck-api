@@ -49,9 +49,9 @@ public class DomainsController {
     public ResponseEntity<DomainStatusModel> getDomainStatus(
             @PathVariable("domain") String domain,
             @RequestParam(name = "store", required = false) Boolean store) throws IOException {
-        var status = domainService.buildAndCheck(domain);
+        var status = domainService.check(domain);
         if(Optional.ofNullable(store).isPresent() && store) {
-            status.storeResult();
+            domainService.storeResult(status);
         }
         var domainStatusModel = convertToDomainStatusModel(status);
         domainStatusModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain,store)).withSelfRel());

@@ -1,6 +1,9 @@
 package com.bompotis.netcheck.service;
 
+import com.bompotis.netcheck.data.entities.DomainCertificateEntity;
+import com.bompotis.netcheck.data.entities.DomainCheckEntity;
 import com.bompotis.netcheck.data.entities.DomainEntity;
+import com.bompotis.netcheck.data.entities.HttpsCheckEntity;
 import com.bompotis.netcheck.data.repositories.DomainCheckRepository;
 import com.bompotis.netcheck.data.repositories.DomainRepository;
 import com.bompotis.netcheck.service.dto.*;
@@ -10,12 +13,10 @@ import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -38,32 +39,69 @@ public class DomainService {
         return new URL("https://" + domain);
     }
 
-    public DomainStatusDto buildAndCheck(String domain) throws IOException {
-        var certificates = new ArrayList<CertificateDetailsDto>();
+    public DomainStatusDto check(String domain) throws IOException {
+        var domainStatusDtoBuilder = new DomainStatusDto.Builder()
+                .domain(domain);
         HttpsURLConnection conn = null;
         try {
             var beginTime = System.nanoTime();
             conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
             conn.getInputStream();
             var hostname = conn.getURL().getHost();
-            var ipAddress = InetAddress.getByName(hostname).getHostAddress();
-            var statusCode = conn.getResponseCode();
-            var responseTime = System.nanoTime() - beginTime;
+            domainStatusDtoBuilder = domainStatusDtoBuilder
+                    .hostname(hostname)
+                    .ipAddress(InetAddress.getByName(hostname).getHostAddress())
+                    .dnsResolved(true)
+                    .statusCode(conn.getResponseCode())
+                    .responseTimeNs(System.nanoTime() - beginTime);
             var serverCerts = conn.getServerCertificates();
             for (var cert : serverCerts) {
                 if(cert instanceof X509Certificate) {
-                    X509Certificate x = (X509Certificate ) cert;
-                    certificates.add(new CertificateDetailsDto(x));
+                    domainStatusDtoBuilder = domainStatusDtoBuilder
+                            .certificate(new CertificateDetailsDto((X509Certificate ) cert));
                 }
             }
-            return new DomainStatusDto(hostname, ipAddress, statusCode, certificates, domainRepository, domainCheckRepository, responseTime);
         } catch (UnknownHostException e) {
-            return new DomainStatusDto(domain, domainRepository, domainCheckRepository, null);
+            domainStatusDtoBuilder = domainStatusDtoBuilder.dnsResolved(false);
         } finally {
-            if (Optional.ofNullable(conn).isPresent()) {
-                conn.disconnect();
-            }
+            Optional.ofNullable(conn)
+                    .ifPresent(HttpURLConnection::disconnect);
         }
+        return domainStatusDtoBuilder.build();
+    }
+
+    public void storeResult(DomainStatusDto domainStatusDto) {
+        var domainEntity = new DomainEntity();
+        var domainEntityOptional = domainRepository.findById(domainStatusDto.getHostname());
+        if (domainEntityOptional.isPresent()) {
+            domainEntity = domainEntityOptional.get();
+        } else {
+            domainEntity.setDomain(domainStatusDto.getHostname());
+        }
+        var domainCheckEntity = getDomainCheckEntity(domainStatusDto);
+        domainCheckEntity.setDomainEntity(domainEntity);
+        domainCheckRepository.save(domainCheckEntity);
+    }
+
+    public DomainCheckEntity getDomainCheckEntity(DomainStatusDto domainStatusDto) {
+        var domainCheckEntity = new DomainCheckEntity();
+        var httpsCheckEntity = new HttpsCheckEntity();
+        httpsCheckEntity.setDnsResolves(domainStatusDto.getDnsResolved());
+        httpsCheckEntity.setStatusCode(domainStatusDto.getStatusCode());
+
+        DomainCertificateEntity issuerCertificateEntity;
+        if(Optional.ofNullable(domainStatusDto.getIssuerCertificate()).isPresent()) {
+            issuerCertificateEntity = new DomainCertificateEntity();
+            issuerCertificateEntity.setCertificateExpiresOn(domainStatusDto.getIssuerCertificate().getNotAfter());
+            issuerCertificateEntity.setCertificateIsValid(domainStatusDto.getIssuerCertificate().isValid());
+            httpsCheckEntity.setIssuerCertificate(issuerCertificateEntity);
+        }
+
+        domainCheckEntity.setHttpsCheckEntity(httpsCheckEntity);
+
+        domainCheckEntity.setHttpsResponseTimeNs(domainStatusDto.getResponseTimeNs());
+        domainCheckEntity.setTimeCheckedOn(new Date());
+        return domainCheckEntity;
     }
 
     public PaginatedDomainCheckDto getDomainHistory(String domain, Integer page, Integer size) {

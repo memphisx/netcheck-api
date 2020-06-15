@@ -22,9 +22,9 @@ public class DomainEntryProcessor implements ItemProcessor<DomainEntity, DomainC
 
     @Override
     public DomainCheckEntity process(DomainEntity domainEntity) throws Exception {
-        var status = domainService.buildAndCheck(domainEntity.getDomain());
+        var status = domainService.check(domainEntity.getDomain());
         log.info("Checking {}",domainEntity.getDomain());
-        var historicEntry = status.getDomainCheckEntity();
+        var historicEntry = domainService.getDomainCheckEntity(status);
         log.info("Successfully checked {}. Passing to writer", domainEntity.getDomain());
         historicEntry.setDomainEntity(domainEntity);
         return historicEntry;
