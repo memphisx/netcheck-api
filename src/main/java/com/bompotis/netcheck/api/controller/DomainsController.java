@@ -1,11 +1,11 @@
 package com.bompotis.netcheck.api.controller;
 
-import com.bompotis.netcheck.api.models.CertificateModel;
-import com.bompotis.netcheck.api.models.DomainCheckModel;
-import com.bompotis.netcheck.api.models.DomainModel;
-import com.bompotis.netcheck.api.models.DomainStatusModel;
+import com.bompotis.netcheck.api.models.*;
 import com.bompotis.netcheck.service.DomainService;
-import com.bompotis.netcheck.service.dto.*;
+import com.bompotis.netcheck.service.dto.CertificateDetailsDto;
+import com.bompotis.netcheck.service.dto.DomainCheckDto;
+import com.bompotis.netcheck.service.dto.PaginatedDomainCheckDto;
+import com.bompotis.netcheck.service.dto.PaginatedDomainsDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -46,16 +46,16 @@ public class DomainsController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}")
-    public ResponseEntity<DomainStatusModel> getDomainStatus(
+    public ResponseEntity<DomainCheckModel> getDomainStatus(
             @PathVariable("domain") String domain,
             @RequestParam(name = "store", required = false) Boolean store) throws IOException {
         var status = domainService.check(domain);
         if(Optional.ofNullable(store).isPresent() && store) {
             domainService.storeResult(status);
         }
-        var domainStatusModel = convertToDomainStatusModel(status);
-        domainStatusModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain,store)).withSelfRel());
-        return ok(domainStatusModel);
+        var domainCheckModel = convertToDomainCheckModel(status);
+        domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain,store)).withSelfRel());
+        return ok(domainCheckModel);
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/{domain}")
@@ -77,7 +77,7 @@ public class DomainsController {
         if (optionalEntity.isEmpty()) {
             return notFound().build();
         }
-        return ok(convertToDomainHistoricEntry(optionalEntity.get()));
+        return ok(convertToDomainCheckModel(optionalEntity.get()));
     }
 
     private CollectionModel<DomainModel> convertToPagedDomainModels(PaginatedDomainsDto paginatedDomainsDto) throws IOException {
@@ -135,7 +135,7 @@ public class DomainsController {
     private CollectionModel<DomainCheckModel> convertToPagedDomainHistoricEntryModel(PaginatedDomainCheckDto paginatedDomainCheckDto, String domain) {
         var historicEntries = new ArrayList<DomainCheckModel>();
         for (var domainEntity : paginatedDomainCheckDto.getDomainChecks()) {
-            historicEntries.add(convertToDomainHistoricEntry(domainEntity));
+            historicEntries.add(convertToDomainCheckModel(domainEntity));
         }
         var links = new ArrayList<Link>();
         links.add(linkTo(methodOn(DomainsController.class)
@@ -166,39 +166,56 @@ public class DomainsController {
         );
     }
 
-    private DomainCheckModel convertToDomainHistoricEntry(DomainStatusDto domainCheckDto) {
-        var entry = new DomainCheckModel(
-                domainCheckDto.getDomain(),
-                domainCheckDto.getStatusCode(),
-                domainCheckDto.getIssuerCertificate().isValid(),
-                domainCheckDto.getIssuerCertificate().getNotAfter(),
-                domainCheckDto.getTimeCheckedOn(),
-                domainCheckDto.getResponseTimeNs(),
-                domainCheckDto.getDnsResolved()
-        );
-        entry.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
-                domainCheckDto.getDomain(),
-                domainCheckDto.getId())).withSelfRel()
-        );
-        return entry;
-    }
-
-    private DomainStatusModel convertToDomainStatusModel(DomainStatusDto domainStatusDto) {
-        CertificateModel issuerCertificate = convertToCertificateModel(domainStatusDto.getIssuerCertificate());
-        var caCertificates = new ArrayList<CertificateModel>();
-        for (var certificate : domainStatusDto.getCaCertificates()) {
-            caCertificates.add(convertToCertificateModel(certificate));
+    private DomainCheckModel convertToDomainCheckModel(DomainCheckDto domainCheckDto) {
+        HttpCheckModel httpCheck = null;
+        HttpCheckModel httpsCheck = null;
+        CertificateModel certificate = null;
+        if (Optional.ofNullable(domainCheckDto.getHttpCheckDto()).isPresent()) {
+            httpCheck = new HttpCheckModel(
+                    domainCheckDto.getDomain(),
+                    domainCheckDto.getHttpCheckDto().getStatusCode(),
+                    domainCheckDto.getHttpCheckDto().getTimeCheckedOn(),
+                    domainCheckDto.getHttpCheckDto().getResponseTimeNs(),
+                    domainCheckDto.getHttpCheckDto().getDnsResolved(),
+                    domainCheckDto.getHttpCheckDto().getIpAddress(),
+                    domainCheckDto.getHttpCheckDto().getProtocol()
+            );
+            if (Optional.ofNullable(domainCheckDto.getHttpCheckDto().getId()).isPresent()) {
+                httpCheck.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
+                        domainCheckDto.getDomain(),
+                        domainCheckDto.getHttpCheckDto().getId())).withSelfRel()
+                );
+            }
         }
-        return new DomainStatusModel(
-                caCertificates,
-                domainStatusDto.getHostname(),
-                domainStatusDto.getIpAddress(),
-                domainStatusDto.getStatusCode(),
-                domainStatusDto.getDnsResolved(),
-                domainStatusDto.getResponseTimeNs(),
-                issuerCertificate
-        );
+        if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto()).isPresent()) {
+            httpsCheck = new HttpCheckModel(
+                    domainCheckDto.getDomain(),
+                    domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getStatusCode(),
+                    domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getTimeCheckedOn(),
+                    domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getResponseTimeNs(),
+                    domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getDnsResolved(),
+                    domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getIpAddress(),
+                    domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getProtocol()
+            );
+            if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getId()).isPresent()) {
+                httpsCheck.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
+                        domainCheckDto.getDomain(),
+                        domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getId())).withSelfRel()
+                );
+            }
 
+            if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()).isPresent()) {
+                certificate = convertToCertificateModel(domainCheckDto.getHttpsCheckDto().getIssuerCertificate());
+            }
+        }
+        var domainCheckModel = new DomainCheckModel(httpCheck, httpsCheck, certificate);
+        if (Optional.ofNullable(domainCheckDto.getId()).isPresent()) {
+            domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
+                    domainCheckDto.getDomain(),
+                    domainCheckDto.getId())).withSelfRel()
+            );
+        }
+        return domainCheckModel;
     }
 
     private CertificateModel convertToCertificateModel(CertificateDetailsDto certificateDetailsDto) {

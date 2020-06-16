@@ -1,35 +1,22 @@
 package com.bompotis.netcheck.service.dto;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 /**
- * Created by Kyriakos Bompotis on 10/6/20.
+ * Created by Kyriakos Bompotis on 15/6/20.
  */
-public class DomainStatusDto {
+public class HttpCheckDto {
     private final String id;
-    private final List<CertificateDetailsDto> caCertificates;
-    private final CertificateDetailsDto issuerCertificate;
     private final Long responseTimeNs;
-    private final String domain;
     private final String hostname;
     private final Integer statusCode;
     private final Boolean dnsResolved;
     private final String ipAddress;
     private final Date timeCheckedOn;
-
-    public List<CertificateDetailsDto> getCaCertificates() {
-        return caCertificates;
-    }
+    private final String protocol;
 
     public Integer getStatusCode() {
         return statusCode;
-    }
-
-    public CertificateDetailsDto getIssuerCertificate() {
-        return issuerCertificate;
     }
 
     public Boolean getDnsResolved() {
@@ -48,10 +35,6 @@ public class DomainStatusDto {
         return responseTimeNs;
     }
 
-    public String getDomain() {
-        return domain;
-    }
-
     public String getId() {
         return id;
     }
@@ -60,26 +43,19 @@ public class DomainStatusDto {
         return timeCheckedOn;
     }
 
+    public String getProtocol() {
+        return protocol;
+    }
+
     public static class Builder {
-        private List<CertificateDetailsDto> caCertificates = new ArrayList<>();
-        private CertificateDetailsDto issuerCertificate;
         private Long responseTimeNs;
-        private String domain;
         private String hostname;
         private Integer statusCode;
         private Boolean dnsResolved;
         private String ipAddress;
         private String id;
         private Date timeCheckedOn;
-
-        public Builder certificate(CertificateDetailsDto cert) {
-            if (cert.getBasicConstraints() < 0) {
-                this.issuerCertificate = cert;
-            } else {
-                this.caCertificates.add(cert);
-            }
-            return this;
-        }
+        private String protocol;
 
         public Builder dnsResolved(Boolean dnsResolved) {
             this.dnsResolved = dnsResolved;
@@ -101,8 +77,8 @@ public class DomainStatusDto {
             return this;
         }
 
-        public Builder domain(String domain) {
-            this.domain = domain;
+        public Builder protocol(String protocol) {
+            this.protocol = protocol;
             return this;
         }
 
@@ -121,21 +97,19 @@ public class DomainStatusDto {
             return this;
         }
 
-        public DomainStatusDto build() {
-            return new DomainStatusDto(this);
+        public HttpCheckDto build() {
+            return new HttpCheckDto(this);
         }
     }
 
-    private DomainStatusDto(Builder b) {
+    private HttpCheckDto(Builder b) {
         this.ipAddress = b.ipAddress;
-        this.domain = b.domain;
         this.hostname = b.hostname;
         this.dnsResolved = b.dnsResolved;
         this.responseTimeNs = b.responseTimeNs;
-        this.caCertificates = Collections.unmodifiableList(b.caCertificates);
-        this.issuerCertificate = b.issuerCertificate;
         this.statusCode = b.statusCode;
         this.timeCheckedOn = b.timeCheckedOn;
+        this.protocol = b.protocol;
         this.id = b.id;
     }
 }

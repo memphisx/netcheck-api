@@ -4,23 +4,19 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Kyriakos Bompotis on 14/6/20.
  */
 @Entity
-@Table(name = "domain_certificate")
-public class DomainCertificateEntity {
+@Table(name = "certificate")
+public class CertificateEntity {
 
     @Id
     @GeneratedValue(generator="uuid")
     @GenericGenerator(name="uuid", strategy = "uuid2")
     @Column(name = "id")
     private String id;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy="issuerCertificate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HttpsCheckEntity> httpsCheckEntities;
 
     @Column(name = "valid_certificate")
     private Boolean certificateIsValid;
@@ -63,14 +59,6 @@ public class DomainCertificateEntity {
 
     public void setBasicConstraints(Integer basicConstraints) {
         this.basicConstraints = basicConstraints;
-    }
-
-    public List<HttpsCheckEntity> getHttpsCheckEntities() {
-        return httpsCheckEntities;
-    }
-
-    public void setHttpsCheckEntities(List<HttpsCheckEntity> httpsCheckEntities) {
-        this.httpsCheckEntities = httpsCheckEntities;
     }
 
     public String getId() {

@@ -1,69 +1,35 @@
 package com.bompotis.netcheck.api.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
-import java.util.Date;
-
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
  */
-@Relation(collectionRelation = "historicEntries", itemRelation = "historicEntry")
+@Relation(collectionRelation = "domainChecks", itemRelation = "domainCheck")
 public class DomainCheckModel extends RepresentationModel<DomainCheckModel> {
-    private final Integer statusCode;
-    private final Boolean certificateIsValid;
-    private final Date certificateExpiresOn;
-    private final Date timeCheckedOn;
-    private final Boolean dnsResolves;
-    private final String domain;
-    private final Long responseTimeMs;
+    private final HttpCheckModel httpCheck;
+    private final HttpCheckModel httpsCheck;
+    private final CertificateModel issuerCertificate;
 
-    @JsonCreator
-    public DomainCheckModel(
-            @JsonProperty("domain") String domain,
-            @JsonProperty("statusCode") Integer statusCode,
-            @JsonProperty("certificateIsValid") Boolean certificateIsValid,
-            @JsonProperty("certificateExpiresOn") Date certificateExpiresOn,
-            @JsonProperty("checkedOn") Date timeCheckedOn,
-            @JsonProperty("responseTimeMs") Long responseTimeMs,
-            @JsonProperty("dnsResolves") Boolean dnsResolves
-    ) {
-        this.domain = domain;
-        this.statusCode = statusCode;
-        this.certificateExpiresOn = certificateExpiresOn;
-        this.certificateIsValid = certificateIsValid;
-        this.timeCheckedOn = timeCheckedOn;
-        this.responseTimeMs = responseTimeMs;
-        this.dnsResolves = dnsResolves;
+    public DomainCheckModel(@JsonProperty("httpCheck") HttpCheckModel httpCheck,
+                            @JsonProperty("httpsCheck") HttpCheckModel httpsCheck,
+                            @JsonProperty("issuerCertificate") CertificateModel issuerCertificate) {
+        this.httpCheck = httpCheck;
+        this.httpsCheck = httpsCheck;
+        this.issuerCertificate = issuerCertificate;
     }
 
-    public Date getCertificateExpiresOn() {
-        return certificateExpiresOn;
+    public HttpCheckModel getHttpCheck() {
+        return httpCheck;
     }
 
-    public Boolean getCertificateIsValid() {
-        return certificateIsValid;
+    public HttpCheckModel getHttpsCheck() {
+        return httpsCheck;
     }
 
-    public Integer getStatusCode() {
-        return statusCode;
-    }
-
-    public Boolean getDnsResolves() {
-        return dnsResolves;
-    }
-
-    public Date getTimeCheckedOn() {
-        return timeCheckedOn;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public Long getResponseTimeMs() {
-        return responseTimeMs;
+    public CertificateModel getIssuerCertificate() {
+        return issuerCertificate;
     }
 }

@@ -5,6 +5,8 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Kyriakos Bompotis on 8/6/20.
@@ -19,11 +21,11 @@ public class DomainCheckEntity {
     @Column(name = "id")
     private String id;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private HttpCheckEntity httpCheckEntity;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProtocolCheckEntity> protocolCheckEntities;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private HttpsCheckEntity httpsCheckEntity;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CertificateEntity> certificateEntities;
 
     @Column(name = "domain", insertable = false, updatable = false)
     private String domain;
@@ -34,6 +36,9 @@ public class DomainCheckEntity {
 
     @Column(name = "check_date")
     private Date timeCheckedOn;
+
+    @Column(name = "http_response_time_ns")
+    private Long httpResponseTimeNs;
 
     @Column(name = "https_response_time_ns")
     private Long httpsResponseTimeNs;
@@ -52,22 +57,6 @@ public class DomainCheckEntity {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public HttpCheckEntity getHttpCheckEntity() {
-        return httpCheckEntity;
-    }
-
-    public void setHttpCheckEntity(HttpCheckEntity httpCheckEntity) {
-        this.httpCheckEntity = httpCheckEntity;
-    }
-
-    public HttpsCheckEntity getHttpsCheckEntity() {
-        return httpsCheckEntity;
-    }
-
-    public void setHttpsCheckEntity(HttpsCheckEntity httpsCheckEntity) {
-        this.httpsCheckEntity = httpsCheckEntity;
     }
 
     public String getDomain() {
@@ -92,5 +81,29 @@ public class DomainCheckEntity {
 
     public void setTimeCheckedOn(Date timeCheckedOn) {
         this.timeCheckedOn = timeCheckedOn;
+    }
+
+    public Long getHttpResponseTimeNs() {
+        return httpResponseTimeNs;
+    }
+
+    public void setHttpResponseTimeNs(Long httpResponseTimeNs) {
+        this.httpResponseTimeNs = httpResponseTimeNs;
+    }
+
+    public Set<ProtocolCheckEntity> getProtocolCheckEntities() {
+        return protocolCheckEntities;
+    }
+
+    public void setProtocolCheckEntities(Set<ProtocolCheckEntity> protocolCheckEntities) {
+        this.protocolCheckEntities = protocolCheckEntities;
+    }
+
+    public Set<CertificateEntity> getCertificateEntities() {
+        return certificateEntities;
+    }
+
+    public void setCertificateEntities(Set<CertificateEntity> certificateEntities) {
+        this.certificateEntities = certificateEntities;
     }
 }
