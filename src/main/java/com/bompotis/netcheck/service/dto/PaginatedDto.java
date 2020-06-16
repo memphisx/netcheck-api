@@ -1,6 +1,4 @@
-package com.bompotis.netcheck.service.Dto;
-
-import java.util.List;
+package com.bompotis.netcheck.service.dto;
 
 /**
  * Created by Kyriakos Bompotis on 12/6/20.

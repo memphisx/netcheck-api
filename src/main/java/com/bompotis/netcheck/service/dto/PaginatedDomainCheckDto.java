@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.service.Dto;
+package com.bompotis.netcheck.service.dto;
 
 import java.util.List;
 
