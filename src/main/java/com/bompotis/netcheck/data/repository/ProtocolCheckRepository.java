@@ -1,6 +1,6 @@
-package com.bompotis.netcheck.data.repositories;
+package com.bompotis.netcheck.data.repository;
 
-import com.bompotis.netcheck.data.entities.ProtocolCheckEntity;
+import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

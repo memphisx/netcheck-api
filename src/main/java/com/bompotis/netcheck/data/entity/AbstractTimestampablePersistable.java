@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.data.entities;
+package com.bompotis.netcheck.data.entity;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;

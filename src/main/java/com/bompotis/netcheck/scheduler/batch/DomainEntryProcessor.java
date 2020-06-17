@@ -1,7 +1,7 @@
 package com.bompotis.netcheck.scheduler.batch;
 
-import com.bompotis.netcheck.data.entities.DomainCheckEntity;
-import com.bompotis.netcheck.data.entities.DomainEntity;
+import com.bompotis.netcheck.data.entity.DomainCheckEntity;
+import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.service.DomainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
