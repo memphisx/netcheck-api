@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.api.models;
+package com.bompotis.netcheck.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
