@@ -12,6 +12,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -28,32 +29,32 @@ public class DomainCheckModelAssembler extends PaginatedRepresentationModelAssem
 
     @Override
     public DomainCheckModel toModel(DomainCheckDto domainCheckDto) {
-        HttpCheckModel httpCheck = null;
-        HttpCheckModel httpsCheck = null;
+        var httpChecks = new ArrayList<HttpCheckModel>();
         CertificateModel certificate = null;
         if (Optional.ofNullable(domainCheckDto.getHttpCheckDto()).isPresent()) {
-            httpCheck = new HttpCheckModelAssembler().toModel(domainCheckDto.getHttpCheckDto());
+            var httpCheck = new HttpCheckModelAssembler().toModel(domainCheckDto.getHttpCheckDto());
             if (Optional.ofNullable(domainCheckDto.getHttpCheckDto().getId()).isPresent()) {
                 httpCheck.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
                         domainCheckDto.getDomain(),
                         domainCheckDto.getHttpCheckDto().getId())).withSelfRel()
                 );
             }
+            httpChecks.add(httpCheck);
         }
         if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto()).isPresent()) {
-            httpsCheck = new HttpCheckModelAssembler().toModel(domainCheckDto.getHttpsCheckDto().getHttpCheckDto());
+            var httpsCheck = new HttpCheckModelAssembler().toModel(domainCheckDto.getHttpsCheckDto().getHttpCheckDto());
             if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getId()).isPresent()) {
                 httpsCheck.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
                         domainCheckDto.getDomain(),
                         domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getId())).withSelfRel()
                 );
             }
-
+            httpChecks.add(httpsCheck);
             if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()).isPresent()) {
                 certificate = new CertificateModelAssembler().toModel(domainCheckDto.getHttpsCheckDto().getIssuerCertificate());
             }
         }
-        var domainCheckModel = new DomainCheckModel(httpCheck, httpsCheck, certificate);
+        var domainCheckModel = new DomainCheckModel(domainCheckDto.getDomain(), httpChecks, certificate);
         if (Optional.ofNullable(domainCheckDto.getId()).isPresent()) {
             domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
                     domainCheckDto.getDomain(),
