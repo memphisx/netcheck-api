@@ -1,6 +1,6 @@
-package com.bompotis.netcheck.data.repositories;
+package com.bompotis.netcheck.data.repository;
 
-import com.bompotis.netcheck.data.entities.DomainEntity;
+import com.bompotis.netcheck.data.entity.DomainEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

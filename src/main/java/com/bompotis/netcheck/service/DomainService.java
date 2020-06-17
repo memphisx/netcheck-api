@@ -1,8 +1,8 @@
 package com.bompotis.netcheck.service;
 
-import com.bompotis.netcheck.data.entities.*;
-import com.bompotis.netcheck.data.repositories.DomainCheckRepository;
-import com.bompotis.netcheck.data.repositories.DomainRepository;
+import com.bompotis.netcheck.data.entity.*;
+import com.bompotis.netcheck.data.repository.DomainCheckRepository;
+import com.bompotis.netcheck.data.repository.DomainRepository;
 import com.bompotis.netcheck.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;

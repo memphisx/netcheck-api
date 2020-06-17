@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.scheduler.tasks;
+package com.bompotis.netcheck.scheduler.task;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;

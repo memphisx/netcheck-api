@@ -1,7 +1,7 @@
 package com.bompotis.netcheck.scheduler.batch;
 
-import com.bompotis.netcheck.data.entities.DomainCheckEntity;
-import com.bompotis.netcheck.data.entities.DomainEntity;
+import com.bompotis.netcheck.data.entity.DomainCheckEntity;
+import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.service.DomainService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;

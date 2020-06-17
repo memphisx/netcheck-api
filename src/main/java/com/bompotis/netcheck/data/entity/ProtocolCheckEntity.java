@@ -1,6 +1,4 @@
-package com.bompotis.netcheck.data.entities;
-
-import org.hibernate.annotations.GenericGenerator;
+package com.bompotis.netcheck.data.entity;
 
 import javax.persistence.*;
 
@@ -9,14 +7,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "protocol_check")
-@Inheritance(strategy=InheritanceType.JOINED)
-public class ProtocolCheckEntity {
-
-    @Id
-    @GeneratedValue(generator="uuid")
-    @GenericGenerator(name="uuid", strategy = "uuid2")
-    @Column(name = "id")
-    private String id;
+public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String>{
 
     @Enumerated(EnumType.STRING)
     @Column(name = "protocol")
@@ -33,15 +24,6 @@ public class ProtocolCheckEntity {
 
     @Column(name = "hostname")
     private String hostname;
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
-
 
     public Integer getStatusCode() {
         return statusCode;
