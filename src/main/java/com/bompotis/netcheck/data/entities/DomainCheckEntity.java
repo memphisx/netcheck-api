@@ -1,11 +1,7 @@
 package com.bompotis.netcheck.data.entities;
 
-
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -13,13 +9,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "domain_check")
-public class DomainCheckEntity {
-
-    @Id
-    @GeneratedValue(generator="uuid")
-    @GenericGenerator(name="uuid", strategy = "uuid2")
-    @Column(name = "id")
-    private String id;
+public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProtocolCheckEntity> protocolCheckEntities;
@@ -49,14 +39,6 @@ public class DomainCheckEntity {
 
     public void setHttpsResponseTimeNs(Long responseTimeNs) {
         this.httpsResponseTimeNs = responseTimeNs;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getDomain() {

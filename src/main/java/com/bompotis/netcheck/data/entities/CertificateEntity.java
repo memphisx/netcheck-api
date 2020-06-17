@@ -1,8 +1,9 @@
 package com.bompotis.netcheck.data.entities;
 
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Date;
 
 /**
@@ -10,13 +11,7 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "certificate")
-public class CertificateEntity {
-
-    @Id
-    @GeneratedValue(generator="uuid")
-    @GenericGenerator(name="uuid", strategy = "uuid2")
-    @Column(name = "id")
-    private String id;
+public class CertificateEntity extends AbstractTimestampablePersistable<String>{
 
     @Column(name = "valid_certificate")
     private Boolean certificateIsValid;
@@ -45,6 +40,11 @@ public class CertificateEntity {
     @Column(name = "not_yet_valid")
     private Boolean notYetValid;
 
+    @Transient
+    public boolean isNew() {
+        return null == this.getId();
+    }
+
     public Boolean getCertificateIsValid() {
         return certificateIsValid;
     }
@@ -59,14 +59,6 @@ public class CertificateEntity {
 
     public void setBasicConstraints(Integer basicConstraints) {
         this.basicConstraints = basicConstraints;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getIssuedBy() {

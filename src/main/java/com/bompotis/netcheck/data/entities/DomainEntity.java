@@ -1,7 +1,6 @@
 package com.bompotis.netcheck.data.entities;
 
 import javax.persistence.*;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -9,7 +8,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "domain")
-public class DomainEntity {
+public class DomainEntity extends AbstractTimestampable<String>{
 
     @Id
     @Column(name = "domain")
@@ -32,5 +31,15 @@ public class DomainEntity {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    @Override
+    public String getId()  {
+        return domain;
+    }
+
+    @Override
+    public boolean isNew() {
+        return null == domain;
     }
 }
