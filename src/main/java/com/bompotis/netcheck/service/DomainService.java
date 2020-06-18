@@ -12,10 +12,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.*;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by Kyriakos Bompotis on 30/11/18.
@@ -26,6 +23,8 @@ public class DomainService {
     private final DomainRepository domainRepository;
 
     private final DomainCheckRepository domainCheckRepository;
+
+    private final Set<Integer> statusCodesWithEmptyResponses = Set.of(404,400,422,204);
 
     @Autowired
     public DomainService(DomainRepository domainRepository, DomainCheckRepository domainCheckRepository) {
@@ -72,15 +71,19 @@ public class DomainService {
         try {
             var beginTime = System.nanoTime();
             conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
-            conn.getInputStream();
             var hostname = conn.getURL().getHost();
             httpCheckDtoBuilder
                     .hostname(hostname)
                     .timeCheckedOn(new Date())
                     .ipAddress(InetAddress.getByName(hostname).getHostAddress())
-                    .dnsResolved(true)
-                    .statusCode(conn.getResponseCode())
+                    .dnsResolved(true);
+            var responseCode = conn.getResponseCode();
+            if (!statusCodesWithEmptyResponses.contains(responseCode)) {
+                conn.getInputStream();
+            }
+            httpCheckDtoBuilder.statusCode(conn.getResponseCode())
                     .responseTimeNs(System.nanoTime() - beginTime);
+            httpCheckDtoBuilder.statusCode(responseCode);
             var serverCerts = conn.getServerCertificates();
             for (var cert : serverCerts) {
                 if(cert instanceof X509Certificate) {
