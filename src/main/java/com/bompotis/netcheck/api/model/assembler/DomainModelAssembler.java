@@ -1,9 +1,8 @@
 package com.bompotis.netcheck.api.model.assembler;
 
 import com.bompotis.netcheck.api.controller.DomainsController;
-import com.bompotis.netcheck.api.model.DomainCheckModel;
 import com.bompotis.netcheck.api.model.DomainModel;
-import com.bompotis.netcheck.service.dto.PaginatedDomainCheckDto;
+import com.bompotis.netcheck.service.dto.DomainDto;
 import com.bompotis.netcheck.service.dto.PaginatedDomainsDto;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -19,20 +18,24 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 /**
  * Created by Kyriakos Bompotis on 17/6/20.
  */
-public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerSupport<String, DomainModel> {
+public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerSupport<DomainDto, DomainModel> {
     public DomainModelAssembler() {
         super(DomainsController.class, DomainModel.class);
     }
 
     @Override
-    public DomainModel toModel(String entity) {
-        return new DomainModel(entity);
+    public DomainModel toModel(DomainDto domainDto) {
+        return new DomainModel(
+                domainDto.getDomain(),
+                new DomainCheckModelAssembler().toModel(domainDto.getLastDomainCheck()),
+                domainDto.getCreatedAt()
+        );
     }
 
     public CollectionModel<DomainModel> toCollectionModel(PaginatedDomainsDto paginatedDomainsDto) throws IOException {
         var domainModels = new ArrayList<DomainModel>();
-        for (String domain : paginatedDomainsDto.getDomains()) {
-            var domainModel = new DomainModel(domain);
+        for (var domain : paginatedDomainsDto.getDomains()) {
+            var domainModel = this.toModel(domain);
             domainModel.add(
                     linkTo(methodOn(DomainsController.class).getDomainStatus(domainModel.getDomain(), false)).withSelfRel()
             );

@@ -6,6 +6,7 @@ import com.bompotis.netcheck.data.repository.DomainRepository;
 import com.bompotis.netcheck.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -178,7 +179,8 @@ public class DomainService {
         var domainCheckList = new ArrayList<DomainCheckDto>();
         var pageRequest = PageRequest.of(
                 Optional.ofNullable(page).orElse(0),
-                Optional.ofNullable(size).orElse(10)
+                Optional.ofNullable(size).orElse(10),
+                Sort.by("createdAt").descending()
         );
         var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
         for (var domainCheckEntity : domainCheckEntities) {
@@ -203,15 +205,20 @@ public class DomainService {
     }
 
     public PaginatedDomainsDto getPaginatedDomains(Integer page, Integer size) {
-        var domains = new ArrayList<String>();
-        var paginatedQueryResult = domainRepository.findAll(
+        var domains = new ArrayList<DomainDto>();
+        var paginatedQueryResult = domainCheckRepository.findAllLastChecksPerDomain(
                 PageRequest.of(
                         Optional.ofNullable(page).orElse(0),
-                        Optional.ofNullable(size).orElse(10)
+                        Optional.ofNullable(size).orElse(10),
+                        Sort.by("createdAt").descending()
                 )
         );
         for (var domain : paginatedQueryResult) {
-            domains.add(domain.getDomain());
+            domains.add(new DomainDto.Builder()
+                    .domain(domain.getDomain()).createdAt(domain.getDomainEntity().getCreatedAt())
+                    .lastDomainCheck(convertDomainCheckEntityToDto(domain))
+                    .build()
+            );
         }
 
         return new PaginatedDomainsDto(
