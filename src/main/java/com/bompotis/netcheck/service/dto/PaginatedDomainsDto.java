@@ -6,9 +6,9 @@ import java.util.List;
  * Created by Kyriakos Bompotis on 12/6/20.
  */
 public class PaginatedDomainsDto extends PaginatedDto{
-    private final List<String> domains;
+    private final List<DomainDto> domains;
 
-    public PaginatedDomainsDto(List<String> domains,
+    public PaginatedDomainsDto(List<DomainDto> domains,
                                long totalElements,
                                int totalPages,
                                int number,
@@ -17,7 +17,7 @@ public class PaginatedDomainsDto extends PaginatedDto{
         this.domains = domains;
     }
 
-    public List<String> getDomains() {
+    public List<DomainDto> getDomains() {
         return domains;
     }
 

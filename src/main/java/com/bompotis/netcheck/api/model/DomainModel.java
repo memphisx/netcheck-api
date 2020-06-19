@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
+import java.util.Date;
+
 /**
  * Created by Kyriakos Bompotis on 9/6/20.
  */
@@ -12,12 +14,28 @@ import org.springframework.hateoas.server.core.Relation;
 public class DomainModel extends RepresentationModel<DomainModel> {
     private final String domain;
 
+    private final DomainCheckModel lastDomainCheck;
+
+    private final Date dateAdded;
+
     @JsonCreator
-    public DomainModel(@JsonProperty("domain") String domain) {
+    public DomainModel(@JsonProperty("domain") String domain,
+                       @JsonProperty("lastDomainCheck") DomainCheckModel lastDomainCheck,
+                       @JsonProperty("dateAdded") Date dateAdded) {
         this.domain = domain;
+        this.lastDomainCheck = lastDomainCheck;
+        this.dateAdded = dateAdded;
     }
 
     public String getDomain() {
         return domain;
+    }
+
+    public DomainCheckModel getLastDomainCheckModel() {
+        return lastDomainCheck;
+    }
+
+    public Date getDateAdded() {
+        return dateAdded;
     }
 }
