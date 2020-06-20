@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Created by Kyriakos Bompotis on 14/6/20.
@@ -49,71 +50,110 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
         return certificateIsValid;
     }
 
-    public void setCertificateIsValid(Boolean certificateIsValid) {
-        this.certificateIsValid = certificateIsValid;
-    }
-
     public Integer getBasicConstraints() {
         return basicConstraints;
-    }
-
-    public void setBasicConstraints(Integer basicConstraints) {
-        this.basicConstraints = basicConstraints;
     }
 
     public String getIssuedBy() {
         return issuedBy;
     }
 
-    public void setIssuedBy(String issuedBy) {
-        this.issuedBy = issuedBy;
-    }
-
     public String getIssuedFor() {
         return issuedFor;
-    }
-
-    public void setIssuedFor(String issuedFor) {
-        this.issuedFor = issuedFor;
     }
 
     public Date getNotBefore() {
         return notBefore;
     }
 
-    public void setNotBefore(Date notBefore) {
-        this.notBefore = notBefore;
-    }
-
     public Date getNotAfter() {
         return notAfter;
-    }
-
-    public void setNotAfter(Date notAfter) {
-        this.notAfter = notAfter;
     }
 
     public Boolean getValid() {
         return isValid;
     }
 
-    public void setValid(Boolean valid) {
-        isValid = valid;
-    }
-
     public Boolean getExpired() {
         return expired;
-    }
-
-    public void setExpired(Boolean expired) {
-        this.expired = expired;
     }
 
     public Boolean getNotYetValid() {
         return notYetValid;
     }
 
-    public void setNotYetValid(Boolean notYetValid) {
-        this.notYetValid = notYetValid;
+    public static class Builder {
+        private Boolean certificateIsValid;
+        private Integer basicConstraints;
+        private String issuedBy;
+        private String issuedFor;
+        private Date notBefore;
+        private Date notAfter;
+        private Boolean isValid;
+        private Boolean expired;
+        private Boolean notYetValid;
+
+        public Builder certificateIsValid(Boolean certificateIsValid) {
+            this.certificateIsValid = certificateIsValid;
+            return this;
+        }
+
+        public Builder basicConstraints(Integer basicConstraints) {
+            this.basicConstraints = basicConstraints;
+            return this;
+        }
+
+        public Builder issuedBy(String issuedBy) {
+            this.issuedBy = issuedBy;
+            return this;
+        }
+
+        public Builder issuedFor(String issuedFor) {
+            this.issuedFor = issuedFor;
+            return this;
+        }
+
+        public Builder notBefore(Date notBefore) {
+            this.notBefore = notBefore;
+            return this;
+        }
+
+        public Builder notAfter(Date notAfter) {
+            this.notAfter = notAfter;
+            return this;
+        }
+
+        public Builder valid(Boolean isValid) {
+            this.isValid = isValid;
+            return this;
+        }
+
+        public Builder expired(Boolean expired) {
+            this.expired = expired;
+            return this;
+        }
+
+        public Builder notYetValid(Boolean notYetValid) {
+            this.notYetValid = notYetValid;
+            return this;
+        }
+
+        public CertificateEntity build() {
+            return new CertificateEntity(this);
+        }
+    }
+
+    protected CertificateEntity() {}
+
+    private CertificateEntity(Builder b) {
+        this.certificateIsValid = b.certificateIsValid;
+        this.basicConstraints = b.basicConstraints;
+        this.issuedBy = b.issuedBy;
+        this.issuedFor = b.issuedFor;
+        this.notBefore = b.notBefore;
+        this.notAfter = b.notAfter;
+        this.isValid = b.isValid;
+        this.expired = b.expired;
+        this.notYetValid = b.notYetValid;
     }
 }

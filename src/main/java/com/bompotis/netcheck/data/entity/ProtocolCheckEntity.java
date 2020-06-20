@@ -29,53 +29,76 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         return statusCode;
     }
 
-    public void setStatusCode(Integer statusCode) {
-        this.statusCode = statusCode;
-    }
-
     public Boolean getDnsResolves() {
         return dnsResolves;
-    }
-
-    public void setDnsResolves(Boolean dnsResolves) {
-        this.dnsResolves = dnsResolves;
     }
 
     public Protocol getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(Protocol protocol) {
-        this.protocol = protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        if (protocol.equals("HTTPS")) {
-            this.protocol = Protocol.HTTPS;
-        }
-        if (protocol.equals("HTTP")) {
-            this.protocol = Protocol.HTTP;
-        }
-    }
-
     public String getIpAddress() {
         return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
     }
 
     public String getHostname() {
         return hostname;
     }
 
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
     public enum Protocol {
         HTTP,
         HTTPS
+    }
+
+    public static class Builder {
+        private Protocol protocol;
+        private Integer statusCode;
+        private Boolean dnsResolves;
+        private String ipAddress;
+        private String hostname;
+
+        public Builder protocol(String protocol) {
+            if (protocol.equals("HTTPS")) {
+                this.protocol = Protocol.HTTPS;
+            }
+            if (protocol.equals("HTTP")) {
+                this.protocol = Protocol.HTTP;
+            }
+            return this;
+        }
+
+        public Builder statusCode(Integer statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        }
+
+        public Builder dnsResolves(Boolean dnsResolves) {
+            this.dnsResolves = dnsResolves;
+            return this;
+        }
+
+        public Builder ipAddress(String ipAddress) {
+            this.ipAddress = ipAddress;
+            return this;
+        }
+
+        public Builder hostname(String hostname) {
+            this.hostname = hostname;
+            return this;
+        }
+
+        public ProtocolCheckEntity build() {
+            return new ProtocolCheckEntity(this);
+        }
+    }
+
+    protected ProtocolCheckEntity() {}
+
+    private ProtocolCheckEntity(Builder b) {
+        this.protocol = b.protocol;
+        this.statusCode = b.statusCode;
+        this.dnsResolves = b.dnsResolves;
+        this.ipAddress = b.ipAddress;
+        this.hostname = b.hostname;
     }
 }

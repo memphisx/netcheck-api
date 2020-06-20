@@ -33,59 +33,92 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
     @Column(name = "https_response_time_ns")
     private Long httpsResponseTimeNs;
 
+    protected DomainCheckEntity() {}
+
     public Long getHttpsResponseTimeNs() {
         return httpsResponseTimeNs;
-    }
-
-    public void setHttpsResponseTimeNs(Long responseTimeNs) {
-        this.httpsResponseTimeNs = responseTimeNs;
     }
 
     public String getDomain() {
         return domain;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
     public DomainEntity getDomainEntity() {
         return domainEntity;
-    }
-
-    public void setDomainEntity(DomainEntity domainEntity) {
-        this.domainEntity = domainEntity;
     }
 
     public Date getTimeCheckedOn() {
         return timeCheckedOn;
     }
 
-    public void setTimeCheckedOn(Date timeCheckedOn) {
-        this.timeCheckedOn = timeCheckedOn;
-    }
-
     public Long getHttpResponseTimeNs() {
         return httpResponseTimeNs;
-    }
-
-    public void setHttpResponseTimeNs(Long httpResponseTimeNs) {
-        this.httpResponseTimeNs = httpResponseTimeNs;
     }
 
     public Set<ProtocolCheckEntity> getProtocolCheckEntities() {
         return protocolCheckEntities;
     }
 
-    public void setProtocolCheckEntities(Set<ProtocolCheckEntity> protocolCheckEntities) {
-        this.protocolCheckEntities = protocolCheckEntities;
-    }
-
     public Set<CertificateEntity> getCertificateEntities() {
         return certificateEntities;
     }
 
-    public void setCertificateEntities(Set<CertificateEntity> certificateEntities) {
-        this.certificateEntities = certificateEntities;
+    public static class Builder {
+        private Set<ProtocolCheckEntity> protocolCheckEntities;
+        private Set<CertificateEntity> certificateEntities;
+        private String domain;
+        private DomainEntity domainEntity;
+        private Date timeCheckedOn;
+        private Long httpResponseTimeNs;
+        private Long httpsResponseTimeNs;
+
+        public Builder protocolCheckEntities(Set<ProtocolCheckEntity> protocolCheckEntities) {
+            this.protocolCheckEntities = protocolCheckEntities;
+            return this;
+        }
+
+        public Builder certificateEntities(Set<CertificateEntity> certificateEntities) {
+            this.certificateEntities = certificateEntities;
+            return this;
+        }
+
+        public Builder domain(String domain) {
+            this.domain = domain;
+            return this;
+        }
+
+        public Builder domainEntity(DomainEntity domainEntity) {
+            this.domainEntity = domainEntity;
+            return this;
+        }
+
+        public Builder timeCheckedOn(Date timeCheckedOn) {
+            this.timeCheckedOn = timeCheckedOn;
+            return this;
+        }
+
+        public Builder httpResponseTimeNs(Long httpResponseTimeNs) {
+            this.httpResponseTimeNs = httpResponseTimeNs;
+            return this;
+        }
+
+        public Builder httpsResponseTimeNs(Long httpsResponseTimeNs) {
+            this.httpsResponseTimeNs = httpsResponseTimeNs;
+            return this;
+        }
+
+        public DomainCheckEntity build() {
+            return new DomainCheckEntity(this);
+        }
+    }
+
+    private DomainCheckEntity(Builder b) {
+        this.protocolCheckEntities = b.protocolCheckEntities;
+        this.certificateEntities = b.certificateEntities;
+        this.domain = b.domain;
+        this.domainEntity = b.domainEntity;
+        this.timeCheckedOn = b.timeCheckedOn;
+        this.httpResponseTimeNs = b.httpResponseTimeNs;
+        this.httpsResponseTimeNs = b.httpsResponseTimeNs;
     }
 }

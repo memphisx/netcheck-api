@@ -17,20 +17,14 @@ public class DomainEntity extends AbstractTimestampable<String>{
     @OneToMany(fetch = FetchType.LAZY, mappedBy="domainEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DomainCheckEntity> domainHistoryEntries;
 
+    protected DomainEntity() {}
+
     public Set<DomainCheckEntity> getDomainHistoryEntries() {
         return domainHistoryEntries;
     }
 
-    public void setDomainHistoryEntries(Set<DomainCheckEntity> domainHistoryEntries) {
-        this.domainHistoryEntries = domainHistoryEntries;
-    }
-
     public String getDomain() {
         return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
     }
 
     @Override
@@ -41,5 +35,29 @@ public class DomainEntity extends AbstractTimestampable<String>{
     @Override
     public boolean isNew() {
         return null == domain;
+    }
+
+    public static class Builder {
+        private String domain;
+        private Set<DomainCheckEntity> domainHistoryEntries;
+
+        public Builder domainHistoryEntries(Set<DomainCheckEntity> domainHistoryEntries) {
+            this.domainHistoryEntries = domainHistoryEntries;
+            return this;
+        }
+
+        public Builder domain(String domain) {
+            this.domain = domain;
+            return this;
+        }
+
+        public DomainEntity build() {
+            return new DomainEntity(this);
+        }
+    }
+
+    private DomainEntity(Builder b) {
+        this.domain = b.domain;
+        this.domainHistoryEntries = b.domainHistoryEntries;
     }
 }

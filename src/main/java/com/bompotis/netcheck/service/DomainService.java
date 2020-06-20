@@ -113,66 +113,61 @@ public class DomainService {
 
 
     public void storeResult(DomainCheckDto domainCheckDto) {
-        var domainEntity = new DomainEntity();
+        var domainCheckEntityBuilder = convertToDomainCheckEntity(domainCheckDto);
         var domainEntityOptional = domainRepository.findById(domainCheckDto.getDomain());
-        if (domainEntityOptional.isPresent()) {
-            domainEntity = domainEntityOptional.get();
-        } else {
-            domainEntity.setDomain(domainCheckDto.getDomain());
-        }
-        var domainCheckEntity = convertToDomainCheckEntity(domainCheckDto);
-        domainCheckEntity.setDomainEntity(domainEntity);
-        domainCheckRepository.save(domainCheckEntity);
+        domainEntityOptional.ifPresentOrElse(
+                domainCheckEntityBuilder::domainEntity,
+                () -> domainCheckEntityBuilder.domainEntity(new DomainEntity.Builder().domain(domainCheckDto.getDomain()).build())
+        );
+        domainCheckRepository.save(domainCheckEntityBuilder.build());
     }
 
-    public DomainCheckEntity convertToDomainCheckEntity(DomainCheckDto domainCheckDto) {
-        var domainCheckEntity = new DomainCheckEntity();
-        var protocolCheckEntities = new HashSet<ProtocolCheckEntity>();
+    public DomainCheckEntity.Builder convertToDomainCheckEntity(DomainCheckDto domainCheckDto) {
+        var domainCheckEntityBuilder = new DomainCheckEntity.Builder()
+                .domain(domainCheckDto.getDomain())
+                .httpResponseTimeNs(domainCheckDto.getHttpCheckDto().getResponseTimeNs())
+                .timeCheckedOn(domainCheckDto.getHttpCheckDto().getTimeCheckedOn())
+                .httpsResponseTimeNs(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getResponseTimeNs());
+
+        domainCheckEntityBuilder.protocolCheckEntities(Set.of(
+                new ProtocolCheckEntity.Builder()
+                        .dnsResolves(domainCheckDto.getHttpCheckDto().getDnsResolved())
+                        .statusCode(domainCheckDto.getHttpCheckDto().getStatusCode())
+                        .protocol(domainCheckDto.getHttpCheckDto().getProtocol())
+                        .ipAddress(domainCheckDto.getHttpCheckDto().getIpAddress())
+                        .hostname(domainCheckDto.getHttpCheckDto().getHostname())
+                .build(),
+                new ProtocolCheckEntity.Builder()
+                        .dnsResolves(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getDnsResolved())
+                        .statusCode(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getStatusCode())
+                        .protocol(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getProtocol())
+                        .ipAddress(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getIpAddress())
+                        .hostname(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getHostname())
+                .build()
+        ));
+
+
         var certificateEntities = new HashSet<CertificateEntity>();
-        domainCheckEntity.setDomain(domainCheckDto.getDomain());
-
-        var httpCheckEntity = new ProtocolCheckEntity();
-        httpCheckEntity.setDnsResolves(domainCheckDto.getHttpCheckDto().getDnsResolved());
-        httpCheckEntity.setStatusCode(domainCheckDto.getHttpCheckDto().getStatusCode());
-        httpCheckEntity.setProtocol(domainCheckDto.getHttpCheckDto().getProtocol());
-        httpCheckEntity.setIpAddress(domainCheckDto.getHttpCheckDto().getIpAddress());
-        httpCheckEntity.setHostname(domainCheckDto.getHttpCheckDto().getHostname());
-        protocolCheckEntities.add(httpCheckEntity);
-
-        domainCheckEntity.setHttpResponseTimeNs(domainCheckDto.getHttpCheckDto().getResponseTimeNs());
-        domainCheckEntity.setTimeCheckedOn(domainCheckDto.getHttpCheckDto().getTimeCheckedOn());
-
-        var httpsCheckEntity = new ProtocolCheckEntity();
-        httpsCheckEntity.setDnsResolves(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getDnsResolved());
-        httpsCheckEntity.setStatusCode(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getStatusCode());
-        httpsCheckEntity.setProtocol(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getProtocol());
-        httpsCheckEntity.setIpAddress(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getIpAddress());
-        httpsCheckEntity.setHostname(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getHostname());
-        protocolCheckEntities.add(httpsCheckEntity);
-
-        domainCheckEntity.setHttpsResponseTimeNs(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getResponseTimeNs());
-        domainCheckEntity.setProtocolCheckEntities(protocolCheckEntities);
-
         if(Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()).isPresent()) {
             certificateEntities.add(convertToDomainCertificateEntity(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()));
         }
-        domainCheckEntity.setCertificateEntities(certificateEntities);
+        domainCheckEntityBuilder.certificateEntities(certificateEntities);
 
-        return domainCheckEntity;
+        return domainCheckEntityBuilder;
     }
 
     private CertificateEntity convertToDomainCertificateEntity(CertificateDetailsDto certificateDetailsDto) {
-        var issuerCertificateEntity = new CertificateEntity();
-        issuerCertificateEntity.setBasicConstraints(certificateDetailsDto.getBasicConstraints());
-        issuerCertificateEntity.setValid(certificateDetailsDto.isValid());
-        issuerCertificateEntity.setExpired(certificateDetailsDto.getExpired());
-        issuerCertificateEntity.setNotYetValid(certificateDetailsDto.getNotYetValid());
-        issuerCertificateEntity.setCertificateIsValid(certificateDetailsDto.isValid());
-        issuerCertificateEntity.setIssuedBy(certificateDetailsDto.getIssuedBy());
-        issuerCertificateEntity.setIssuedFor(certificateDetailsDto.getIssuedFor());
-        issuerCertificateEntity.setNotAfter(certificateDetailsDto.getNotAfter());
-        issuerCertificateEntity.setNotBefore(certificateDetailsDto.getNotBefore());
-        return issuerCertificateEntity;
+        return new CertificateEntity.Builder()
+                .basicConstraints(certificateDetailsDto.getBasicConstraints())
+                .valid(certificateDetailsDto.isValid())
+                .expired(certificateDetailsDto.getExpired())
+                .notYetValid(certificateDetailsDto.getNotYetValid())
+                .certificateIsValid(certificateDetailsDto.isValid())
+                .issuedBy(certificateDetailsDto.getIssuedBy())
+                .issuedFor(certificateDetailsDto.getIssuedFor())
+                .notAfter(certificateDetailsDto.getNotAfter())
+                .notBefore(certificateDetailsDto.getNotBefore())
+                .build();
     }
 
     public PaginatedDomainCheckDto getDomainHistory(String domain, Integer page, Integer size) {
@@ -213,13 +208,14 @@ public class DomainService {
                         Sort.by("createdAt").descending()
                 )
         );
-        for (var domain : paginatedQueryResult) {
-            domains.add(new DomainDto.Builder()
-                    .domain(domain.getDomain()).createdAt(domain.getDomainEntity().getCreatedAt())
-                    .lastDomainCheck(convertDomainCheckEntityToDto(domain))
-                    .build()
-            );
-        }
+        paginatedQueryResult.forEach(
+                (domain) -> domains.add(new DomainDto.Builder()
+                        .domain(domain.getDomain())
+                        .createdAt(domain.getDomainEntity().getCreatedAt())
+                        .lastDomainCheck(convertDomainCheckEntityToDto(domain))
+                        .build()
+                )
+        );
 
         return new PaginatedDomainsDto(
                 domains,
@@ -231,9 +227,10 @@ public class DomainService {
     }
 
     public void scheduleDomainToCheck(String domain) {
-        var domainEntity = new DomainEntity();
-        domainEntity.setDomain(domain);
-        domainRepository.save(domainEntity);
+        domainRepository.save(new DomainEntity.Builder()
+                .domain(domain)
+                .build()
+        );
     }
 
     public DomainCheckDto convertDomainCheckEntityToDto(DomainCheckEntity domainCheckEntity) {

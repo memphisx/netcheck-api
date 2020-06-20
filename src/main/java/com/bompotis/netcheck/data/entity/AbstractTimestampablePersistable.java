@@ -31,12 +31,10 @@ public abstract class AbstractTimestampablePersistable<PK extends Serializable> 
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    protected AbstractTimestampablePersistable() {}
+
     public PK getId() {
         return this.id;
-    }
-
-    protected void setId(PK id) {
-        this.id = id;
     }
 
     @Transient
@@ -48,16 +46,8 @@ public abstract class AbstractTimestampablePersistable<PK extends Serializable> 
         return null == createdAt ? null : createdAt;
     }
 
-    public void setCreatedAt(final Date createdDate) {
-        this.createdAt = createdDate;
-    }
-
     public Date getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setUpdatedAt (Date updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     @PrePersist
