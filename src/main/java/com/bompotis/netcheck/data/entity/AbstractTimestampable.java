@@ -21,20 +21,14 @@ public abstract class AbstractTimestampable<PK extends Serializable> implements 
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    public Date getCreatedAt() {
-        return null == createdAt ? null : createdAt;
-    }
+    protected AbstractTimestampable() {}
 
-    public void setCreatedAt(final Date createdDate) {
-        this.createdAt = createdDate;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
     public Date getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setUpdatedAt (Date updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     @PrePersist
