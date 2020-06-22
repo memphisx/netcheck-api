@@ -14,6 +14,7 @@ public class HttpCheckDto {
     private final String ipAddress;
     private final Date timeCheckedOn;
     private final String protocol;
+    private final String redirectUri;
 
     public Integer getStatusCode() {
         return statusCode;
@@ -47,6 +48,10 @@ public class HttpCheckDto {
         return protocol;
     }
 
+    public String getRedirectUri() {
+        return redirectUri;
+    }
+
     public static class Builder {
         private Long responseTimeNs;
         private String hostname;
@@ -56,6 +61,7 @@ public class HttpCheckDto {
         private String id;
         private Date timeCheckedOn;
         private String protocol;
+        private String redirectUri;
 
         public Builder dnsResolved(Boolean dnsResolved) {
             this.dnsResolved = dnsResolved;
@@ -97,6 +103,11 @@ public class HttpCheckDto {
             return this;
         }
 
+        public Builder redirectUri(String redirectUri) {
+            this.redirectUri = redirectUri;
+            return this;
+        }
+
         public HttpCheckDto build() {
             return new HttpCheckDto(this);
         }
@@ -111,5 +122,6 @@ public class HttpCheckDto {
         this.timeCheckedOn = b.timeCheckedOn;
         this.protocol = b.protocol;
         this.id = b.id;
+        this.redirectUri = b.redirectUri;
     }
 }

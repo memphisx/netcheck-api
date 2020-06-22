@@ -23,7 +23,7 @@ public class HttpCheckModelAssembler extends RepresentationModelAssemblerSupport
                 httpCheckDto.getResponseTimeNs(),
                 httpCheckDto.getDnsResolved(),
                 httpCheckDto.getIpAddress(),
-                httpCheckDto.getProtocol()
-        );
+                httpCheckDto.getProtocol(),
+                httpCheckDto.getRedirectUri());
     }
 }

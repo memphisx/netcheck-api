@@ -21,11 +21,22 @@ import java.util.*;
 @Service
 public class DomainService {
 
+    private final Set<Integer> STATUS_CODES_WITH_EMPTY_RESPONSES = Set.of(
+            HttpURLConnection.HTTP_NOT_FOUND,
+            HttpURLConnection.HTTP_BAD_REQUEST,
+            HttpURLConnection.HTTP_NO_CONTENT,
+            422
+    );
+
+    private final Set<Integer> REDIRECT_STATUS_CODES = Set.of(
+            HttpURLConnection.HTTP_MOVED_TEMP,
+            HttpURLConnection.HTTP_MOVED_PERM,
+            HttpURLConnection.HTTP_SEE_OTHER
+    );
+
     private final DomainRepository domainRepository;
 
     private final DomainCheckRepository domainCheckRepository;
-
-    private final Set<Integer> statusCodesWithEmptyResponses = Set.of(404,400,422,204);
 
     @Autowired
     public DomainService(DomainRepository domainRepository, DomainCheckRepository domainCheckRepository) {
@@ -47,15 +58,7 @@ public class DomainService {
         try {
             var beginTime = System.nanoTime();
             conn = (HttpURLConnection) getHttpDomainUri(domain).openConnection();
-            conn.getInputStream();
-            var hostname = conn.getURL().getHost();
-            httpCheckDtoBuilder
-                    .timeCheckedOn(new Date())
-                    .hostname(hostname)
-                    .ipAddress(InetAddress.getByName(hostname).getHostAddress())
-                    .dnsResolved(true)
-                    .statusCode(conn.getResponseCode())
-                    .responseTimeNs(System.nanoTime() - beginTime);
+            checkAssembler(httpCheckDtoBuilder, conn, beginTime);
         } catch (UnknownHostException e) {
             httpCheckDtoBuilder.dnsResolved(false);
         } finally {
@@ -72,19 +75,7 @@ public class DomainService {
         try {
             var beginTime = System.nanoTime();
             conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
-            var hostname = conn.getURL().getHost();
-            httpCheckDtoBuilder
-                    .hostname(hostname)
-                    .timeCheckedOn(new Date())
-                    .ipAddress(InetAddress.getByName(hostname).getHostAddress())
-                    .dnsResolved(true);
-            var responseCode = conn.getResponseCode();
-            if (!statusCodesWithEmptyResponses.contains(responseCode)) {
-                conn.getInputStream();
-            }
-            httpCheckDtoBuilder.statusCode(conn.getResponseCode())
-                    .responseTimeNs(System.nanoTime() - beginTime);
-            httpCheckDtoBuilder.statusCode(responseCode);
+            checkAssembler(httpCheckDtoBuilder, conn, beginTime);
             var serverCerts = conn.getServerCertificates();
             for (var cert : serverCerts) {
                 if(cert instanceof X509Certificate) {
@@ -99,6 +90,25 @@ public class DomainService {
                     .ifPresent(HttpURLConnection::disconnect);
         }
         return httpsCheckDtoBuilder.httpCheckDto(httpCheckDtoBuilder.build()).build();
+    }
+
+    private void checkAssembler(HttpCheckDto.Builder httpCheckDtoBuilder, HttpURLConnection conn, long beginTime) throws IOException {
+        var hostname = conn.getURL().getHost();
+        httpCheckDtoBuilder
+                .hostname(hostname)
+                .timeCheckedOn(new Date())
+                .ipAddress(InetAddress.getByName(hostname).getHostAddress())
+                .dnsResolved(true);
+        var responseCode = conn.getResponseCode();
+        if (!STATUS_CODES_WITH_EMPTY_RESPONSES.contains(responseCode)) {
+            conn.getInputStream();
+        }
+        if (REDIRECT_STATUS_CODES.contains(responseCode)) {
+            httpCheckDtoBuilder.redirectUri(conn.getHeaderField("Location"));
+        }
+        httpCheckDtoBuilder.statusCode(conn.getResponseCode())
+                .responseTimeNs(System.nanoTime() - beginTime);
+        httpCheckDtoBuilder.statusCode(responseCode);
     }
 
 
@@ -136,6 +146,7 @@ public class DomainService {
                         .protocol(domainCheckDto.getHttpCheckDto().getProtocol())
                         .ipAddress(domainCheckDto.getHttpCheckDto().getIpAddress())
                         .hostname(domainCheckDto.getHttpCheckDto().getHostname())
+                        .redirectUri(domainCheckDto.getHttpCheckDto().getRedirectUri())
                 .build(),
                 new ProtocolCheckEntity.Builder()
                         .dnsResolves(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getDnsResolved())
@@ -143,6 +154,7 @@ public class DomainService {
                         .protocol(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getProtocol())
                         .ipAddress(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getIpAddress())
                         .hostname(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getHostname())
+                        .redirectUri(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getRedirectUri())
                 .build()
         ));
 
@@ -243,6 +255,7 @@ public class DomainService {
                         .hostname(protocolCheck.getHostname())
                         .protocol(protocolCheck.getProtocol().toString())
                         .ipAddress(protocolCheck.getIpAddress())
+                        .redirectUri(protocolCheck.getRedirectUri())
                         .responseTimeNs(domainCheckEntity.getHttpResponseTimeNs())
                         .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
                         .dnsResolved(protocolCheck.getDnsResolves())
@@ -256,6 +269,7 @@ public class DomainService {
                         .hostname(protocolCheck.getHostname())
                         .protocol(protocolCheck.getProtocol().toString())
                         .ipAddress(protocolCheck.getIpAddress())
+                        .redirectUri(protocolCheck.getRedirectUri())
                         .responseTimeNs(domainCheckEntity.getHttpsResponseTimeNs())
                         .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
                         .dnsResolved(protocolCheck.getDnsResolves())

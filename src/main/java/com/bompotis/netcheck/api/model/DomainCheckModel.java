@@ -5,7 +5,6 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by Kyriakos Bompotis on 10/6/20.

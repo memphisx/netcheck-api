@@ -25,6 +25,9 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
     @Column(name = "hostname")
     private String hostname;
 
+    @Column(name = "redirect_uri")
+    private String redirectUri;
+
     public Integer getStatusCode() {
         return statusCode;
     }
@@ -45,6 +48,10 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         return hostname;
     }
 
+    public String getRedirectUri() {
+        return redirectUri;
+    }
+
     public enum Protocol {
         HTTP,
         HTTPS
@@ -56,6 +63,7 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         private Boolean dnsResolves;
         private String ipAddress;
         private String hostname;
+        private String redirectUri;
 
         public Builder protocol(String protocol) {
             if (protocol.equals("HTTPS")) {
@@ -87,6 +95,11 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
             return this;
         }
 
+        public Builder redirectUri(String redirectUri) {
+            this.redirectUri = redirectUri;
+            return this;
+        }
+
         public ProtocolCheckEntity build() {
             return new ProtocolCheckEntity(this);
         }
@@ -100,5 +113,6 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         this.dnsResolves = b.dnsResolves;
         this.ipAddress = b.ipAddress;
         this.hostname = b.hostname;
+        this.redirectUri = b.redirectUri;
     }
 }

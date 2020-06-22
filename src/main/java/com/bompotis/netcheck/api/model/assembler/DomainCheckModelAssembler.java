@@ -12,7 +12,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
