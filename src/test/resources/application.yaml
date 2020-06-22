@@ -8,3 +8,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+settings:
+  cors:
+    origin: "*"
