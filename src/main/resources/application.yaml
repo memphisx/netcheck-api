@@ -10,4 +10,19 @@ spring:
     initialize-schema: always
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
+settings:
+  cors:
+    origin: "*"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      cors:
+        allowed-origins: ${settings.cors.origin}
+        allowed-methods: "GET,POST"
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
