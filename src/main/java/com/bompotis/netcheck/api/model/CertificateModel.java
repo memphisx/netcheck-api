@@ -4,7 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by Kyriakos Bompotis on 11/6/20.
@@ -33,12 +39,18 @@ public class CertificateModel extends RepresentationModel<CertificateModel> {
         this.expired = expired;
     }
 
-    public String getIssuedBy() {
-        return issuedBy;
+    public Map<String,Object> getIssuedBy() throws InvalidNameException {
+        return new LdapName(issuedBy)
+                .getRdns()
+                .stream()
+                .collect(Collectors.toMap(Rdn::getType, Rdn::getValue, (a, b) -> b, HashMap::new));
     }
 
-    public String getIssuedFor() {
-        return issuedFor;
+    public Map<String,Object> getIssuedFor() throws InvalidNameException {
+        return new LdapName(issuedFor)
+                .getRdns()
+                .stream()
+                .collect(Collectors.toMap(Rdn::getType, Rdn::getValue, (a, b) -> b, HashMap::new));
     }
 
     public Date getNotBefore() {
