@@ -22,7 +22,7 @@ import static org.springframework.http.ResponseEntity.ok;
  * Created by Kyriakos Bompotis on 28/11/18.
  */
 @RestController
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"${settings.cors.origin}"})
 @RequestMapping(value = "/domains")
 public class DomainsController {
 

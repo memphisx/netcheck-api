@@ -1,6 +1,7 @@
 package com.bompotis.netcheck.api.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
@@ -19,6 +20,7 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
     private final String ipAddress;
     private final Long responseTimeNs;
     private final String protocol;
+    private final String redirectUri;
 
     @JsonCreator
     public HttpCheckModel(
@@ -28,8 +30,8 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
             @JsonProperty("responseTimeNs") Long responseTimeNs,
             @JsonProperty("dnsResolves") Boolean dnsResolves,
             @JsonProperty("ipAddress") String ipAddress,
-            @JsonProperty("protocol") String protocol
-    ) {
+            @JsonProperty("protocol") String protocol,
+            @JsonProperty("redirectUri") String redirectUri) {
         this.hostname = hostname;
         this.statusCode = statusCode;
         this.timeCheckedOn = timeCheckedOn;
@@ -37,6 +39,7 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
         this.dnsResolves = dnsResolves;
         this.ipAddress = ipAddress;
         this.protocol = protocol;
+        this.redirectUri = redirectUri;
     }
 
     public Integer getStatusCode() {
@@ -65,5 +68,10 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
 
     public String getProtocol() {
         return protocol;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getRedirectUri() {
+        return redirectUri;
     }
 }
