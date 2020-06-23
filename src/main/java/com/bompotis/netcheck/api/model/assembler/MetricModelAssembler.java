@@ -10,6 +10,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -34,7 +35,8 @@ public class MetricModelAssembler extends PaginatedRepresentationModelAssemblerS
 
     public CollectionModel<MetricModel> toCollectionModel(PaginatedMetricsDto paginatedMetricDto, String domain, String protocol) {
         ArrayList<MetricModel> metricModels;
-        if (protocol.toUpperCase().equals("HTTP")) {
+
+        if (Optional.ofNullable(protocol).orElse("HTTPS").toUpperCase().equals("HTTP")) {
             metricModels = paginatedMetricDto
                     .getHttpMetrics()
                     .stream()
