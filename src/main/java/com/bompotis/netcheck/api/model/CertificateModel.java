@@ -40,14 +40,15 @@ public class CertificateModel extends RepresentationModel<CertificateModel> {
     }
 
     public Map<String,Object> getIssuedBy() throws InvalidNameException {
-        return new LdapName(issuedBy)
-                .getRdns()
-                .stream()
-                .collect(Collectors.toMap(Rdn::getType, Rdn::getValue, (a, b) -> b, HashMap::new));
+        return ldapNameToMap(issuedBy);
     }
 
     public Map<String,Object> getIssuedFor() throws InvalidNameException {
-        return new LdapName(issuedFor)
+        return ldapNameToMap(issuedFor);
+    }
+
+    private Map<String,Object> ldapNameToMap(String ldapName) throws InvalidNameException {
+        return new LdapName(ldapName)
                 .getRdns()
                 .stream()
                 .collect(Collectors.toMap(Rdn::getType, Rdn::getValue, (a, b) -> b, HashMap::new));

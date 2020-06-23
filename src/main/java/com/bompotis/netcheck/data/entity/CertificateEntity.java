@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * Created by Kyriakos Bompotis on 14/6/20.
@@ -13,9 +12,6 @@ import java.util.Set;
 @Entity
 @Table(name = "certificate")
 public class CertificateEntity extends AbstractTimestampablePersistable<String>{
-
-    @Column(name = "valid_certificate")
-    private Boolean certificateIsValid;
 
     @Column(name = "basic_constraints")
     private Integer basicConstraints;
@@ -46,10 +42,6 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
         return null == this.getId();
     }
 
-    public Boolean getCertificateIsValid() {
-        return certificateIsValid;
-    }
-
     public Integer getBasicConstraints() {
         return basicConstraints;
     }
@@ -70,7 +62,7 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
         return notAfter;
     }
 
-    public Boolean getValid() {
+    public Boolean isValid() {
         return isValid;
     }
 
@@ -83,7 +75,6 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
     }
 
     public static class Builder {
-        private Boolean certificateIsValid;
         private Integer basicConstraints;
         private String issuedBy;
         private String issuedFor;
@@ -92,11 +83,6 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
         private Boolean isValid;
         private Boolean expired;
         private Boolean notYetValid;
-
-        public Builder certificateIsValid(Boolean certificateIsValid) {
-            this.certificateIsValid = certificateIsValid;
-            return this;
-        }
 
         public Builder basicConstraints(Integer basicConstraints) {
             this.basicConstraints = basicConstraints;
@@ -146,7 +132,6 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
     protected CertificateEntity() {}
 
     private CertificateEntity(Builder b) {
-        this.certificateIsValid = b.certificateIsValid;
         this.basicConstraints = b.basicConstraints;
         this.issuedBy = b.issuedBy;
         this.issuedFor = b.issuedFor;

@@ -1,38 +1,23 @@
 package com.bompotis.netcheck.service.dto;
 
+import java.util.List;
+
 /**
- * Created by Kyriakos Bompotis on 12/6/20.
+ * Created by Kyriakos Bompotis on 22/6/20.
  */
-public class PaginatedDto {
+public class PaginatedDto<T> extends AbstractPaginatedDto {
+    private final List<T> dtoList;
 
-    private final long totalElements;
-    private final int totalPages;
-    private final int number;
-    private final int size;
-
-    public PaginatedDto(long totalElements,
+    public PaginatedDto(List<T> dtoList,
+                        long totalElements,
                         int totalPages,
                         int number,
                         int size) {
-        this.totalElements = totalElements;
-        this.totalPages = totalPages;
-        this.number = number;
-        this.size = size;
+        super(totalElements, totalPages, number, size);
+        this.dtoList = dtoList;
     }
 
-    public long getTotalElements() {
-        return totalElements;
-    }
-
-    public int getTotalPages() {
-        return totalPages;
-    }
-
-    public int getNumber() {
-        return number;
-    }
-
-    public int getSize() {
-        return size;
+    public List<T> getDtoList() {
+        return dtoList;
     }
 }

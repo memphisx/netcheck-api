@@ -1,5 +1,7 @@
 package com.bompotis.netcheck.service.dto;
 
+import java.io.IOException;
+
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
  */
@@ -25,13 +27,17 @@ public class DomainCheckDto {
         return id;
     }
 
-    public static class Builder {
+    public static class Builder extends AbstractHttpChecker{
         private HttpCheckDto httpCheckDto;
         private HttpsCheckDto httpsCheckDto;
-        private String domain;
+        private final String domain;
         private String id;
 
-        public Builder httpCheckDto(HttpCheckDto httpCheckDto) {
+        public Builder(String domain) {
+            this.domain = domain;
+        }
+
+        public Builder httpCheck(HttpCheckDto httpCheckDto) {
             this.httpCheckDto = httpCheckDto;
             return this;
         }
@@ -41,8 +47,13 @@ public class DomainCheckDto {
             return this;
         }
 
-        public Builder domain(String domain) {
-            this.domain = domain;
+        public Builder withCurrentHttpCheck() throws IOException {
+            this.httpCheckDto = checkHttp(this.domain);
+            return this;
+        }
+
+        public Builder withCurrentHttpsCheck() throws IOException {
+            this.httpsCheckDto = checkHttps(this.domain);
             return this;
         }
 
