@@ -14,20 +14,20 @@ import java.util.Date;
 public class MetricModel extends RepresentationModel<HttpCheckModel> {
     private final Date metricPeriod;
     private final Integer uptimePercentage;
-    private final Long averageResponseTime;
+    private final Long averageResponseTimeNs;
 
     @JsonCreator
     public MetricModel(
             @JsonProperty("metricPeriod") Date metricPeriod,
             @JsonProperty("uptimePercentage") Integer uptimePercentage,
-            @JsonProperty("averageResponseTime") Long averageResponseTime) {
+            @JsonProperty("averageResponseTime") Long averageResponseTimeNs) {
         this.metricPeriod = metricPeriod;
         this.uptimePercentage = uptimePercentage;
-        this.averageResponseTime = averageResponseTime;
+        this.averageResponseTimeNs = averageResponseTimeNs;
     }
 
-    public Long getAverageResponseTime() {
-        return averageResponseTime;
+    public Long getAverageResponseTimeNs() {
+        return averageResponseTimeNs;
     }
 
     public Integer getUptimePercentage() {

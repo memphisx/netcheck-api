@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by Kyriakos Bompotis on 22/6/20.
  */
-public class PaginatedMetricsDto extends PaginatedDto{
+public class PaginatedMetricsDto extends AbstractPaginatedDto {
     private final List<MetricDto> httpMetrics;
     private final List<MetricDto> httpsMetrics;
 

@@ -1,8 +1,5 @@
 package com.bompotis.netcheck.service.dto;
 
-import com.bompotis.netcheck.data.entity.DomainCheckEntity;
-import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
-
 import java.io.IOException;
 
 /**

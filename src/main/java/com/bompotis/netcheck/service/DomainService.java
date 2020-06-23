@@ -74,7 +74,7 @@ public class DomainService {
         return domainCheckEntityBuilder;
     }
 
-    public PaginatedDomainCheckDto getDomainHistory(String domain, Integer page, Integer size) {
+    public PaginatedDto<DomainCheckDto> getDomainHistory(String domain, Integer page, Integer size) {
         var domainCheckList = new ArrayList<DomainCheckDto>();
         var pageRequest = PageRequest.of(
                 Optional.ofNullable(page).orElse(0),
@@ -85,7 +85,7 @@ public class DomainService {
         for (var domainCheckEntity : domainCheckEntities) {
             domainCheckList.add(convertDomainCheckEntityToDto(domainCheckEntity));
         }
-        return new PaginatedDomainCheckDto(
+        return new PaginatedDto<>(
                 domainCheckList,
                 domainCheckEntities.getTotalElements(),
                 domainCheckEntities.getTotalPages(),
@@ -94,7 +94,7 @@ public class DomainService {
         );
     }
 
-    public PaginatedHttpCheckDto getHttpDomainHistory(String domain, Integer page, Integer size) {
+    public PaginatedDto<HttpCheckDto> getHttpDomainHistory(String domain, Integer page, Integer size) {
         var httpCheckDtos = new ArrayList<HttpCheckDto>();
         var pageRequest = PageRequest.of(
                 Optional.ofNullable(page).orElse(0),
@@ -105,7 +105,7 @@ public class DomainService {
         for (var domainCheckEntity : domainCheckEntities) {
             httpCheckDtos.add(convertDomainCheckEntityToDto(domainCheckEntity).getHttpCheckDto());
         }
-        return new PaginatedHttpCheckDto(
+        return new PaginatedDto<>(
                 httpCheckDtos,
                 domainCheckEntities.getTotalElements(),
                 domainCheckEntities.getTotalPages(),
@@ -114,7 +114,7 @@ public class DomainService {
         );
     }
 
-    public PaginatedHttpCheckDto getHttpsDomainHistory(String domain, Integer page, Integer size) {
+    public PaginatedDto<HttpCheckDto> getHttpsDomainHistory(String domain, Integer page, Integer size) {
         var httpCheckDtos = new ArrayList<HttpCheckDto>();
         var pageRequest = PageRequest.of(
                 Optional.ofNullable(page).orElse(0),
@@ -125,7 +125,7 @@ public class DomainService {
         for (var domainCheckEntity : domainCheckEntities) {
             httpCheckDtos.add(convertDomainCheckEntityToDto(domainCheckEntity).getHttpsCheckDto().getHttpCheckDto());
         }
-        return new PaginatedHttpCheckDto(
+        return new PaginatedDto<>(
                 httpCheckDtos,
                 domainCheckEntities.getTotalElements(),
                 domainCheckEntities.getTotalPages(),
@@ -183,7 +183,7 @@ public class DomainService {
         return Optional.of(convertDomainCheckEntityToDto(domainCheckEntity));
     }
 
-    public PaginatedDomainsDto getPaginatedDomains(Integer page, Integer size) {
+    public PaginatedDto<DomainDto> getPaginatedDomains(Integer page, Integer size) {
         var domains = new ArrayList<DomainDto>();
         var paginatedQueryResult = domainCheckRepository.findAllLastChecksPerDomain(
                 PageRequest.of(
@@ -201,7 +201,7 @@ public class DomainService {
                 )
         );
 
-        return new PaginatedDomainsDto(
+        return new PaginatedDto<>(
                 domains,
                 paginatedQueryResult.getTotalElements(),
                 paginatedQueryResult.getTotalPages(),

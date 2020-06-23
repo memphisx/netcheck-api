@@ -3,7 +3,7 @@ package com.bompotis.netcheck.api.model.assembler;
 import com.bompotis.netcheck.api.controller.DomainsController;
 import com.bompotis.netcheck.api.model.HttpCheckModel;
 import com.bompotis.netcheck.service.dto.HttpCheckDto;
-import com.bompotis.netcheck.service.dto.PaginatedHttpCheckDto;
+import com.bompotis.netcheck.service.dto.PaginatedDto;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
@@ -39,8 +39,8 @@ public class HttpCheckModelAssembler extends PaginatedRepresentationModelAssembl
                 httpCheckDto.isUp());
     }
 
-    public CollectionModel<HttpCheckModel> toCollectionModel(PaginatedHttpCheckDto paginatedHttpCheckDto, String domain, String protocol) {
-        var httpModels = paginatedHttpCheckDto.getHttpChecks().stream().map(this::toModel).collect(Collectors.toCollection(ArrayList::new));
+    public CollectionModel<HttpCheckModel> toCollectionModel(PaginatedDto<HttpCheckDto> paginatedHttpCheckDto, String domain, String protocol) {
+        var httpModels = paginatedHttpCheckDto.getDtoList().stream().map(this::toModel).collect(Collectors.toCollection(ArrayList::new));
         ResponseEntity<CollectionModel<HttpCheckModel>> method;
         var links = new ArrayList<Link>();
         if (isValidPage(paginatedHttpCheckDto.getNumber(),paginatedHttpCheckDto.getTotalPages())) {

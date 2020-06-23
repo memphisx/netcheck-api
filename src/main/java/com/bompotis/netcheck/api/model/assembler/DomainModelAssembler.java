@@ -3,7 +3,7 @@ package com.bompotis.netcheck.api.model.assembler;
 import com.bompotis.netcheck.api.controller.DomainsController;
 import com.bompotis.netcheck.api.model.DomainModel;
 import com.bompotis.netcheck.service.dto.DomainDto;
-import com.bompotis.netcheck.service.dto.PaginatedDomainsDto;
+import com.bompotis.netcheck.service.dto.PaginatedDto;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
@@ -32,9 +32,9 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
         );
     }
 
-    public CollectionModel<DomainModel> toCollectionModel(PaginatedDomainsDto paginatedDomainsDto) throws IOException {
+    public CollectionModel<DomainModel> toCollectionModel(PaginatedDto<DomainDto> paginatedDomainsDto) throws IOException {
         var domainModels = new ArrayList<DomainModel>();
-        for (var domain : paginatedDomainsDto.getDomains()) {
+        for (var domain : paginatedDomainsDto.getDtoList()) {
             var domainModel = this.toModel(domain);
             domainModel.add(
                     linkTo(methodOn(DomainsController.class).getDomainStatus(domainModel.getDomain(), false)).withSelfRel()

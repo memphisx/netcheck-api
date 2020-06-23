@@ -5,7 +5,7 @@ import com.bompotis.netcheck.api.model.CertificateModel;
 import com.bompotis.netcheck.api.model.DomainCheckModel;
 import com.bompotis.netcheck.api.model.HttpCheckModel;
 import com.bompotis.netcheck.service.dto.DomainCheckDto;
-import com.bompotis.netcheck.service.dto.PaginatedDomainCheckDto;
+import com.bompotis.netcheck.service.dto.PaginatedDto;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
@@ -63,9 +63,9 @@ public class DomainCheckModelAssembler extends PaginatedRepresentationModelAssem
         return domainCheckModel;
     }
 
-    public CollectionModel<DomainCheckModel> toCollectionModel(PaginatedDomainCheckDto paginatedDomainCheckDto, String domain) {
+    public CollectionModel<DomainCheckModel> toCollectionModel(PaginatedDto<DomainCheckDto> paginatedDomainCheckDto, String domain) {
         var historicEntries = new ArrayList<DomainCheckModel>();
-        for (var domainCheckDto : paginatedDomainCheckDto.getDomainChecks()) {
+        for (var domainCheckDto : paginatedDomainCheckDto.getDtoList()) {
             historicEntries.add(new DomainCheckModelAssembler().toModel(domainCheckDto));
         }
         var links = new ArrayList<Link>();
