@@ -13,6 +13,7 @@ import java.util.Date;
  */
 @Relation(collectionRelation = "checks", itemRelation = "check")
 public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
+    private final Boolean isUp;
     private final Integer statusCode;
     private final Date timeCheckedOn;
     private final Boolean dnsResolves;
@@ -31,7 +32,9 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
             @JsonProperty("dnsResolves") Boolean dnsResolves,
             @JsonProperty("ipAddress") String ipAddress,
             @JsonProperty("protocol") String protocol,
-            @JsonProperty("redirectUri") String redirectUri) {
+            @JsonProperty("redirectUri") String redirectUri,
+            @JsonProperty("redirectUri") Boolean isUp) {
+        this.isUp = isUp;
         this.hostname = hostname;
         this.statusCode = statusCode;
         this.timeCheckedOn = timeCheckedOn;
@@ -73,5 +76,9 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getRedirectUri() {
         return redirectUri;
+    }
+
+    public Boolean getUp() {
+        return isUp;
     }
 }

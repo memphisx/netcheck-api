@@ -1,6 +1,9 @@
 package com.bompotis.netcheck.service;
 
-import com.bompotis.netcheck.data.entity.*;
+import com.bompotis.netcheck.data.entity.CertificateEntity;
+import com.bompotis.netcheck.data.entity.DomainCheckEntity;
+import com.bompotis.netcheck.data.entity.DomainEntity;
+import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
 import com.bompotis.netcheck.data.repository.DomainCheckRepository;
 import com.bompotis.netcheck.data.repository.DomainRepository;
 import com.bompotis.netcheck.service.dto.*;
@@ -9,30 +12,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
-import java.net.*;
-import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Created by Kyriakos Bompotis on 30/11/18.
  */
 @Service
 public class DomainService {
-
-    private final Set<Integer> STATUS_CODES_WITH_EMPTY_RESPONSES = Set.of(
-            HttpURLConnection.HTTP_NOT_FOUND,
-            HttpURLConnection.HTTP_BAD_REQUEST,
-            HttpURLConnection.HTTP_NO_CONTENT,
-            422
-    );
-
-    private final Set<Integer> REDIRECT_STATUS_CODES = Set.of(
-            HttpURLConnection.HTTP_MOVED_TEMP,
-            HttpURLConnection.HTTP_MOVED_PERM,
-            HttpURLConnection.HTTP_SEE_OTHER
-    );
 
     private final DomainRepository domainRepository;
 
@@ -45,80 +35,10 @@ public class DomainService {
     }
 
     public DomainCheckDto check(String domain) throws IOException {
-        return new DomainCheckDto.Builder()
-                .httpCheckDto(checkHttp(domain))
-                .httpsCheckDto(checkHttps(domain))
-                .domain(domain)
+        return new DomainCheckDto.Builder(domain)
+                .withCurrentHttpCheck()
+                .withCurrentHttpsCheck()
                 .build();
-    }
-
-    private HttpCheckDto checkHttp(String domain) throws IOException {
-        var httpCheckDtoBuilder = new HttpCheckDto.Builder().protocol("HTTP");
-        HttpURLConnection conn = null;
-        try {
-            var beginTime = System.nanoTime();
-            conn = (HttpURLConnection) getHttpDomainUri(domain).openConnection();
-            checkAssembler(httpCheckDtoBuilder, conn, beginTime);
-        } catch (UnknownHostException e) {
-            httpCheckDtoBuilder.dnsResolved(false);
-        } finally {
-            Optional.ofNullable(conn)
-                    .ifPresent(HttpURLConnection::disconnect);
-        }
-        return httpCheckDtoBuilder.build();
-    }
-
-    private HttpsCheckDto checkHttps(String domain) throws IOException {
-        var httpsCheckDtoBuilder = new HttpsCheckDto.Builder();
-        var httpCheckDtoBuilder = new HttpCheckDto.Builder().protocol("HTTPS");
-        HttpsURLConnection conn = null;
-        try {
-            var beginTime = System.nanoTime();
-            conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
-            checkAssembler(httpCheckDtoBuilder, conn, beginTime);
-            var serverCerts = conn.getServerCertificates();
-            for (var cert : serverCerts) {
-                if(cert instanceof X509Certificate) {
-                    httpsCheckDtoBuilder
-                            .certificate(new CertificateDetailsDto((X509Certificate ) cert));
-                }
-            }
-        } catch (UnknownHostException e) {
-            httpCheckDtoBuilder.dnsResolved(false);
-        } finally {
-            Optional.ofNullable(conn)
-                    .ifPresent(HttpURLConnection::disconnect);
-        }
-        return httpsCheckDtoBuilder.httpCheckDto(httpCheckDtoBuilder.build()).build();
-    }
-
-    private void checkAssembler(HttpCheckDto.Builder httpCheckDtoBuilder, HttpURLConnection conn, long beginTime) throws IOException {
-        var hostname = conn.getURL().getHost();
-        httpCheckDtoBuilder
-                .hostname(hostname)
-                .timeCheckedOn(new Date())
-                .ipAddress(InetAddress.getByName(hostname).getHostAddress())
-                .dnsResolved(true);
-        var responseCode = conn.getResponseCode();
-        if (!STATUS_CODES_WITH_EMPTY_RESPONSES.contains(responseCode)) {
-            conn.getInputStream();
-        }
-        if (REDIRECT_STATUS_CODES.contains(responseCode)) {
-            httpCheckDtoBuilder.redirectUri(conn.getHeaderField("Location"));
-        }
-        httpCheckDtoBuilder.statusCode(conn.getResponseCode())
-                .responseTimeNs(System.nanoTime() - beginTime);
-        httpCheckDtoBuilder.statusCode(responseCode);
-    }
-
-
-    private URL getHttpsDomainUri(String domain) throws MalformedURLException {
-        return new URL("https://" + domain);
-    }
-
-
-    private URL getHttpDomainUri(String domain) throws MalformedURLException {
-        return new URL("http://" + domain);
     }
 
 
@@ -140,46 +60,18 @@ public class DomainService {
                 .httpsResponseTimeNs(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getResponseTimeNs());
 
         domainCheckEntityBuilder.protocolCheckEntities(Set.of(
-                new ProtocolCheckEntity.Builder()
-                        .dnsResolves(domainCheckDto.getHttpCheckDto().getDnsResolved())
-                        .statusCode(domainCheckDto.getHttpCheckDto().getStatusCode())
-                        .protocol(domainCheckDto.getHttpCheckDto().getProtocol())
-                        .ipAddress(domainCheckDto.getHttpCheckDto().getIpAddress())
-                        .hostname(domainCheckDto.getHttpCheckDto().getHostname())
-                        .redirectUri(domainCheckDto.getHttpCheckDto().getRedirectUri())
-                .build(),
-                new ProtocolCheckEntity.Builder()
-                        .dnsResolves(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getDnsResolved())
-                        .statusCode(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getStatusCode())
-                        .protocol(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getProtocol())
-                        .ipAddress(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getIpAddress())
-                        .hostname(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getHostname())
-                        .redirectUri(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getRedirectUri())
-                .build()
+                domainCheckDto.getHttpCheckDto().toProtocolCheckEntity(),
+                domainCheckDto.getHttpsCheckDto().getHttpCheckDto().toProtocolCheckEntity()
         ));
 
 
         var certificateEntities = new HashSet<CertificateEntity>();
         if(Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()).isPresent()) {
-            certificateEntities.add(convertToDomainCertificateEntity(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()));
+            certificateEntities.add(domainCheckDto.getHttpsCheckDto().getIssuerCertificate().toCertificateEntity());
         }
         domainCheckEntityBuilder.certificateEntities(certificateEntities);
 
         return domainCheckEntityBuilder;
-    }
-
-    private CertificateEntity convertToDomainCertificateEntity(CertificateDetailsDto certificateDetailsDto) {
-        return new CertificateEntity.Builder()
-                .basicConstraints(certificateDetailsDto.getBasicConstraints())
-                .valid(certificateDetailsDto.isValid())
-                .expired(certificateDetailsDto.getExpired())
-                .notYetValid(certificateDetailsDto.getNotYetValid())
-                .certificateIsValid(certificateDetailsDto.isValid())
-                .issuedBy(certificateDetailsDto.getIssuedBy())
-                .issuedFor(certificateDetailsDto.getIssuedFor())
-                .notAfter(certificateDetailsDto.getNotAfter())
-                .notBefore(certificateDetailsDto.getNotBefore())
-                .build();
     }
 
     public PaginatedDomainCheckDto getDomainHistory(String domain, Integer page, Integer size) {
@@ -202,8 +94,88 @@ public class DomainService {
         );
     }
 
+    public PaginatedHttpCheckDto getHttpDomainHistory(String domain, Integer page, Integer size) {
+        var httpCheckDtos = new ArrayList<HttpCheckDto>();
+        var pageRequest = PageRequest.of(
+                Optional.ofNullable(page).orElse(0),
+                Optional.ofNullable(size).orElse(10),
+                Sort.by("createdAt").descending()
+        );
+        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
+        for (var domainCheckEntity : domainCheckEntities) {
+            httpCheckDtos.add(convertDomainCheckEntityToDto(domainCheckEntity).getHttpCheckDto());
+        }
+        return new PaginatedHttpCheckDto(
+                httpCheckDtos,
+                domainCheckEntities.getTotalElements(),
+                domainCheckEntities.getTotalPages(),
+                domainCheckEntities.getNumber(),
+                domainCheckEntities.getNumberOfElements()
+        );
+    }
+
+    public PaginatedHttpCheckDto getHttpsDomainHistory(String domain, Integer page, Integer size) {
+        var httpCheckDtos = new ArrayList<HttpCheckDto>();
+        var pageRequest = PageRequest.of(
+                Optional.ofNullable(page).orElse(0),
+                Optional.ofNullable(size).orElse(10),
+                Sort.by("createdAt").descending()
+        );
+        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
+        for (var domainCheckEntity : domainCheckEntities) {
+            httpCheckDtos.add(convertDomainCheckEntityToDto(domainCheckEntity).getHttpsCheckDto().getHttpCheckDto());
+        }
+        return new PaginatedHttpCheckDto(
+                httpCheckDtos,
+                domainCheckEntities.getTotalElements(),
+                domainCheckEntities.getTotalPages(),
+                domainCheckEntities.getNumber(),
+                domainCheckEntities.getNumberOfElements()
+        );
+    }
+
+    public PaginatedMetricsDto getDomainMetrics(String domain, Integer page, Integer size) {
+        var httpMetrics = new ArrayList<MetricDto>();
+        var httpsMetrics = new ArrayList<MetricDto>();
+        var pageRequest = PageRequest.of(
+                Optional.ofNullable(page).orElse(0),
+                Optional.ofNullable(size).orElse(10),
+                Sort.by("createdAt").descending()
+        );
+        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
+        for (var domainCheckEntity : domainCheckEntities) {
+            var httpMetricBuilder = new MetricDto.Builder()
+                    .metricPeriod(domainCheckEntity.getTimeCheckedOn())
+                    .averageResponseTime(domainCheckEntity.getHttpResponseTimeNs());
+            var httpsMetricBuilder = new MetricDto.Builder()
+                    .metricPeriod(domainCheckEntity.getTimeCheckedOn())
+                    .averageResponseTime(domainCheckEntity.getHttpsResponseTimeNs());
+            for (var protocolCheck : domainCheckEntity.getProtocolCheckEntities()) {
+                var uptimePercentage = Optional.ofNullable(protocolCheck.getStatusCode()).isPresent() &&
+                        (protocolCheck.getStatusCode() < 400) ? 100 : 0;
+                if (protocolCheck.getProtocol().equals(ProtocolCheckEntity.Protocol.HTTP)) {
+                    httpMetricBuilder.uptimePercentage(uptimePercentage);
+                }
+                if (protocolCheck.getProtocol().equals(ProtocolCheckEntity.Protocol.HTTPS)) {
+                    httpsMetricBuilder.uptimePercentage(uptimePercentage);
+                }
+            }
+            httpMetrics.add(httpMetricBuilder.build());
+            httpsMetrics.add(httpsMetricBuilder.build());
+        }
+        return new PaginatedMetricsDto(
+                httpMetrics,
+                httpsMetrics,
+                domainCheckEntities.getTotalElements(),
+                domainCheckEntities.getTotalPages(),
+                domainCheckEntities.getNumber(),
+                domainCheckEntities.getNumberOfElements()
+        );
+    }
+
+
     public Optional<DomainCheckDto> getDomainCheck(String domain, String id) {
-        var queryResult = domainCheckRepository.findById(id);
+        var queryResult = domainCheckRepository.findByIdAndDomain(id,domain);
         if (queryResult.isEmpty()) {
             return Optional.empty();
         }
@@ -246,54 +218,33 @@ public class DomainService {
     }
 
     public DomainCheckDto convertDomainCheckEntityToDto(DomainCheckEntity domainCheckEntity) {
-        var domainCheckDtoBuilder = new DomainCheckDto.Builder();
+        var domainCheckDtoBuilder = new DomainCheckDto.Builder(domainCheckEntity.getDomain());
 
         for (var protocolCheck: domainCheckEntity.getProtocolCheckEntities()) {
             if (protocolCheck.getProtocol().equals(ProtocolCheckEntity.Protocol.HTTP)) {
-                var httpCheckDto = new HttpCheckDto.Builder().statusCode(protocolCheck.getStatusCode())
-                        .id(protocolCheck.getId())
-                        .hostname(protocolCheck.getHostname())
-                        .protocol(protocolCheck.getProtocol().toString())
-                        .ipAddress(protocolCheck.getIpAddress())
-                        .redirectUri(protocolCheck.getRedirectUri())
-                        .responseTimeNs(domainCheckEntity.getHttpResponseTimeNs())
-                        .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
-                        .dnsResolved(protocolCheck.getDnsResolves())
-                        .build();
-                domainCheckDtoBuilder.httpCheckDto(httpCheckDto);
+                domainCheckDtoBuilder.httpCheck(new HttpCheckDto(
+                        protocolCheck,
+                        domainCheckEntity.getHttpResponseTimeNs(),
+                        domainCheckEntity.getTimeCheckedOn()
+                ));
             }
             if (protocolCheck.getProtocol().equals(ProtocolCheckEntity.Protocol.HTTPS)) {
                 var httpsCheckDtoBuilder = new HttpsCheckDto.Builder();
-                var httpCheckDto = new HttpCheckDto.Builder().statusCode(protocolCheck.getStatusCode())
-                        .id(protocolCheck.getId())
-                        .hostname(protocolCheck.getHostname())
-                        .protocol(protocolCheck.getProtocol().toString())
-                        .ipAddress(protocolCheck.getIpAddress())
-                        .redirectUri(protocolCheck.getRedirectUri())
-                        .responseTimeNs(domainCheckEntity.getHttpsResponseTimeNs())
-                        .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
-                        .dnsResolved(protocolCheck.getDnsResolves())
-                        .build();
-                httpsCheckDtoBuilder.httpCheckDto(httpCheckDto);
+                httpsCheckDtoBuilder.httpCheckDto(new HttpCheckDto(
+                        protocolCheck,
+                        domainCheckEntity.getHttpsResponseTimeNs(),
+                        domainCheckEntity.getTimeCheckedOn()
+                ));
 
-                for (var certificate : domainCheckEntity.getCertificateEntities()) {
-                    var certificateDto = new CertificateDetailsDto.Builder()
-                            .valid(certificate.getCertificateIsValid())
-                            .notAfter(certificate.getNotAfter())
-                            .notBefore(certificate.getNotBefore())
-                            .expired(certificate.getExpired())
-                            .basicConstraints(certificate.getBasicConstraints())
-                            .issuedBy(certificate.getIssuedBy())
-                            .issuedFor(certificate.getIssuedFor())
-                            .notYetValid(certificate.getNotYetValid())
-                            .build();
-                    httpsCheckDtoBuilder.certificate(certificateDto);
-                }
+                domainCheckEntity.getCertificateEntities()
+                        .stream()
+                        .map(CertificateDetailsDto::new)
+                        .forEach(httpsCheckDtoBuilder::certificate);
+
                 domainCheckDtoBuilder.httpsCheckDto(httpsCheckDtoBuilder.build());
             }
         }
         return domainCheckDtoBuilder
-                .domain(domainCheckEntity.getDomain())
                 .id(domainCheckEntity.getId())
                 .build();
     }

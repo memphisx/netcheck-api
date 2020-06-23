@@ -3,7 +3,7 @@ package com.bompotis.netcheck.service.dto;
 /**
  * Created by Kyriakos Bompotis on 12/6/20.
  */
-public class PaginatedDto {
+public abstract class PaginatedDto {
 
     private final long totalElements;
     private final int totalPages;

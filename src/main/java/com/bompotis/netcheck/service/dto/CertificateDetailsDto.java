@@ -1,5 +1,7 @@
 package com.bompotis.netcheck.service.dto;
 
+import com.bompotis.netcheck.data.entity.CertificateEntity;
+
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -136,5 +138,30 @@ public class CertificateDetailsDto {
         this.isValid = b.isValid;
         this.expired = b.expired;
         this.notYetValid = b.notYetValid;
+    }
+
+    public CertificateDetailsDto(CertificateEntity entity) {
+        this.isValid = entity.getCertificateIsValid();
+        this.notAfter = entity.getNotAfter();
+        this.notBefore = entity.getNotBefore();
+        this.expired = entity.getExpired();
+        this.basicConstraints = entity.getBasicConstraints();
+        this.issuedBy = entity.getIssuedBy();
+        this.issuedFor = entity.getIssuedFor();
+        this.notYetValid = entity.getNotYetValid();
+    }
+
+    public CertificateEntity toCertificateEntity() {
+        return new CertificateEntity.Builder()
+                .basicConstraints(this.getBasicConstraints())
+                .valid(this.isValid())
+                .expired(this.getExpired())
+                .notYetValid(this.getNotYetValid())
+                .certificateIsValid(this.isValid())
+                .issuedBy(this.getIssuedBy())
+                .issuedFor(this.getIssuedFor())
+                .notAfter(this.getNotAfter())
+                .notBefore(this.getNotBefore())
+                .build();
     }
 }

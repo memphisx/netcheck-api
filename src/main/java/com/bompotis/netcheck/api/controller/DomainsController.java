@@ -2,7 +2,11 @@ package com.bompotis.netcheck.api.controller;
 
 import com.bompotis.netcheck.api.model.DomainCheckModel;
 import com.bompotis.netcheck.api.model.DomainModel;
+import com.bompotis.netcheck.api.model.HttpCheckModel;
+import com.bompotis.netcheck.api.model.MetricModel;
 import com.bompotis.netcheck.api.model.assembler.DomainCheckModelAssembler;
+import com.bompotis.netcheck.api.model.assembler.HttpCheckModelAssembler;
+import com.bompotis.netcheck.api.model.assembler.MetricModelAssembler;
 import com.bompotis.netcheck.api.model.assembler.DomainModelAssembler;
 import com.bompotis.netcheck.service.DomainService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +68,28 @@ public class DomainsController {
                                                                                @RequestParam(name = "page", required = false) Integer page,
                                                                                @RequestParam(name = "size", required = false) Integer size) {
         return ok(new DomainCheckModelAssembler().toCollectionModel(domainService.getDomainHistory(domain,page,size), domain));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/http")
+    public ResponseEntity<CollectionModel<HttpCheckModel>> getHttpChecks(@PathVariable("domain") String domain,
+                                                                         @RequestParam(name = "page", required = false) Integer page,
+                                                                         @RequestParam(name = "size", required = false) Integer size) {
+        return ok(new HttpCheckModelAssembler().toCollectionModel(domainService.getHttpDomainHistory(domain,page,size), domain, "http"));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/https")
+    public ResponseEntity<CollectionModel<HttpCheckModel>> getHttpsChecks(@PathVariable("domain") String domain,
+                                                                               @RequestParam(name = "page", required = false) Integer page,
+                                                                               @RequestParam(name = "size", required = false) Integer size) {
+        return ok(new HttpCheckModelAssembler().toCollectionModel(domainService.getHttpsDomainHistory(domain,page,size), domain, "https"));
+    }
+
+
+    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/metrics")
+    public ResponseEntity<CollectionModel<MetricModel>> getDomainsMetrics(@PathVariable("domain") String domain,
+                                                                          @RequestParam(name = "page", required = false) Integer page,
+                                                                          @RequestParam(name = "size", required = false) Integer size) {
+        return ok(new MetricModelAssembler().toCollectionModel(domainService.getDomainMetrics(domain, page, size), domain));
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history/{id}")

@@ -1,6 +1,10 @@
 package com.bompotis.netcheck.service.dto;
 
+import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
+
 import java.util.Date;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Kyriakos Bompotis on 15/6/20.
@@ -52,7 +56,20 @@ public class HttpCheckDto {
         return redirectUri;
     }
 
+    public Boolean isUp() {
+        AtomicBoolean result = new AtomicBoolean(false);
+        Optional.ofNullable(statusCode).ifPresent(
+                (code) -> {
+                    if (code < 400 ) {
+                        result.set(true);
+                    }
+                }
+        );
+        return result.get();
+    }
+
     public static class Builder {
+        private Boolean isUp = false;
         private Long responseTimeNs;
         private String hostname;
         private Integer statusCode;
@@ -123,5 +140,28 @@ public class HttpCheckDto {
         this.protocol = b.protocol;
         this.id = b.id;
         this.redirectUri = b.redirectUri;
+    }
+
+    public HttpCheckDto(ProtocolCheckEntity entity, Long responseTimeNs, Date timeCheckedOn) {
+        this.statusCode = entity.getStatusCode();
+        this.id = entity.getId();
+        this.hostname = entity.getHostname();
+        this.protocol = entity.getProtocol().toString();
+        this.ipAddress = entity.getIpAddress();
+        this.redirectUri = entity.getRedirectUri();
+        this.responseTimeNs = responseTimeNs;
+        this.timeCheckedOn = timeCheckedOn;
+        this.dnsResolved = entity.getDnsResolves();
+    }
+
+    public ProtocolCheckEntity toProtocolCheckEntity() {
+        return new ProtocolCheckEntity.Builder()
+                .dnsResolves(this.getDnsResolved())
+                .statusCode(this.getStatusCode())
+                .protocol(this.getProtocol())
+                .ipAddress(this.getIpAddress())
+                .hostname(this.getHostname())
+                .redirectUri(this.getRedirectUri())
+                .build();
     }
 }
