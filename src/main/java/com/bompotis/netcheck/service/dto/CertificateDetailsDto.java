@@ -141,7 +141,7 @@ public class CertificateDetailsDto {
     }
 
     public CertificateDetailsDto(CertificateEntity entity) {
-        this.isValid = entity.getCertificateIsValid();
+        this.isValid = entity.isValid();
         this.notAfter = entity.getNotAfter();
         this.notBefore = entity.getNotBefore();
         this.expired = entity.getExpired();
@@ -157,7 +157,7 @@ public class CertificateDetailsDto {
                 .valid(this.isValid())
                 .expired(this.getExpired())
                 .notYetValid(this.getNotYetValid())
-                .certificateIsValid(this.isValid())
+                .valid(this.isValid())
                 .issuedBy(this.getIssuedBy())
                 .issuedFor(this.getIssuedFor())
                 .notAfter(this.getNotAfter())

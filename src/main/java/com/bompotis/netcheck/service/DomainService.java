@@ -69,6 +69,9 @@ public class DomainService {
         if(Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()).isPresent()) {
             certificateEntities.add(domainCheckDto.getHttpsCheckDto().getIssuerCertificate().toCertificateEntity());
         }
+        if(Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getCaCertificates()).isPresent()) {
+            domainCheckDto.getHttpsCheckDto().getCaCertificates().forEach((cert) -> certificateEntities.add(cert.toCertificateEntity()));
+        }
         domainCheckEntityBuilder.certificateEntities(certificateEntities);
 
         return domainCheckEntityBuilder;

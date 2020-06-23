@@ -4,6 +4,7 @@ import com.bompotis.netcheck.api.controller.DomainsController;
 import com.bompotis.netcheck.api.model.CertificateModel;
 import com.bompotis.netcheck.api.model.DomainCheckModel;
 import com.bompotis.netcheck.api.model.HttpCheckModel;
+import com.bompotis.netcheck.data.entity.CertificateEntity;
 import com.bompotis.netcheck.service.dto.DomainCheckDto;
 import com.bompotis.netcheck.service.dto.PaginatedDto;
 import org.springframework.hateoas.CollectionModel;
@@ -12,7 +13,9 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -29,7 +32,8 @@ public class DomainCheckModelAssembler extends PaginatedRepresentationModelAssem
     @Override
     public DomainCheckModel toModel(DomainCheckDto domainCheckDto) {
         var httpChecks = new ArrayList<HttpCheckModel>();
-        CertificateModel certificate = null;
+        CertificateModel issuerCertificate = null;
+        List<CertificateModel> caCertificates = null;
         if (Optional.ofNullable(domainCheckDto.getHttpCheckDto()).isPresent()) {
             var httpCheck = new HttpCheckModelAssembler().toModel(domainCheckDto.getHttpCheckDto());
             if (Optional.ofNullable(domainCheckDto.getHttpCheckDto().getId()).isPresent()) {
@@ -50,10 +54,18 @@ public class DomainCheckModelAssembler extends PaginatedRepresentationModelAssem
             }
             httpChecks.add(httpsCheck);
             if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()).isPresent()) {
-                certificate = new CertificateModelAssembler().toModel(domainCheckDto.getHttpsCheckDto().getIssuerCertificate());
+                issuerCertificate = new CertificateModelAssembler().toModel(domainCheckDto.getHttpsCheckDto().getIssuerCertificate());
+            }
+            if (Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getCaCertificates()).isPresent()) {
+                caCertificates = domainCheckDto
+                        .getHttpsCheckDto()
+                        .getCaCertificates()
+                        .stream()
+                        .map(cert -> new CertificateModelAssembler().toModel(cert))
+                        .collect(Collectors.toCollection(ArrayList::new));
             }
         }
-        var domainCheckModel = new DomainCheckModel(domainCheckDto.getDomain(), httpChecks, certificate);
+        var domainCheckModel = new DomainCheckModel(domainCheckDto.getDomain(), httpChecks, issuerCertificate, caCertificates);
         if (Optional.ofNullable(domainCheckDto.getId()).isPresent()) {
             domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
                     domainCheckDto.getDomain(),
