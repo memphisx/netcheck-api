@@ -87,9 +87,10 @@ public class DomainsController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}/metrics")
     public ResponseEntity<CollectionModel<MetricModel>> getDomainsMetrics(@PathVariable("domain") String domain,
+                                                                          @RequestParam(name = "protocol", required = false) String protocol,
                                                                           @RequestParam(name = "page", required = false) Integer page,
                                                                           @RequestParam(name = "size", required = false) Integer size) {
-        return ok(new MetricModelAssembler().toCollectionModel(domainService.getDomainMetrics(domain, page, size), domain));
+        return ok(new MetricModelAssembler().toCollectionModel(domainService.getDomainMetrics(domain, page, size), domain, protocol));
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history/{id}")

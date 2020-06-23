@@ -32,24 +32,35 @@ public class MetricModelAssembler extends PaginatedRepresentationModelAssemblerS
         );
     }
 
-    public CollectionModel<MetricModel> toCollectionModel(PaginatedMetricsDto paginatedMetricDto, String domain) {
-        var metricModels = paginatedMetricDto.getHttpMetrics().stream().map(this::toModel).collect(Collectors.toCollection(ArrayList::new));
+    public CollectionModel<MetricModel> toCollectionModel(PaginatedMetricsDto paginatedMetricDto, String domain, String protocol) {
+        ArrayList<MetricModel> metricModels;
+        if (protocol.toUpperCase().equals("HTTP")) {
+            metricModels = paginatedMetricDto
+                    .getHttpMetrics()
+                    .stream()
+                    .map(this::toModel).collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            metricModels = paginatedMetricDto
+                    .getHttpsMetrics()
+                    .stream()
+                    .map(this::toModel).collect(Collectors.toCollection(ArrayList::new));
+        }
         var links = new ArrayList<Link>();
         var method = methodOn(DomainsController.class)
-                .getDomainsMetrics(domain, paginatedMetricDto.getNumber(), paginatedMetricDto.getSize());
+                .getDomainsMetrics(domain, protocol, paginatedMetricDto.getNumber(), paginatedMetricDto.getSize());
         links.add(linkTo(method)
                 .withSelfRel()
         );
         if (isValidPage(paginatedMetricDto.getNumber(),paginatedMetricDto.getTotalPages())) {
             if (isNotLastPage(paginatedMetricDto.getNumber(), paginatedMetricDto.getTotalPages())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomainsMetrics(domain,paginatedMetricDto.getNumber()+1, paginatedMetricDto.getSize()))
+                        .getDomainsMetrics(domain, protocol,paginatedMetricDto.getNumber()+1, paginatedMetricDto.getSize()))
                         .withRel(IanaLinkRelations.NEXT)
                 );
             }
             if (isNotFirstPage(paginatedMetricDto.getNumber())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomainsMetrics(domain,paginatedMetricDto.getNumber()-1, paginatedMetricDto.getSize()))
+                        .getDomainsMetrics(domain, protocol, paginatedMetricDto.getNumber()-1, paginatedMetricDto.getSize()))
                         .withRel(IanaLinkRelations.PREVIOUS)
                 );
             }
