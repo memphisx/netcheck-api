@@ -1,10 +1,13 @@
 package com.bompotis.netcheck.data.entity;
 
+import org.springframework.lang.NonNull;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Created by Kyriakos Bompotis on 14/6/20.
@@ -13,29 +16,37 @@ import java.util.Date;
 @Table(name = "certificate")
 public class CertificateEntity extends AbstractTimestampablePersistable<String>{
 
+    @NonNull
     @Column(name = "basic_constraints")
     private Integer basicConstraints;
 
+    @NonNull
     @Column(name = "issued_by")
     private String issuedBy;
 
+    @NonNull
     @Column(name = "issued_for")
     private String issuedFor;
 
+    @NonNull
     @Column(name = "not_before")
     private Date notBefore;
 
+    @NonNull
     @Column(name = "not_after")
     private Date notAfter;
 
+    @NonNull
     @Column(name = "is_valid")
-    private Boolean isValid;
+    private boolean isValid;
 
+    @NonNull
     @Column(name = "expired")
-    private Boolean expired;
+    private boolean expired;
 
+    @NonNull
     @Column(name = "not_yet_valid")
-    private Boolean notYetValid;
+    private boolean notYetValid;
 
     @Transient
     public boolean isNew() {
@@ -80,9 +91,9 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
         private String issuedFor;
         private Date notBefore;
         private Date notAfter;
-        private Boolean isValid;
-        private Boolean expired;
-        private Boolean notYetValid;
+        private boolean isValid;
+        private boolean expired;
+        private boolean notYetValid;
 
         public Builder basicConstraints(Integer basicConstraints) {
             this.basicConstraints = basicConstraints;
@@ -109,17 +120,17 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
             return this;
         }
 
-        public Builder valid(Boolean isValid) {
+        public Builder valid(boolean isValid) {
             this.isValid = isValid;
             return this;
         }
 
-        public Builder expired(Boolean expired) {
+        public Builder expired(boolean expired) {
             this.expired = expired;
             return this;
         }
 
-        public Builder notYetValid(Boolean notYetValid) {
+        public Builder notYetValid(boolean notYetValid) {
             this.notYetValid = notYetValid;
             return this;
         }
@@ -140,5 +151,25 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
         this.isValid = b.isValid;
         this.expired = b.expired;
         this.notYetValid = b.notYetValid;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CertificateEntity that = (CertificateEntity) o;
+        return isValid == that.isValid &&
+                expired == that.expired &&
+                notYetValid == that.notYetValid &&
+                basicConstraints.equals(that.basicConstraints) &&
+                issuedBy.equals(that.issuedBy) &&
+                issuedFor.equals(that.issuedFor) &&
+                notBefore.equals(that.notBefore) &&
+                notAfter.equals(that.notAfter);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(basicConstraints, issuedBy, issuedFor, notBefore, notAfter, isValid, expired, notYetValid);
     }
 }
