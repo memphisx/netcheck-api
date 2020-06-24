@@ -4,7 +4,6 @@ import com.bompotis.netcheck.api.controller.DomainsController;
 import com.bompotis.netcheck.api.model.CertificateModel;
 import com.bompotis.netcheck.api.model.DomainCheckModel;
 import com.bompotis.netcheck.api.model.HttpCheckModel;
-import com.bompotis.netcheck.data.entity.CertificateEntity;
 import com.bompotis.netcheck.service.dto.DomainCheckDto;
 import com.bompotis.netcheck.service.dto.PaginatedDto;
 import org.springframework.hateoas.CollectionModel;

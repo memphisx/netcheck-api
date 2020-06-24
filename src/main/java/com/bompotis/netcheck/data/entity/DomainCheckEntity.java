@@ -1,7 +1,10 @@
 package com.bompotis.netcheck.data.entity;
 
+import org.springframework.lang.NonNull;
+
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -11,12 +14,33 @@ import java.util.Set;
 @Table(name = "domain_check")
 public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "check_protocol",
+            joinColumns = @JoinColumn(name = "domain_check_id"),
+            inverseJoinColumns = @JoinColumn(name = "protocol_check_id"))
     private Set<ProtocolCheckEntity> protocolCheckEntities;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "check_certificate",
+            joinColumns = @JoinColumn(name = "domain_check_id"),
+            inverseJoinColumns = @JoinColumn(name = "certificate_id"))
     private Set<CertificateEntity> certificateEntities;
 
+    @NonNull
+    @Column(name = "certificates_change")
+    private boolean certificatesChange;
+
+    @NonNull
+    @Column(name = "http_check_change")
+    private boolean httpCheckChange;
+
+    @NonNull
+    @Column(name = "https_check_change")
+    private boolean httpsCheckChange;
+
+    @NonNull
     @Column(name = "domain", insertable = false, updatable = false)
     private String domain;
 
@@ -24,6 +48,13 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
     @JoinColumn(name = "domain")
     private DomainEntity domainEntity;
 
+    @Column(name = "http_ip_address")
+    private String httpIpAddress;
+
+    @Column(name = "https_ip_address")
+    private String httpsIpAddress;
+
+    @NonNull
     @Column(name = "check_date")
     private Date timeCheckedOn;
 
@@ -63,6 +94,26 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
         return certificateEntities;
     }
 
+    public String getHttpIpAddress() {
+        return httpIpAddress;
+    }
+
+    public String getHttpsIpAddress() {
+        return httpsIpAddress;
+    }
+
+    public boolean isCertificatesChange() {
+        return certificatesChange;
+    }
+
+    public boolean isHttpCheckChange() {
+        return httpCheckChange;
+    }
+
+    public boolean isHttpsCheckChange() {
+        return httpsCheckChange;
+    }
+
     public static class Builder {
         private Set<ProtocolCheckEntity> protocolCheckEntities;
         private Set<CertificateEntity> certificateEntities;
@@ -71,6 +122,11 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
         private Date timeCheckedOn;
         private Long httpResponseTimeNs;
         private Long httpsResponseTimeNs;
+        private boolean certificatesChange;
+        private boolean httpCheckChange;
+        private boolean httpsCheckChange;
+        private String httpIpAddress;
+        private String httpsIpAddress;
 
         public Builder protocolCheckEntities(Set<ProtocolCheckEntity> protocolCheckEntities) {
             this.protocolCheckEntities = protocolCheckEntities;
@@ -97,6 +153,21 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
             return this;
         }
 
+        public Builder certificatesChange(boolean certificatesChange) {
+            this.certificatesChange = certificatesChange;
+            return this;
+        }
+
+        public Builder httpCheckChange(boolean httpCheckChange) {
+            this.httpCheckChange = httpCheckChange;
+            return this;
+        }
+
+        public Builder httpsCheckChange(boolean httpsCheckChange) {
+            this.httpsCheckChange = httpsCheckChange;
+            return this;
+        }
+
         public Builder httpResponseTimeNs(Long httpResponseTimeNs) {
             this.httpResponseTimeNs = httpResponseTimeNs;
             return this;
@@ -104,6 +175,16 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
 
         public Builder httpsResponseTimeNs(Long httpsResponseTimeNs) {
             this.httpsResponseTimeNs = httpsResponseTimeNs;
+            return this;
+        }
+
+        public Builder httpIpAddress(String httpIpAddress) {
+            this.httpIpAddress = httpIpAddress;
+            return this;
+        }
+
+        public Builder httpsIpAddress(String httpsIpAddress) {
+            this.httpsIpAddress = httpsIpAddress;
             return this;
         }
 
@@ -120,5 +201,28 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
         this.timeCheckedOn = b.timeCheckedOn;
         this.httpResponseTimeNs = b.httpResponseTimeNs;
         this.httpsResponseTimeNs = b.httpsResponseTimeNs;
+        this.certificatesChange = b.certificatesChange;
+        this.httpCheckChange = b.httpCheckChange;
+        this.httpsCheckChange = b.httpsCheckChange;
+        this.httpIpAddress = b.httpIpAddress;
+        this.httpsIpAddress = b.httpsIpAddress;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DomainCheckEntity that = (DomainCheckEntity) o;
+        return domain.equals(that.domain) &&
+                timeCheckedOn.equals(that.timeCheckedOn) &&
+                Objects.equals(httpResponseTimeNs, that.httpResponseTimeNs) &&
+                Objects.equals(httpIpAddress, that.httpIpAddress) &&
+                Objects.equals(httpsIpAddress, that.httpsIpAddress) &&
+                Objects.equals(httpsResponseTimeNs, that.httpsResponseTimeNs);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(domain, httpIpAddress, httpsIpAddress, timeCheckedOn, httpResponseTimeNs, httpsResponseTimeNs);
     }
 }

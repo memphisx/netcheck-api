@@ -69,7 +69,6 @@ public class HttpCheckDto {
     }
 
     public static class Builder {
-        private Boolean isUp = false;
         private Long responseTimeNs;
         private String hostname;
         private Integer statusCode;
@@ -142,12 +141,12 @@ public class HttpCheckDto {
         this.redirectUri = b.redirectUri;
     }
 
-    public HttpCheckDto(ProtocolCheckEntity entity, Long responseTimeNs, Date timeCheckedOn) {
+    public HttpCheckDto(ProtocolCheckEntity entity, Long responseTimeNs, Date timeCheckedOn, String ipAddress) {
         this.statusCode = entity.getStatusCode();
         this.id = entity.getId();
         this.hostname = entity.getHostname();
         this.protocol = entity.getProtocol().toString();
-        this.ipAddress = entity.getIpAddress();
+        this.ipAddress = ipAddress;
         this.redirectUri = entity.getRedirectUri();
         this.responseTimeNs = responseTimeNs;
         this.timeCheckedOn = timeCheckedOn;
@@ -159,7 +158,6 @@ public class HttpCheckDto {
                 .dnsResolves(this.getDnsResolved())
                 .statusCode(this.getStatusCode())
                 .protocol(this.getProtocol())
-                .ipAddress(this.getIpAddress())
                 .hostname(this.getHostname())
                 .redirectUri(this.getRedirectUri())
                 .build();

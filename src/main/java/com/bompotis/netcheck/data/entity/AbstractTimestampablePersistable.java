@@ -5,7 +5,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
-import org.springframework.util.ClassUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -68,23 +67,5 @@ public abstract class AbstractTimestampablePersistable<PK extends Serializable> 
 
     public String toString() {
         return String.format("Entity of type %s with id: %s", this.getClass().getName(), this.getId());
-    }
-
-    public boolean equals(Object obj) {
-        if(null == obj) {
-            return false;
-        } else if(this == obj) {
-            return true;
-        } else if(!this.getClass().equals(ClassUtils.getUserClass(obj))) {
-            return false;
-        } else {
-            AbstractTimestampablePersistable that = (AbstractTimestampablePersistable)obj;
-            return null != this.getId() && this.getId().equals(that.getId());
-        }
-    }
-
-    public int hashCode() {
-        byte hashCode = 17;
-        return hashCode + ((null == this.getId()) ? 0 : (this.getId().hashCode() * 31));
     }
 }

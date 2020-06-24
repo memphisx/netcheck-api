@@ -1,6 +1,9 @@
 package com.bompotis.netcheck.data.entity;
 
+import org.springframework.lang.NonNull;
+
 import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * Created by Kyriakos Bompotis on 14/6/20.
@@ -9,6 +12,7 @@ import javax.persistence.*;
 @Table(name = "protocol_check")
 public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String>{
 
+    @NonNull
     @Enumerated(EnumType.STRING)
     @Column(name = "protocol")
     private Protocol protocol;
@@ -16,11 +20,9 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
     @Column(name = "status_code")
     private Integer statusCode;
 
+    @NonNull
     @Column(name = "dns_resolves")
-    private Boolean dnsResolves;
-
-    @Column(name = "ip_address")
-    private String ipAddress;
+    private boolean dnsResolves;
 
     @Column(name = "hostname")
     private String hostname;
@@ -32,16 +34,12 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         return statusCode;
     }
 
-    public Boolean getDnsResolves() {
+    public boolean getDnsResolves() {
         return dnsResolves;
     }
 
     public Protocol getProtocol() {
         return protocol;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
     }
 
     public String getHostname() {
@@ -60,8 +58,7 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
     public static class Builder {
         private Protocol protocol;
         private Integer statusCode;
-        private Boolean dnsResolves;
-        private String ipAddress;
+        private boolean dnsResolves;
         private String hostname;
         private String redirectUri;
 
@@ -80,13 +77,8 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
             return this;
         }
 
-        public Builder dnsResolves(Boolean dnsResolves) {
+        public Builder dnsResolves(boolean dnsResolves) {
             this.dnsResolves = dnsResolves;
-            return this;
-        }
-
-        public Builder ipAddress(String ipAddress) {
-            this.ipAddress = ipAddress;
             return this;
         }
 
@@ -111,8 +103,24 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         this.protocol = b.protocol;
         this.statusCode = b.statusCode;
         this.dnsResolves = b.dnsResolves;
-        this.ipAddress = b.ipAddress;
         this.hostname = b.hostname;
         this.redirectUri = b.redirectUri;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProtocolCheckEntity that = (ProtocolCheckEntity) o;
+        return dnsResolves == that.dnsResolves &&
+                protocol == that.protocol &&
+                Objects.equals(statusCode, that.statusCode) &&
+                Objects.equals(hostname, that.hostname) &&
+                Objects.equals(redirectUri, that.redirectUri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(protocol, statusCode, dnsResolves, hostname, redirectUri);
     }
 }

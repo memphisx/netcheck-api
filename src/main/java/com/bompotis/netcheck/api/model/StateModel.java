@@ -9,38 +9,35 @@ import org.springframework.hateoas.server.core.Relation;
 import java.util.Date;
 
 /**
- * Created by Kyriakos Bompotis on 15/6/20.
+ * Created by Kyriakos Bompotis on 24/6/20.
  */
-@Relation(collectionRelation = "checks", itemRelation = "check")
-public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
+@Relation(collectionRelation = "states", itemRelation = "state")
+public class StateModel extends RepresentationModel<StateModel> {
     private final Boolean isUp;
     private final Integer statusCode;
     private final Date timeCheckedOn;
     private final Boolean dnsResolves;
     private final String hostname;
-    private final String ipAddress;
-    private final Long responseTimeNs;
     private final String protocol;
     private final String redirectUri;
+    private final String reason;
 
     @JsonCreator
-    public HttpCheckModel(
+    public StateModel(
             @JsonProperty("hostname") String hostname,
             @JsonProperty("statusCode") Integer statusCode,
             @JsonProperty("checkedOn") Date timeCheckedOn,
-            @JsonProperty("responseTimeNs") Long responseTimeNs,
+            @JsonProperty("reason") String reason,
             @JsonProperty("dnsResolves") Boolean dnsResolves,
-            @JsonProperty("ipAddress") String ipAddress,
             @JsonProperty("protocol") String protocol,
             @JsonProperty("redirectUri") String redirectUri,
-            @JsonProperty("up") Boolean isUp) {
+            @JsonProperty("isUp") Boolean isUp) {
         this.isUp = isUp;
         this.hostname = hostname;
         this.statusCode = statusCode;
         this.timeCheckedOn = timeCheckedOn;
-        this.responseTimeNs = responseTimeNs;
+        this.reason = reason;
         this.dnsResolves = dnsResolves;
-        this.ipAddress = ipAddress;
         this.protocol = protocol;
         this.redirectUri = redirectUri;
     }
@@ -61,14 +58,6 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
         return hostname;
     }
 
-    public Long getResponseTimeNs() {
-        return responseTimeNs;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
     public String getProtocol() {
         return protocol;
     }
@@ -80,5 +69,9 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
 
     public Boolean getUp() {
         return isUp;
+    }
+
+    public String getReason() {
+        return reason;
     }
 }

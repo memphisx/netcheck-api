@@ -13,10 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Kyriakos Bompotis on 30/11/18.
@@ -41,50 +39,114 @@ public class DomainService {
                 .build();
     }
 
-
-    public void storeResult(DomainCheckDto domainCheckDto) {
-        var domainCheckEntityBuilder = convertToDomainCheckEntity(domainCheckDto);
-        var domainEntityOptional = domainRepository.findById(domainCheckDto.getDomain());
-        domainEntityOptional.ifPresentOrElse(
-                domainCheckEntityBuilder::domainEntity,
-                () -> domainCheckEntityBuilder.domainEntity(new DomainEntity.Builder().domain(domainCheckDto.getDomain()).build())
-        );
-        domainCheckRepository.save(domainCheckEntityBuilder.build());
-    }
-
-    public DomainCheckEntity.Builder convertToDomainCheckEntity(DomainCheckDto domainCheckDto) {
-        var domainCheckEntityBuilder = new DomainCheckEntity.Builder()
+    public DomainCheckEntity convertToDomainCheckEntity(DomainCheckDto domainCheckDto, DomainEntity domainEntity) {
+        final var newCertificates = new HashSet<CertificateEntity>();
+        final var domainCheckEntityBuilder = new DomainCheckEntity.Builder()
                 .domain(domainCheckDto.getDomain())
                 .httpResponseTimeNs(domainCheckDto.getHttpCheckDto().getResponseTimeNs())
+                .httpIpAddress(domainCheckDto.getHttpCheckDto().getIpAddress())
                 .timeCheckedOn(domainCheckDto.getHttpCheckDto().getTimeCheckedOn())
-                .httpsResponseTimeNs(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getResponseTimeNs());
+                .httpsResponseTimeNs(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getResponseTimeNs())
+                .httpsIpAddress(domainCheckDto.getHttpsCheckDto().getHttpCheckDto().getIpAddress())
+                .domainEntity(domainEntity);
 
-        domainCheckEntityBuilder.protocolCheckEntities(Set.of(
+        final var newProtocolChecks = Set.of(
                 domainCheckDto.getHttpCheckDto().toProtocolCheckEntity(),
                 domainCheckDto.getHttpsCheckDto().getHttpCheckDto().toProtocolCheckEntity()
-        ));
+        );
 
-
-        var certificateEntities = new HashSet<CertificateEntity>();
         if(Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getIssuerCertificate()).isPresent()) {
-            certificateEntities.add(domainCheckDto.getHttpsCheckDto().getIssuerCertificate().toCertificateEntity());
+            newCertificates.add(domainCheckDto.getHttpsCheckDto().getIssuerCertificate().toCertificateEntity());
         }
         if(Optional.ofNullable(domainCheckDto.getHttpsCheckDto().getCaCertificates()).isPresent()) {
-            domainCheckDto.getHttpsCheckDto().getCaCertificates().forEach((cert) -> certificateEntities.add(cert.toCertificateEntity()));
+            domainCheckDto.getHttpsCheckDto().getCaCertificates().forEach((cert) -> newCertificates.add(cert.toCertificateEntity()));
         }
-        domainCheckEntityBuilder.certificateEntities(certificateEntities);
 
-        return domainCheckEntityBuilder;
+        final var previousDomainCheck = domainCheckRepository
+                .findFirstByDomainOrderByTimeCheckedOnDesc(domainCheckDto.getDomain());
+
+        if (previousDomainCheck.isEmpty()) {
+            return domainCheckEntityBuilder
+                    .httpCheckChange(true)
+                    .httpsCheckChange(true)
+                    .certificatesChange(true)
+                    .protocolCheckEntities(newProtocolChecks)
+                    .certificateEntities(newCertificates)
+                    .build();
+        }
+        return assignOlderProtocolsAndCertificates(
+                domainCheckEntityBuilder,
+                previousDomainCheck.get().getProtocolCheckEntities(),
+                previousDomainCheck.get().getCertificateEntities(),
+                newProtocolChecks,
+                newCertificates
+        );
+    }
+
+    private DomainCheckEntity assignOlderProtocolsAndCertificates(DomainCheckEntity.Builder domainCheckEntityBuilder,
+                                                                  Set<ProtocolCheckEntity> oldProtocolChecks,
+                                                                  Set<CertificateEntity> oldCertificates,
+                                                                  Set<ProtocolCheckEntity> newProtocolChecks,
+                                                                  HashSet<CertificateEntity> newCertificates) {
+        if (oldProtocolChecks.isEmpty()) {
+            domainCheckEntityBuilder.protocolCheckEntities(newProtocolChecks).httpsCheckChange(true).httpCheckChange(true);
+        } else if (oldProtocolChecks.equals(newProtocolChecks)) {
+            domainCheckEntityBuilder.protocolCheckEntities(oldProtocolChecks).httpsCheckChange(false).httpCheckChange(false);
+        } else {
+            final var finalProtocolsSet = new HashSet<ProtocolCheckEntity>();
+            final var oldProtocolCheckMap = oldProtocolChecks
+                    .stream()
+                    .collect(Collectors.toMap(ProtocolCheckEntity::getProtocol, oldProtocolCheck -> oldProtocolCheck, (a, b) -> b, HashMap::new));
+            for (var newProtocolCheck : newProtocolChecks) {
+                final var protocol = newProtocolCheck.getProtocol();
+                if (newProtocolCheck.equals(oldProtocolCheckMap.get(protocol))) {
+                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTP)) {
+                        domainCheckEntityBuilder.httpCheckChange(false);
+                    }
+                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTPS)) {
+                        domainCheckEntityBuilder.httpsCheckChange(false);
+                    }
+                    finalProtocolsSet.add(oldProtocolCheckMap.get(protocol));
+                } else {
+                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTP)) {
+                        domainCheckEntityBuilder.httpCheckChange(true);
+                    }
+                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTPS)) {
+                        domainCheckEntityBuilder.httpsCheckChange(true);
+                    }
+                    finalProtocolsSet.add(newProtocolCheck);
+                }
+            }
+            domainCheckEntityBuilder.protocolCheckEntities(finalProtocolsSet);
+        }
+
+        if (oldCertificates.isEmpty()) {
+            domainCheckEntityBuilder.certificateEntities(newCertificates).certificatesChange(true);
+        } else if (oldCertificates.equals(newCertificates)) {
+            domainCheckEntityBuilder.certificateEntities(oldCertificates).certificatesChange(false);
+        } else {
+            domainCheckEntityBuilder.certificatesChange(true);
+            final var finalCertificateSet = new HashSet<CertificateEntity>();
+            final var oldCertificateMap = oldCertificates
+                    .stream()
+                    .collect(Collectors.toMap(CertificateEntity::getBasicConstraints, oldCertificate -> oldCertificate, (a, b) -> b, HashMap::new));
+            for (var newCertificate : newCertificates) {
+                final var basicConstraint = newCertificate.getBasicConstraints();
+                if (newCertificate.equals(oldCertificateMap.get(basicConstraint))) {
+                    finalCertificateSet.add(oldCertificateMap.get(basicConstraint));
+                } else {
+                    finalCertificateSet.add(newCertificate);
+                }
+            }
+            domainCheckEntityBuilder.certificateEntities(finalCertificateSet);
+        }
+
+        return domainCheckEntityBuilder.build();
     }
 
     public PaginatedDto<DomainCheckDto> getDomainHistory(String domain, Integer page, Integer size) {
-        var domainCheckList = new ArrayList<DomainCheckDto>();
-        var pageRequest = PageRequest.of(
-                Optional.ofNullable(page).orElse(0),
-                Optional.ofNullable(size).orElse(10),
-                Sort.by("createdAt").descending()
-        );
-        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
+        ArrayList<DomainCheckDto> domainCheckList = new ArrayList<>();
+        final var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, getDefaultPageRequest(page, size));
         for (var domainCheckEntity : domainCheckEntities) {
             domainCheckList.add(convertDomainCheckEntityToDto(domainCheckEntity));
         }
@@ -99,12 +161,7 @@ public class DomainService {
 
     public PaginatedDto<HttpCheckDto> getHttpDomainHistory(String domain, Integer page, Integer size) {
         var httpCheckDtos = new ArrayList<HttpCheckDto>();
-        var pageRequest = PageRequest.of(
-                Optional.ofNullable(page).orElse(0),
-                Optional.ofNullable(size).orElse(10),
-                Sort.by("createdAt").descending()
-        );
-        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
+        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, getDefaultPageRequest(page, size));
         for (var domainCheckEntity : domainCheckEntities) {
             httpCheckDtos.add(convertDomainCheckEntityToDto(domainCheckEntity).getHttpCheckDto());
         }
@@ -119,12 +176,7 @@ public class DomainService {
 
     public PaginatedDto<HttpCheckDto> getHttpsDomainHistory(String domain, Integer page, Integer size) {
         var httpCheckDtos = new ArrayList<HttpCheckDto>();
-        var pageRequest = PageRequest.of(
-                Optional.ofNullable(page).orElse(0),
-                Optional.ofNullable(size).orElse(10),
-                Sort.by("createdAt").descending()
-        );
-        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
+        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, getDefaultPageRequest(page, size));
         for (var domainCheckEntity : domainCheckEntities) {
             httpCheckDtos.add(convertDomainCheckEntityToDto(domainCheckEntity).getHttpsCheckDto().getHttpCheckDto());
         }
@@ -140,12 +192,7 @@ public class DomainService {
     public PaginatedMetricsDto getDomainMetrics(String domain, Integer page, Integer size) {
         var httpMetrics = new ArrayList<MetricDto>();
         var httpsMetrics = new ArrayList<MetricDto>();
-        var pageRequest = PageRequest.of(
-                Optional.ofNullable(page).orElse(0),
-                Optional.ofNullable(size).orElse(10),
-                Sort.by("createdAt").descending()
-        );
-        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, pageRequest);
+        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, getDefaultPageRequest(page, size));
         for (var domainCheckEntity : domainCheckEntities) {
             var httpMetricBuilder = new MetricDto.Builder()
                     .metricPeriod(domainCheckEntity.getTimeCheckedOn())
@@ -188,13 +235,7 @@ public class DomainService {
 
     public PaginatedDto<DomainDto> getPaginatedDomains(Integer page, Integer size) {
         var domains = new ArrayList<DomainDto>();
-        var paginatedQueryResult = domainCheckRepository.findAllLastChecksPerDomain(
-                PageRequest.of(
-                        Optional.ofNullable(page).orElse(0),
-                        Optional.ofNullable(size).orElse(10),
-                        Sort.by("createdAt").descending()
-                )
-        );
+        var paginatedQueryResult = domainCheckRepository.findAllLastChecksPerDomain(getDefaultPageRequest(page, size));
         paginatedQueryResult.forEach(
                 (domain) -> domains.add(new DomainDto.Builder()
                         .domain(domain.getDomain())
@@ -228,7 +269,8 @@ public class DomainService {
                 domainCheckDtoBuilder.httpCheck(new HttpCheckDto(
                         protocolCheck,
                         domainCheckEntity.getHttpResponseTimeNs(),
-                        domainCheckEntity.getTimeCheckedOn()
+                        domainCheckEntity.getTimeCheckedOn(),
+                        domainCheckEntity.getHttpIpAddress()
                 ));
             }
             if (protocolCheck.getProtocol().equals(ProtocolCheckEntity.Protocol.HTTPS)) {
@@ -236,7 +278,8 @@ public class DomainService {
                 httpsCheckDtoBuilder.httpCheckDto(new HttpCheckDto(
                         protocolCheck,
                         domainCheckEntity.getHttpsResponseTimeNs(),
-                        domainCheckEntity.getTimeCheckedOn()
+                        domainCheckEntity.getTimeCheckedOn(),
+                        domainCheckEntity.getHttpsIpAddress()
                 ));
 
                 domainCheckEntity.getCertificateEntities()
@@ -252,4 +295,44 @@ public class DomainService {
                 .build();
     }
 
+    private PageRequest getDefaultPageRequest(Integer page, Integer size) {
+        return PageRequest.of(
+                Optional.ofNullable(page).orElse(0),
+                Optional.ofNullable(size).orElse(10),
+                Sort.by("createdAt").descending()
+        );
+    }
+
+    public PaginatedDto<StateDto> getDomainStates(String domain, String protocol, Integer page, Integer size) {
+        final ArrayList<StateDto> stateList = new ArrayList<>();
+        final var domainCheckEntities = domainCheckRepository.findAllStateChanges(domain, getDefaultPageRequest(page, size));
+        for (var domainCheckEntity : domainCheckEntities) {
+            var protocolToCollect = Optional.ofNullable(protocol).orElse("HTTPS");
+            var check = domainCheckEntity
+                    .getProtocolCheckEntities()
+                    .stream()
+                    .collect(Collectors.toMap(protocolCheck -> protocolCheck.getProtocol().toString(), protocolCheck -> protocolCheck, (a, b) -> b))
+                    .get(protocolToCollect.toUpperCase());
+            stateList.add(new StateDto.Builder()
+                    .hostname(check.getHostname())
+                    .dnsResolves(check.getDnsResolves())
+                    .redirectUri(check.getRedirectUri())
+                    .id(check.getId())
+                    .statusCode(check.getStatusCode())
+                    .protocol(check.getProtocol().toString())
+                    .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
+                    .certificatesChange(domainCheckEntity.isCertificatesChange())
+                    .httpCheckChange(domainCheckEntity.isHttpCheckChange())
+                    .httpsCheckChange(domainCheckEntity.isHttpsCheckChange())
+                    .build()
+            );
+        }
+        return new PaginatedDto<>(
+                stateList,
+                domainCheckEntities.getTotalElements(),
+                domainCheckEntities.getTotalPages(),
+                domainCheckEntities.getNumber(),
+                domainCheckEntities.getNumberOfElements()
+        );
+    }
 }
