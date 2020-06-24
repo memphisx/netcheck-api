@@ -33,7 +33,7 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
             @JsonProperty("ipAddress") String ipAddress,
             @JsonProperty("protocol") String protocol,
             @JsonProperty("redirectUri") String redirectUri,
-            @JsonProperty("redirectUri") Boolean isUp) {
+            @JsonProperty("up") Boolean isUp) {
         this.isUp = isUp;
         this.hostname = hostname;
         this.statusCode = statusCode;
