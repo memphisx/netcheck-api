@@ -37,7 +37,7 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
         for (var domain : paginatedDomainsDto.getDtoList()) {
             var domainModel = this.toModel(domain);
             domainModel.add(
-                    linkTo(methodOn(DomainsController.class).getDomainStatus(domainModel.getDomain(), false)).withSelfRel()
+                    linkTo(methodOn(DomainsController.class).getDomainStatus(domainModel.getDomain())).withSelfRel()
             );
             domainModels.add(domainModel);
         }
