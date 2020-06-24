@@ -45,15 +45,10 @@ public class DomainsController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}")
-    public ResponseEntity<DomainCheckModel> getDomainStatus(
-            @PathVariable("domain") String domain,
-            @RequestParam(name = "store", required = false) Boolean store) throws IOException {
+    public ResponseEntity<DomainCheckModel> getDomainStatus(@PathVariable("domain") String domain) throws IOException {
         var status = domainService.check(domain);
-        if(Optional.ofNullable(store).isPresent() && store) {
-            domainService.storeResult(status);
-        }
         var domainCheckModel = new DomainCheckModelAssembler().toModel(status);
-        domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain,store)).withSelfRel());
+        domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain)).withSelfRel());
         return ok(domainCheckModel);
     }
 
