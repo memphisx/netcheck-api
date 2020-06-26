@@ -20,6 +20,9 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
     @Column(name = "status_code")
     private Integer statusCode;
 
+    @Column(name = "connection_accepted")
+    private boolean connectionAccepted;
+
     @NonNull
     @Column(name = "dns_resolves")
     private boolean dnsResolves;
@@ -50,6 +53,10 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         return redirectUri;
     }
 
+    public boolean isConnectionAccepted() {
+        return connectionAccepted;
+    }
+
     public enum Protocol {
         HTTP,
         HTTPS
@@ -59,6 +66,7 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         private Protocol protocol;
         private Integer statusCode;
         private boolean dnsResolves;
+        private boolean connectionAccepted;
         private String hostname;
         private String redirectUri;
 
@@ -74,6 +82,11 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
 
         public Builder statusCode(Integer statusCode) {
             this.statusCode = statusCode;
+            return this;
+        }
+
+        public Builder connectionAccepted(boolean connectionAccepted) {
+            this.connectionAccepted = connectionAccepted;
             return this;
         }
 
@@ -105,6 +118,7 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         this.dnsResolves = b.dnsResolves;
         this.hostname = b.hostname;
         this.redirectUri = b.redirectUri;
+        this.connectionAccepted = b.connectionAccepted;
     }
 
     @Override
@@ -115,12 +129,13 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         return dnsResolves == that.dnsResolves &&
                 protocol == that.protocol &&
                 Objects.equals(statusCode, that.statusCode) &&
+                Objects.equals(connectionAccepted, that.connectionAccepted) &&
                 Objects.equals(hostname, that.hostname) &&
                 Objects.equals(redirectUri, that.redirectUri);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(protocol, statusCode, dnsResolves, hostname, redirectUri);
+        return Objects.hash(protocol, connectionAccepted, statusCode, dnsResolves, hostname, redirectUri);
     }
 }

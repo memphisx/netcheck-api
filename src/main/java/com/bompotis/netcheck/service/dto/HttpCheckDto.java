@@ -15,6 +15,7 @@ public class HttpCheckDto {
     private final String hostname;
     private final Integer statusCode;
     private final Boolean dnsResolved;
+    private final Boolean connectionAccepted;
     private final String ipAddress;
     private final Date timeCheckedOn;
     private final String protocol;
@@ -56,6 +57,10 @@ public class HttpCheckDto {
         return redirectUri;
     }
 
+    public Boolean getConnectionAccepted() {
+        return connectionAccepted;
+    }
+
     public Boolean isUp() {
         AtomicBoolean result = new AtomicBoolean(false);
         Optional.ofNullable(statusCode).ifPresent(
@@ -73,6 +78,7 @@ public class HttpCheckDto {
         private String hostname;
         private Integer statusCode;
         private Boolean dnsResolved;
+        private Boolean connectionAccepted;
         private String ipAddress;
         private String id;
         private Date timeCheckedOn;
@@ -81,6 +87,11 @@ public class HttpCheckDto {
 
         public Builder dnsResolved(Boolean dnsResolved) {
             this.dnsResolved = dnsResolved;
+            return this;
+        }
+
+        public Builder connectionAccepted(Boolean connectionAccepted) {
+            this.connectionAccepted = connectionAccepted;
             return this;
         }
 
@@ -139,6 +150,7 @@ public class HttpCheckDto {
         this.protocol = b.protocol;
         this.id = b.id;
         this.redirectUri = b.redirectUri;
+        this.connectionAccepted = b.connectionAccepted;
     }
 
     public HttpCheckDto(ProtocolCheckEntity entity, Long responseTimeNs, Date timeCheckedOn, String ipAddress) {
@@ -151,12 +163,14 @@ public class HttpCheckDto {
         this.responseTimeNs = responseTimeNs;
         this.timeCheckedOn = timeCheckedOn;
         this.dnsResolved = entity.getDnsResolves();
+        this.connectionAccepted = entity.isConnectionAccepted();
     }
 
     public ProtocolCheckEntity toProtocolCheckEntity() {
         return new ProtocolCheckEntity.Builder()
                 .dnsResolves(this.getDnsResolved())
                 .statusCode(this.getStatusCode())
+                .connectionAccepted(this.getConnectionAccepted())
                 .protocol(this.getProtocol())
                 .hostname(this.getHostname())
                 .redirectUri(this.getRedirectUri())

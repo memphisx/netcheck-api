@@ -12,6 +12,7 @@ import java.util.Set;
  * Created by Kyriakos Bompotis on 22/6/20.
  */
 public abstract class AbstractHttpChecker {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractHttpChecker.class);
 
     private static final Set<Integer> STATUS_CODES_WITH_EMPTY_RESPONSES = Set.of(
             HttpURLConnection.HTTP_NOT_FOUND,
