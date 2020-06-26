@@ -7,7 +7,7 @@ import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSuppor
  * Created by Kyriakos Bompotis on 17/6/20.
  */
 public abstract class PaginatedRepresentationModelAssemblerSupport<T, D extends RepresentationModel<?>> extends RepresentationModelAssemblerSupport<T, D> {
-    public PaginatedRepresentationModelAssemblerSupport(Class controllerClass, Class resourceType) {
+    public PaginatedRepresentationModelAssemblerSupport(Class controllerClass, Class<D> resourceType) {
         super(controllerClass, resourceType);
     }
 

@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,7 +34,7 @@ public class DomainService {
         this.domainCheckRepository = domainCheckRepository;
     }
 
-    public DomainCheckDto check(String domain) throws IOException {
+    public DomainCheckDto check(String domain) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         var monitored = domainRepository.findById(domain).isPresent();
         return new DomainCheckDto.Builder(domain)
                 .monitored(monitored)

@@ -21,11 +21,16 @@ public class DomainEntryProcessor implements ItemProcessor<DomainEntity, DomainC
     }
 
     @Override
-    public DomainCheckEntity process(DomainEntity domainEntity) throws Exception {
-        log.info("Checking {}",domainEntity.getDomain());
-        var status = domainService.check(domainEntity.getDomain());
-        var domainCheckEntityBuilder = domainService.convertToDomainCheckEntity(status, domainEntity);
-        log.info("Successfully checked {}. Passing to writer", domainEntity.getDomain());
+    public DomainCheckEntity process(DomainEntity domainEntity) {
+        DomainCheckEntity domainCheckEntityBuilder = null;
+        try {
+            log.info("Checking {}", domainEntity.getDomain());
+            var status = domainService.check(domainEntity.getDomain());
+            domainCheckEntityBuilder = domainService.convertToDomainCheckEntity(status, domainEntity);
+            log.info("Successfully checked {}. Passing to writer", domainEntity.getDomain());
+        } catch (Exception e) {
+            log.error("Failed to check {}", domainEntity.getDomain(), e);
+        }
         return domainCheckEntityBuilder;
     }
 }
