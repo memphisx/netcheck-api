@@ -1,7 +1,6 @@
 package com.bompotis.netcheck.api.model.assembler;
 
 import com.bompotis.netcheck.api.controller.DomainsController;
-import com.bompotis.netcheck.api.model.HttpCheckModel;
 import com.bompotis.netcheck.api.model.StateModel;
 import com.bompotis.netcheck.service.dto.PaginatedDto;
 import com.bompotis.netcheck.service.dto.StateDto;
@@ -20,7 +19,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  */
 public class StateModelAssembler extends PaginatedRepresentationModelAssemblerSupport<StateDto, StateModel> {
     public StateModelAssembler() {
-        super(DomainsController.class, HttpCheckModel.class);
+        super(DomainsController.class, StateModel.class);
     }
 
     @Override
