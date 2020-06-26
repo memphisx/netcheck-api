@@ -17,6 +17,10 @@ public abstract class AbstractHttpChecker {
             HttpURLConnection.HTTP_NOT_FOUND,
             HttpURLConnection.HTTP_BAD_REQUEST,
             HttpURLConnection.HTTP_NO_CONTENT,
+            HttpURLConnection.HTTP_UNAVAILABLE,
+            HttpURLConnection.HTTP_GATEWAY_TIMEOUT,
+            HttpURLConnection.HTTP_VERSION,
+            HttpURLConnection.HTTP_INTERNAL_ERROR,
             422
     );
 
