@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public abstract class AbstractHttpChecker {
 
-    private final Set<Integer> STATUS_CODES_WITH_EMPTY_RESPONSES = Set.of(
+    private static final Set<Integer> STATUS_CODES_WITH_EMPTY_RESPONSES = Set.of(
             HttpURLConnection.HTTP_NOT_FOUND,
             HttpURLConnection.HTTP_BAD_REQUEST,
             HttpURLConnection.HTTP_NO_CONTENT,
@@ -24,7 +24,7 @@ public abstract class AbstractHttpChecker {
             422
     );
 
-    private final Set<Integer> REDIRECT_STATUS_CODES = Set.of(
+    private static final Set<Integer> REDIRECT_STATUS_CODES = Set.of(
             HttpURLConnection.HTTP_MOVED_TEMP,
             HttpURLConnection.HTTP_MOVED_PERM,
             HttpURLConnection.HTTP_SEE_OTHER
