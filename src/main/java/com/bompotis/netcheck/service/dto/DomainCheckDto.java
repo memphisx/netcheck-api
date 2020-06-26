@@ -8,6 +8,7 @@ import java.io.IOException;
 public class DomainCheckDto {
     private final HttpCheckDto httpCheckDto;
     private final HttpsCheckDto httpsCheckDto;
+    private final Boolean monitored;
     private final String domain;
     private final String id;
 
@@ -27,14 +28,24 @@ public class DomainCheckDto {
         return id;
     }
 
+    public Boolean getMonitored() {
+        return monitored;
+    }
+
     public static class Builder extends AbstractHttpChecker{
         private HttpCheckDto httpCheckDto;
         private HttpsCheckDto httpsCheckDto;
         private final String domain;
+        private Boolean monitored;
         private String id;
 
         public Builder(String domain) {
             this.domain = domain;
+        }
+
+        public Builder monitored(Boolean monitored) {
+            this.monitored = monitored;
+            return this;
         }
 
         public Builder httpCheck(HttpCheckDto httpCheckDto) {
@@ -71,6 +82,7 @@ public class DomainCheckDto {
         this.httpCheckDto = b.httpCheckDto;
         this.domain = b.domain;
         this.httpsCheckDto = b.httpsCheckDto;
+        this.monitored = b.monitored;
         this.id = b.id;
     }
 }

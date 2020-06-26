@@ -64,7 +64,14 @@ public class DomainCheckModelAssembler extends PaginatedRepresentationModelAssem
                         .collect(Collectors.toCollection(ArrayList::new));
             }
         }
-        var domainCheckModel = new DomainCheckModel(domainCheckDto.getDomain(), httpChecks, issuerCertificate, caCertificates);
+        var domainCheckModel = new DomainCheckModel(
+                domainCheckDto.getDomain(),
+                domainCheckDto.getMonitored(),
+                httpChecks,
+                issuerCertificate,
+                caCertificates
+        );
+
         if (Optional.ofNullable(domainCheckDto.getId()).isPresent()) {
             domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainsHistoricEntry(
                     domainCheckDto.getDomain(),

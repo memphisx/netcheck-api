@@ -33,7 +33,9 @@ public class DomainService {
     }
 
     public DomainCheckDto check(String domain) throws IOException {
+        var monitored = domainRepository.findById(domain).isPresent();
         return new DomainCheckDto.Builder(domain)
+                .monitored(monitored)
                 .withCurrentHttpCheck()
                 .withCurrentHttpsCheck()
                 .build();
