@@ -100,4 +100,24 @@ public abstract class AbstractHttpChecker {
     private URL getHttpDomainUri(String domain) throws MalformedURLException {
         return new URL("http://" + domain);
     }
+
+    protected static class X509TrustEverythingManager implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
+
+    protected static class AllHostnamesValidVerifier implements HostnameVerifier {
+        @Override
+        public boolean verify(String s, SSLSession sslSession) {
+            return true;
+        }
+    }
 }
