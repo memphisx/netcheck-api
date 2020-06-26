@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -34,12 +36,12 @@ public class DomainsController {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<CollectionModel<DomainModel>> getDomains(
             @RequestParam(name = "page", required = false) Integer page,
-            @RequestParam(name = "size", required = false) Integer size) throws IOException {
+            @RequestParam(name = "size", required = false) Integer size) throws IOException, KeyManagementException, NoSuchAlgorithmException {
         return ok(new DomainModelAssembler().toCollectionModel(domainService.getPaginatedDomains(page,size)));
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}")
-    public ResponseEntity<DomainCheckModel> getDomainStatus(@PathVariable("domain") String domain) throws IOException {
+    public ResponseEntity<DomainCheckModel> getDomainStatus(@PathVariable("domain") String domain) throws IOException, KeyManagementException, NoSuchAlgorithmException {
         var status = domainService.check(domain);
         var domainCheckModel = new DomainCheckModelAssembler().toModel(status);
         domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain)).withSelfRel());

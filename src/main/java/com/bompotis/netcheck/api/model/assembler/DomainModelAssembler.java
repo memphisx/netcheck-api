@@ -10,6 +10,8 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -32,7 +34,7 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
         );
     }
 
-    public CollectionModel<DomainModel> toCollectionModel(PaginatedDto<DomainDto> paginatedDomainsDto) throws IOException {
+    public CollectionModel<DomainModel> toCollectionModel(PaginatedDto<DomainDto> paginatedDomainsDto) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         var domainModels = new ArrayList<DomainModel>();
         for (var domain : paginatedDomainsDto.getDtoList()) {
             var domainModel = this.toModel(domain);
