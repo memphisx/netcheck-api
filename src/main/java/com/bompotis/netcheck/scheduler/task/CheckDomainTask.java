@@ -22,17 +22,54 @@ public class CheckDomainTask {
 
     private final Job checkDomainsStatusJob;
 
+    private final Job generateHourlyMetricsJob;
+
+    private final Job generateDailyMetricsJob;
+
+    private final Job generateWeeklyMetricsJob;
+
     @Autowired
-    public CheckDomainTask(JobLauncher jobLauncher, Job checkDomainsStatusJob) {
+    public CheckDomainTask(JobLauncher jobLauncher,
+                           Job checkDomainsStatusJob,
+                           Job generateHourlyMetricsJob, 
+                           Job generateDailyMetricsJob,
+                           Job generateWeeklyMetricsJob) {
         this.jobLauncher = jobLauncher;
         this.checkDomainsStatusJob = checkDomainsStatusJob;
+        this.generateHourlyMetricsJob = generateHourlyMetricsJob;
+        this.generateDailyMetricsJob = generateDailyMetricsJob;
+        this.generateWeeklyMetricsJob = generateWeeklyMetricsJob;
     }
 
     @Scheduled(cron = "0 */10 * * * *")
-    public void reportCurrentTime() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+    public void checkDomains() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
         JobParameters params = new JobParametersBuilder()
                 .addString("JobID", String.valueOf(System.currentTimeMillis()))
                 .toJobParameters();
         jobLauncher.run(checkDomainsStatusJob, params);
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void hourlyMetrics() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+        JobParameters params = new JobParametersBuilder()
+                .addString("JobID", String.valueOf(System.currentTimeMillis()))
+                .toJobParameters();
+        jobLauncher.run(generateHourlyMetricsJob, params);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void dailyMetrics() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+        JobParameters params = new JobParametersBuilder()
+                .addString("JobID", String.valueOf(System.currentTimeMillis()))
+                .toJobParameters();
+        jobLauncher.run(generateDailyMetricsJob, params);
+    }
+
+    @Scheduled(cron = "0 0 0 * * 0")
+    public void weeklyMetrics() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+        JobParameters params = new JobParametersBuilder()
+                .addString("JobID", String.valueOf(System.currentTimeMillis()))
+                .toJobParameters();
+        jobLauncher.run(generateWeeklyMetricsJob, params);
     }
 }

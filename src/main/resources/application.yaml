@@ -2,12 +2,14 @@ spring:
   datasource:
     hikari:
       connectionTimeout: 20000
-      maximumPoolSize: 5
+      maximumPoolSize: 20
     url: jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.db}
     username: ${postgres.user}
     password: ${postgres.password}
   batch:
     initialize-schema: always
+    job:
+      enabled: false
   jpa:
     hibernate:
       ddl-auto: update

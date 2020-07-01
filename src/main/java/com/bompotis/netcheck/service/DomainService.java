@@ -1,10 +1,8 @@
 package com.bompotis.netcheck.service;
 
-import com.bompotis.netcheck.data.entity.CertificateEntity;
-import com.bompotis.netcheck.data.entity.DomainCheckEntity;
-import com.bompotis.netcheck.data.entity.DomainEntity;
-import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
+import com.bompotis.netcheck.data.entity.*;
 import com.bompotis.netcheck.data.repository.DomainCheckRepository;
+import com.bompotis.netcheck.data.repository.DomainMetricRepository;
 import com.bompotis.netcheck.data.repository.DomainRepository;
 import com.bompotis.netcheck.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +26,15 @@ public class DomainService {
 
     private final DomainCheckRepository domainCheckRepository;
 
+    private final DomainMetricRepository domainMetricRepository;
+
     @Autowired
-    public DomainService(DomainRepository domainRepository, DomainCheckRepository domainCheckRepository) {
+    public DomainService(DomainRepository domainRepository,
+                         DomainCheckRepository domainCheckRepository,
+                         DomainMetricRepository domainMetricRepository) {
         this.domainRepository = domainRepository;
         this.domainCheckRepository = domainCheckRepository;
+        this.domainMetricRepository = domainMetricRepository;
     }
 
     public DomainCheckDto check(String domain) throws IOException, NoSuchAlgorithmException, KeyManagementException {
@@ -193,40 +196,6 @@ public class DomainService {
         );
     }
 
-    public PaginatedMetricsDto getDomainMetrics(String domain, Integer page, Integer size) {
-        var httpMetrics = new ArrayList<MetricDto>();
-        var httpsMetrics = new ArrayList<MetricDto>();
-        var domainCheckEntities = domainCheckRepository.findAllByDomain(domain, getDefaultPageRequest(page, size));
-        for (var domainCheckEntity : domainCheckEntities) {
-            var httpMetricBuilder = new MetricDto.Builder()
-                    .metricPeriod(domainCheckEntity.getTimeCheckedOn())
-                    .averageResponseTime(domainCheckEntity.getHttpResponseTimeNs());
-            var httpsMetricBuilder = new MetricDto.Builder()
-                    .metricPeriod(domainCheckEntity.getTimeCheckedOn())
-                    .averageResponseTime(domainCheckEntity.getHttpsResponseTimeNs());
-            for (var protocolCheck : domainCheckEntity.getProtocolCheckEntities()) {
-                var uptimePercentage = Optional.ofNullable(protocolCheck.getStatusCode()).isPresent() &&
-                        (protocolCheck.getStatusCode() < 400) ? 100 : 0;
-                if (protocolCheck.getProtocol().equals(ProtocolCheckEntity.Protocol.HTTP)) {
-                    httpMetricBuilder.uptimePercentage(uptimePercentage);
-                }
-                if (protocolCheck.getProtocol().equals(ProtocolCheckEntity.Protocol.HTTPS)) {
-                    httpsMetricBuilder.uptimePercentage(uptimePercentage);
-                }
-            }
-            httpMetrics.add(httpMetricBuilder.build());
-            httpsMetrics.add(httpsMetricBuilder.build());
-        }
-        return new PaginatedMetricsDto(
-                httpMetrics,
-                httpsMetrics,
-                domainCheckEntities.getTotalElements(),
-                domainCheckEntities.getTotalPages(),
-                domainCheckEntities.getNumber(),
-                domainCheckEntities.getNumberOfElements()
-        );
-    }
-
 
     public Optional<DomainCheckDto> getDomainCheck(String domain, String id) {
         var queryResult = domainCheckRepository.findByIdAndDomain(id,domain);
@@ -337,6 +306,38 @@ public class DomainService {
                 domainCheckEntities.getTotalPages(),
                 domainCheckEntities.getNumber(),
                 domainCheckEntities.getNumberOfElements()
+        );
+    }
+
+    public PaginatedDto<MetricDto> getDomainMetrics(String domain, String period, String protocol, Integer page, Integer size) {
+        var httpMetrics = new ArrayList<MetricDto>();
+        var domainMetricEntities =
+                domainMetricRepository.findAllByDomainAndProtocolAndPeriodType(
+                        domain,
+                        DomainMetricEntity.Protocol.valueOf(protocol),
+                        DomainMetricEntity.Period.valueOf(period),
+                        getDefaultPageRequest(page, size)
+                );
+
+        for (var domainMetricEntity : domainMetricEntities) {
+            var httpMetric = new MetricDto.Builder()
+                    .maxResponseTime(domainMetricEntity.getMaxResponseTimeNs())
+                    .totalChecks(domainMetricEntity.getTotalChecks())
+                    .successfulChecks(domainMetricEntity.getSuccessfulChecks())
+                    .averageResponseTime(domainMetricEntity.getAvgResponseTimeNs())
+                    .minResponseTime(domainMetricEntity.getMinResponseTimeNs())
+                    .metricPeriodStart(domainMetricEntity.getStartPeriod())
+                    .metricPeriodEnd(domainMetricEntity.getEndPeriod())
+                    .protocol(protocol)
+                    .build();
+            httpMetrics.add(httpMetric);
+        }
+        return new PaginatedDto<>(
+                httpMetrics,
+                domainMetricEntities.getTotalElements(),
+                domainMetricEntities.getTotalPages(),
+                domainMetricEntities.getNumber(),
+                domainMetricEntities.getNumberOfElements()
         );
     }
 }

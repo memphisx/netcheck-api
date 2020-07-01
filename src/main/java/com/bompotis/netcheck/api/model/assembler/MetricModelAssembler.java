@@ -3,15 +3,13 @@ package com.bompotis.netcheck.api.model.assembler;
 import com.bompotis.netcheck.api.controller.DomainsController;
 import com.bompotis.netcheck.api.model.MetricModel;
 import com.bompotis.netcheck.service.dto.MetricDto;
-import com.bompotis.netcheck.service.dto.PaginatedMetricsDto;
+import com.bompotis.netcheck.service.dto.PaginatedDto;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.util.ArrayList;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -27,43 +25,34 @@ public class MetricModelAssembler extends PaginatedRepresentationModelAssemblerS
     @Override
     public MetricModel toModel(MetricDto entity) {
         return new MetricModel(
-                entity.getMetricPeriod(),
-                entity.getUptimePercentage(),
-                entity.getAverageResponseTime()
+                entity.getMetricPeriodStart(),
+                entity.getMetricPeriodEnd(),
+                entity.getTotalChecks(),
+                entity.getSuccessfulChecks(),
+                entity.getAverageResponseTime(),
+                entity.getMaxResponseTime(),
+                entity.getMinResponseTime(),
+                entity.getProtocol()
         );
     }
 
-    public CollectionModel<MetricModel> toCollectionModel(PaginatedMetricsDto paginatedMetricDto, String domain, String protocol) {
-        ArrayList<MetricModel> metricModels;
-        final var returnedProtocol = Optional.ofNullable(protocol).orElse("HTTPS").toUpperCase();
-
-        if (returnedProtocol.equals("HTTP")) {
-            metricModels = paginatedMetricDto
-                    .getHttpMetrics()
-                    .stream()
-                    .map(this::toModel).collect(Collectors.toCollection(ArrayList::new));
-        } else {
-            metricModels = paginatedMetricDto
-                    .getHttpsMetrics()
-                    .stream()
-                    .map(this::toModel).collect(Collectors.toCollection(ArrayList::new));
-        }
-        var links = new ArrayList<Link>();
-        var method = methodOn(DomainsController.class)
-                .getDomainsMetrics(domain, returnedProtocol, paginatedMetricDto.getNumber(), paginatedMetricDto.getSize());
-        links.add(linkTo(method)
+    public CollectionModel<MetricModel> toCollectionModel(PaginatedDto<MetricDto> paginatedMetricsDto, String domain, String protocol, String period) {
+        final var metricModels = this.toCollectionModel(paginatedMetricsDto.getDtoList()).getContent();
+        final var links = new ArrayList<Link>();
+        links.add(linkTo(methodOn(DomainsController.class)
+                .getDomainsMetrics(domain, protocol, period, paginatedMetricsDto.getNumber(), paginatedMetricsDto.getSize()))
                 .withSelfRel()
         );
-        if (isValidPage(paginatedMetricDto.getNumber(),paginatedMetricDto.getTotalPages())) {
-            if (isNotLastPage(paginatedMetricDto.getNumber(), paginatedMetricDto.getTotalPages())) {
+        if (isValidPage(paginatedMetricsDto.getNumber(),paginatedMetricsDto.getTotalPages())) {
+            if (isNotLastPage(paginatedMetricsDto.getNumber(), paginatedMetricsDto.getTotalPages())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomainsMetrics(domain, returnedProtocol,paginatedMetricDto.getNumber()+1, paginatedMetricDto.getSize()))
+                        .getDomainsMetrics(domain, protocol, period, paginatedMetricsDto.getNumber()+1, paginatedMetricsDto.getSize()))
                         .withRel(IanaLinkRelations.NEXT)
                 );
             }
-            if (isNotFirstPage(paginatedMetricDto.getNumber())) {
+            if (isNotFirstPage(paginatedMetricsDto.getNumber())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomainsMetrics(domain, returnedProtocol, paginatedMetricDto.getNumber()-1, paginatedMetricDto.getSize()))
+                        .getDomainsMetrics(domain, protocol, period, paginatedMetricsDto.getNumber()-1, paginatedMetricsDto.getSize()))
                         .withRel(IanaLinkRelations.PREVIOUS)
                 );
             }
@@ -72,9 +61,9 @@ public class MetricModelAssembler extends PaginatedRepresentationModelAssemblerS
                 metricModels,
                 new PagedModel.PageMetadata(
                         metricModels.size(),
-                        paginatedMetricDto.getNumber(),
-                        paginatedMetricDto.getTotalElements(),
-                        paginatedMetricDto.getTotalPages()
+                        paginatedMetricsDto.getNumber(),
+                        paginatedMetricsDto.getTotalElements(),
+                        paginatedMetricsDto.getTotalPages()
                 ),
                 links
         );

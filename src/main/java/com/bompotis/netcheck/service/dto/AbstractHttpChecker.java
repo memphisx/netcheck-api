@@ -29,6 +29,7 @@ public abstract class AbstractHttpChecker {
             HttpURLConnection.HTTP_GATEWAY_TIMEOUT,
             HttpURLConnection.HTTP_VERSION,
             HttpURLConnection.HTTP_INTERNAL_ERROR,
+            HttpURLConnection.HTTP_FORBIDDEN,
             422
     );
 
