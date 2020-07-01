@@ -9,6 +9,7 @@ public class DomainDto {
     private final String domain;
     private final DomainCheckDto lastDomainCheck;
     private final Date createdAt;
+    private final Integer checkFrequencyMinutes;
 
     public DomainCheckDto getLastDomainCheck() {
         return lastDomainCheck;
@@ -22,10 +23,15 @@ public class DomainDto {
         return createdAt;
     }
 
+    public Integer getCheckFrequencyMinutes() {
+        return checkFrequencyMinutes;
+    }
+
     public static class Builder {
         private DomainCheckDto lastDomainCheck;
         private String domain;
         private Date createdAt;
+        private Integer checkFrequencyMinutes;
 
         public Builder lastDomainCheck(DomainCheckDto lastDomainCheck) {
             this.lastDomainCheck = lastDomainCheck;
@@ -34,6 +40,11 @@ public class DomainDto {
 
         public Builder domain(String domain) {
             this.domain = domain;
+            return this;
+        }
+
+        public Builder checkFrequencyMinutes(Integer checkFrequencyMinutes) {
+            this.checkFrequencyMinutes = checkFrequencyMinutes;
             return this;
         }
 
@@ -51,5 +62,6 @@ public class DomainDto {
         this.lastDomainCheck = b.lastDomainCheck;
         this.domain = b.domain;
         this.createdAt = b.createdAt;
+        this.checkFrequencyMinutes = b.checkFrequencyMinutes;
     }
 }

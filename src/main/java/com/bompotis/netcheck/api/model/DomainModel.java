@@ -16,15 +16,19 @@ public class DomainModel extends RepresentationModel<DomainModel> {
 
     private final DomainCheckModel lastDomainCheck;
 
+    private final Integer checkFrequencyMinutes;
+
     private final Date dateAdded;
 
     @JsonCreator
     public DomainModel(@JsonProperty("domain") String domain,
                        @JsonProperty("lastDomainCheck") DomainCheckModel lastDomainCheck,
-                       @JsonProperty("dateAdded") Date dateAdded) {
+                       @JsonProperty("dateAdded") Date dateAdded,
+                       @JsonProperty("dateAdded") Integer checkFrequencyMinutes) {
         this.domain = domain;
         this.lastDomainCheck = lastDomainCheck;
         this.dateAdded = dateAdded;
+        this.checkFrequencyMinutes = checkFrequencyMinutes;
     }
 
     public String getDomain() {
@@ -37,5 +41,9 @@ public class DomainModel extends RepresentationModel<DomainModel> {
 
     public Date getDateAdded() {
         return dateAdded;
+    }
+
+    public Integer getCheckFrequencyMinutes() {
+        return checkFrequencyMinutes;
     }
 }

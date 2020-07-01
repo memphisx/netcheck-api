@@ -49,8 +49,9 @@ public class DomainsController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/{domain}")
-    public ResponseEntity<Object> addDomainToScheduler(@PathVariable("domain") String domain) {
-        domainService.scheduleDomainToCheck(domain);
+    public ResponseEntity<Object> addDomainToScheduler(@PathVariable("domain") String domain,
+                                                       @RequestParam(name = "frequency", required = false) Integer frequency) {
+        domainService.scheduleDomainToCheck(domain, frequency);
         return ok().build();
     }
 
