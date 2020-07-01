@@ -1,4 +1,4 @@
-package com.bompotis.netcheck.scheduler.batch;
+package com.bompotis.netcheck.scheduler.batch.processor;
 
 import com.bompotis.netcheck.data.entity.DomainCheckEntity;
 import com.bompotis.netcheck.data.entity.DomainEntity;
@@ -10,13 +10,13 @@ import org.springframework.batch.item.ItemProcessor;
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
  */
-public class DomainEntryProcessor implements ItemProcessor<DomainEntity, DomainCheckEntity> {
+public class DomainCheckProcessor implements ItemProcessor<DomainEntity, DomainCheckEntity> {
 
     private final DomainService domainService;
 
-    private static final Logger log = LoggerFactory.getLogger(DomainEntryProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(DomainCheckProcessor.class);
 
-    public DomainEntryProcessor(DomainService domainService) {
+    public DomainCheckProcessor(DomainService domainService) {
         this.domainService = domainService;
     }
 
