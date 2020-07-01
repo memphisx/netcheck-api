@@ -20,7 +20,11 @@ public class CheckDomainTask {
 
     private final JobLauncher jobLauncher;
 
-    private final Job checkDomainsStatusJob;
+    private final Job fiveMinCheckDomainsStatusJob;
+
+    private final Job tenMinCheckDomainsStatusJob;
+
+    private final Job fifteenMinCheckDomainsStatusJob;
 
     private final Job generateHourlyMetricsJob;
 
@@ -30,23 +34,43 @@ public class CheckDomainTask {
 
     @Autowired
     public CheckDomainTask(JobLauncher jobLauncher,
-                           Job checkDomainsStatusJob,
-                           Job generateHourlyMetricsJob, 
+                           Job fiveMinCheckDomainsStatusJob,
+                           Job tenMinCheckDomainsStatusJob,
+                           Job fifteenMinCheckDomainsStatusJob,
+                           Job generateHourlyMetricsJob,
                            Job generateDailyMetricsJob,
                            Job generateWeeklyMetricsJob) {
         this.jobLauncher = jobLauncher;
-        this.checkDomainsStatusJob = checkDomainsStatusJob;
+        this.fiveMinCheckDomainsStatusJob = fiveMinCheckDomainsStatusJob;
+        this.tenMinCheckDomainsStatusJob = tenMinCheckDomainsStatusJob;
+        this.fifteenMinCheckDomainsStatusJob = fifteenMinCheckDomainsStatusJob;
         this.generateHourlyMetricsJob = generateHourlyMetricsJob;
         this.generateDailyMetricsJob = generateDailyMetricsJob;
         this.generateWeeklyMetricsJob = generateWeeklyMetricsJob;
     }
 
-    @Scheduled(cron = "0 */10 * * * *")
-    public void checkDomains() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+    @Scheduled(cron = "0 */5 * * * *")
+    public void checkDomainsWith5MinFrequency() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
         JobParameters params = new JobParametersBuilder()
                 .addString("JobID", String.valueOf(System.currentTimeMillis()))
                 .toJobParameters();
-        jobLauncher.run(checkDomainsStatusJob, params);
+        jobLauncher.run(fiveMinCheckDomainsStatusJob, params);
+    }
+
+    @Scheduled(cron = "0 */10 * * * *")
+    public void checkDomainsWith10MinFrequency() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+        JobParameters params = new JobParametersBuilder()
+                .addString("JobID", String.valueOf(System.currentTimeMillis()))
+                .toJobParameters();
+        jobLauncher.run(tenMinCheckDomainsStatusJob, params);
+    }
+
+    @Scheduled(cron = "0 */15 * * * *")
+    public void checkDomainsWith15MinFrequency() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+        JobParameters params = new JobParametersBuilder()
+                .addString("JobID", String.valueOf(System.currentTimeMillis()))
+                .toJobParameters();
+        jobLauncher.run(fifteenMinCheckDomainsStatusJob, params);
     }
 
     @Scheduled(cron = "0 0 * * * *")

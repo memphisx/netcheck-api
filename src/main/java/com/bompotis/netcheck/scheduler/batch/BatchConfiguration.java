@@ -65,6 +65,33 @@ public class BatchConfiguration {
     }
 
     @Bean
+    public JpaPagingItemReader<DomainEntity> fiveMinFrequencydomainReader() {
+        var reader = new JpaPagingItemReader<DomainEntity>();
+        reader.setPageSize(10);
+        reader.setQueryString("select d from DomainEntity d where d.checkFrequency = 5");
+        reader.setEntityManagerFactory(entityManagerFactory);
+        return reader;
+    }
+
+    @Bean
+    public JpaPagingItemReader<DomainEntity> tenMinFrequencydomainReader() {
+        var reader = new JpaPagingItemReader<DomainEntity>();
+        reader.setPageSize(10);
+        reader.setQueryString("select d from DomainEntity d where d.checkFrequency = 10");
+        reader.setEntityManagerFactory(entityManagerFactory);
+        return reader;
+    }
+
+    @Bean
+    public JpaPagingItemReader<DomainEntity> fifteenMinFrequencydomainReader() {
+        var reader = new JpaPagingItemReader<DomainEntity>();
+        reader.setPageSize(10);
+        reader.setQueryString("select d from DomainEntity d where d.checkFrequency = 15");
+        reader.setEntityManagerFactory(entityManagerFactory);
+        return reader;
+    }
+
+    @Bean
     public DomainCheckProcessor checkProcessor() {
         return new DomainCheckProcessor(domainService);
     }
@@ -84,18 +111,38 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Job checkDomainsStatusJob(JobCompletionNotificationListener listener, Step checkDomainsStep) {
-        return jobBuilderFactory.get("checkDomains")
+    public Job fiveMinCheckDomainsStatusJob(JobCompletionNotificationListener listener, Step fiveMinCheckDomainsStep) {
+        return jobBuilderFactory.get("fiveMinCheckDomainsStatusJob")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
-                .flow(checkDomainsStep)
+                .flow(fiveMinCheckDomainsStep)
+                .end()
+                .build();
+    }
+
+    @Bean
+    public Job tenMinCheckDomainsStatusJob(JobCompletionNotificationListener listener, Step tenMinCheckDomainsStep) {
+        return jobBuilderFactory.get("tenMinCheckDomainsStatusJob")
+                .incrementer(new RunIdIncrementer())
+                .listener(listener)
+                .flow(tenMinCheckDomainsStep)
+                .end()
+                .build();
+    }
+
+    @Bean
+    public Job fifteenMinCheckDomainsStatusJob(JobCompletionNotificationListener listener, Step fifteenMinCheckDomainsStep) {
+        return jobBuilderFactory.get("fifteenMinCheckDomainsStatusJob")
+                .incrementer(new RunIdIncrementer())
+                .listener(listener)
+                .flow(fifteenMinCheckDomainsStep)
                 .end()
                 .build();
     }
 
     @Bean
     public Job generateHourlyMetricsJob(JobCompletionNotificationListener listener, Step generateHourlyMetricsStep) {
-        return jobBuilderFactory.get("checkDomains")
+        return jobBuilderFactory.get("generateHourlyMetricsJob")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
                 .flow(generateHourlyMetricsStep)
@@ -105,7 +152,7 @@ public class BatchConfiguration {
 
     @Bean
     public Job generateDailyMetricsJob(JobCompletionNotificationListener listener, Step generateDailyMetricsStep) {
-        return jobBuilderFactory.get("checkDomains")
+        return jobBuilderFactory.get("generateDailyMetricsJob")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
                 .flow(generateDailyMetricsStep)
@@ -115,7 +162,7 @@ public class BatchConfiguration {
 
     @Bean
     public Job generateWeeklyMetricsJob(JobCompletionNotificationListener listener, Step generateWeeklyMetricsStep) {
-        return jobBuilderFactory.get("checkDomains")
+        return jobBuilderFactory.get("generateWeeklyMetricsJob")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
                 .flow(generateWeeklyMetricsStep)
@@ -129,10 +176,36 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step checkDomainsStep(JpaItemWriter<DomainCheckEntity> domainCheckEntityWriter, TaskExecutor asyncTaskExecutor) {
-        return stepBuilderFactory.get("checkDomainsStep")
+    public Step fiveMinCheckDomainsStep(JpaItemWriter<DomainCheckEntity> domainCheckEntityWriter, TaskExecutor asyncTaskExecutor) {
+        return stepBuilderFactory.get("fiveMinCheckDomainsStep")
                 .<DomainEntity, DomainCheckEntity> chunk(10)
-                .reader(domainReader())
+                .reader(fiveMinFrequencydomainReader())
+                .processor(checkProcessor())
+                .writer(domainCheckEntityWriter)
+                .taskExecutor(asyncTaskExecutor)
+                .throttleLimit(10)
+                .allowStartIfComplete(true)
+                .build();
+    }
+
+    @Bean
+    public Step tenMinCheckDomainsStep(JpaItemWriter<DomainCheckEntity> domainCheckEntityWriter, TaskExecutor asyncTaskExecutor) {
+        return stepBuilderFactory.get("tenMinCheckDomainsStep")
+                .<DomainEntity, DomainCheckEntity> chunk(10)
+                .reader(tenMinFrequencydomainReader())
+                .processor(checkProcessor())
+                .writer(domainCheckEntityWriter)
+                .taskExecutor(asyncTaskExecutor)
+                .throttleLimit(10)
+                .allowStartIfComplete(true)
+                .build();
+    }
+
+    @Bean
+    public Step fifteenMinCheckDomainsStep(JpaItemWriter<DomainCheckEntity> domainCheckEntityWriter, TaskExecutor asyncTaskExecutor) {
+        return stepBuilderFactory.get("fifteenMinCheckDomainsStep")
+                .<DomainEntity, DomainCheckEntity> chunk(10)
+                .reader(fifteenMinFrequencydomainReader())
                 .processor(checkProcessor())
                 .writer(domainCheckEntityWriter)
                 .taskExecutor(asyncTaskExecutor)
@@ -143,36 +216,26 @@ public class BatchConfiguration {
 
     @Bean
     public Step generateHourlyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter, TaskExecutor asyncTaskExecutor) {
-        return stepBuilderFactory.get("generateHourlyMetricsStep")
-                .<DomainEntity, List<DomainMetricEntity>> chunk(10)
-                .reader(domainReader())
-                .processor(new DomainMetricProcessor(DomainMetricProcessor.Period.LAST_HOUR,domainCheckRepository))
-                .writer(domainMetricEntityListWriter)
-                .taskExecutor(asyncTaskExecutor)
-                .throttleLimit(1)
-                .allowStartIfComplete(true)
-                .build();
+        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, DomainMetricProcessor.Period.LAST_HOUR);
     }
 
     @Bean
     public Step generateDailyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter, TaskExecutor asyncTaskExecutor) {
-        return stepBuilderFactory.get("generateHourlyMetricsStep")
-                .<DomainEntity, List<DomainMetricEntity>> chunk(10)
-                .reader(domainReader())
-                .processor(new DomainMetricProcessor(DomainMetricProcessor.Period.LAST_DAY,domainCheckRepository))
-                .writer(domainMetricEntityListWriter)
-                .taskExecutor(asyncTaskExecutor)
-                .throttleLimit(1)
-                .allowStartIfComplete(true)
-                .build();
+        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, DomainMetricProcessor.Period.LAST_DAY);
     }
 
     @Bean
     public Step generateWeeklyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter, TaskExecutor asyncTaskExecutor) {
-        return stepBuilderFactory.get("generateHourlyMetricsStep")
+        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, DomainMetricProcessor.Period.LAST_WEEK);
+    }
+
+    private Step generateMetricsStep(DomainMetricListWriter domainMetricEntityListWriter,
+                                           TaskExecutor asyncTaskExecutor,
+                                           DomainMetricProcessor.Period period) {
+        return stepBuilderFactory.get("generate"+ period.name().replace("_","") +"MetricsStep")
                 .<DomainEntity, List<DomainMetricEntity>> chunk(10)
                 .reader(domainReader())
-                .processor(new DomainMetricProcessor(DomainMetricProcessor.Period.LAST_WEEK,domainCheckRepository))
+                .processor(new DomainMetricProcessor(period,domainCheckRepository))
                 .writer(domainMetricEntityListWriter)
                 .taskExecutor(asyncTaskExecutor)
                 .throttleLimit(1)

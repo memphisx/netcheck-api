@@ -212,6 +212,7 @@ public class DomainService {
         paginatedQueryResult.forEach(
                 (domain) -> domains.add(new DomainDto.Builder()
                         .domain(domain.getDomain())
+                        .checkFrequencyMinutes(domain.getDomainEntity().getCheckFrequency())
                         .createdAt(domain.getDomainEntity().getCreatedAt())
                         .lastDomainCheck(convertDomainCheckEntityToDto(domain))
                         .build()
@@ -227,8 +228,9 @@ public class DomainService {
         );
     }
 
-    public void scheduleDomainToCheck(String domain) {
+    public void scheduleDomainToCheck(String domain, Integer frequency) {
         domainRepository.save(new DomainEntity.Builder()
+                .frequency(Optional.ofNullable(frequency).orElse(10))
                 .domain(domain)
                 .build()
         );

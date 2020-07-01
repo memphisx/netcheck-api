@@ -30,7 +30,8 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
         return new DomainModel(
                 domainDto.getDomain(),
                 new DomainCheckModelAssembler().toModel(domainDto.getLastDomainCheck()),
-                domainDto.getCreatedAt()
+                domainDto.getCreatedAt(),
+                domainDto.getCheckFrequencyMinutes()
         );
     }
 
