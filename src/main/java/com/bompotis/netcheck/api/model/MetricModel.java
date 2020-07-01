@@ -12,29 +12,64 @@ import java.util.Date;
  */
 @Relation(collectionRelation = "metrics", itemRelation = "metric")
 public class MetricModel extends RepresentationModel<HttpCheckModel> {
-    private final Date metricPeriod;
-    private final Integer uptimePercentage;
-    private final Long averageResponseTimeNs;
+    private final Date metricPeriodStart;
+    private final Date metricPeriodEnd;
+    private final Integer totalChecks;
+    private final Integer successfulChecks;
+    private final Long averageResponseTime;
+    private final Long maxResponseTime;
+    private final Long minResponseTime;
+    private final String protocol;
 
     @JsonCreator
     public MetricModel(
-            @JsonProperty("metricPeriod") Date metricPeriod,
-            @JsonProperty("uptimePercentage") Integer uptimePercentage,
-            @JsonProperty("averageResponseTime") Long averageResponseTimeNs) {
-        this.metricPeriod = metricPeriod;
-        this.uptimePercentage = uptimePercentage;
-        this.averageResponseTimeNs = averageResponseTimeNs;
+            @JsonProperty("metricPeriodStart") Date metricPeriodStart,
+            @JsonProperty("metricPeriodEnd") Date metricPeriodEnd,
+            @JsonProperty("totalChecks") Integer totalChecks,
+            @JsonProperty("successfulChecks") Integer successfulChecks,
+            @JsonProperty("averageResponseTime") Long averageResponseTime,
+            @JsonProperty("maxResponseTime") Long maxResponseTime,
+            @JsonProperty("minResponseTime") Long minResponseTime,
+            @JsonProperty("protocol") String protocol) {
+        this.metricPeriodStart = metricPeriodStart;
+        this.metricPeriodEnd = metricPeriodEnd;
+        this.totalChecks = totalChecks;
+        this.successfulChecks = successfulChecks;
+        this.averageResponseTime = averageResponseTime;
+        this.maxResponseTime = maxResponseTime;
+        this.minResponseTime = minResponseTime;
+        this.protocol = protocol;
     }
 
-    public Long getAverageResponseTimeNs() {
-        return averageResponseTimeNs;
+    public Date getMetricPeriodStart() {
+        return metricPeriodStart;
     }
 
-    public Integer getUptimePercentage() {
-        return uptimePercentage;
+    public Date getMetricPeriodEnd() {
+        return metricPeriodEnd;
     }
 
-    public Date getMetricPeriod() {
-        return metricPeriod;
+    public Integer getTotalChecks() {
+        return totalChecks;
+    }
+
+    public Integer getSuccessfulChecks() {
+        return successfulChecks;
+    }
+
+    public Long getAverageResponseTime() {
+        return averageResponseTime;
+    }
+
+    public Long getMaxResponseTime() {
+        return maxResponseTime;
+    }
+
+    public Long getMinResponseTime() {
+        return minResponseTime;
+    }
+
+    public String getProtocol() {
+        return protocol;
     }
 }
