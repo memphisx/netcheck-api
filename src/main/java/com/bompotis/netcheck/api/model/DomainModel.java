@@ -24,7 +24,7 @@ public class DomainModel extends RepresentationModel<DomainModel> {
     public DomainModel(@JsonProperty("domain") String domain,
                        @JsonProperty("lastDomainCheck") DomainCheckModel lastDomainCheck,
                        @JsonProperty("dateAdded") Date dateAdded,
-                       @JsonProperty("dateAdded") Integer checkFrequencyMinutes) {
+                       @JsonProperty("checkFrequencyMinutes") Integer checkFrequencyMinutes) {
         this.domain = domain;
         this.lastDomainCheck = lastDomainCheck;
         this.dateAdded = dateAdded;
