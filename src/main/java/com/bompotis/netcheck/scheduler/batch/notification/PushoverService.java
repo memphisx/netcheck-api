@@ -21,13 +21,13 @@ public class PushoverService implements NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(PushoverService.class);
 
-    @Value("${settings.notifications.pushover.enabled}")
+    @Value("${settings.notifications.pushover.enabled:false}")
     private Boolean enabled;
 
-    @Value("${settings.notifications.pushover.userIdToken}")
+    @Value("${settings.notifications.pushover.userIdToken:}")
     private String userIdToken;
 
-    @Value("${settings.notifications.pushover.apiToken}")
+    @Value("${settings.notifications.pushover.apiToken:}")
     private String apiToken;
 
     @Autowired
