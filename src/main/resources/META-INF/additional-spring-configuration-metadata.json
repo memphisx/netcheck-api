@@ -4,6 +4,21 @@
       "name": "settings.cors.origin",
       "type": "java.lang.String",
       "description": "CORS Permitted Domains."
+    },
+    {
+      "name": "settings.notifications.pushover.enabled",
+      "type": "java.lang.String",
+      "description": "Enable or disable Pushover notifications."
+    },
+    {
+      "name": "settings.notifications.pushover.apiToken",
+      "type": "java.lang.String",
+      "description": "Pushover API Token."
+    },
+    {
+      "name": "settings.notifications.pushover.userIdToken",
+      "type": "java.lang.String",
+      "description": "Pushover User ID token."
     }
   ]
 }
