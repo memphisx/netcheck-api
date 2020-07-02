@@ -10,7 +10,11 @@ import java.util.Objects;
  * Created by Kyriakos Bompotis on 29/6/20.
  */
 @Entity
-@Table(name = "domain_metric")
+@Table(name = "domain_metric",
+        indexes = {
+                @Index(name = "domain_metric__domain_period_protocol_idx", columnList = "domain,period_type,protocol"),
+                @Index(name = "domain_metric__domain_period_created_idx", columnList = "domain,period_type,created_at")
+})
 public class DomainMetricEntity extends AbstractTimestampablePersistable<String>{
 
     public enum Protocol {
