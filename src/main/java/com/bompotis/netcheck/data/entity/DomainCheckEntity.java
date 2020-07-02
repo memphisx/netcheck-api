@@ -11,17 +11,22 @@ import java.util.Set;
  * Created by Kyriakos Bompotis on 8/6/20.
  */
 @Entity
-@Table(name = "domain_check")
+@Table(name = "domain_check",
+        indexes = {
+                @Index(name = "domain_check__domain_http_https_cert_idx", columnList = "domain,http_check_change,https_check_change,certificates_change"),
+                @Index(name = "domain_check__domain_created_idx", columnList = "domain,created_at"),
+                @Index(name = "domain_check__domain_check_date_idx", columnList = "domain,check_date")
+})
 public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "check_protocol",
             joinColumns = @JoinColumn(name = "domain_check_id"),
             inverseJoinColumns = @JoinColumn(name = "protocol_check_id"))
     private Set<ProtocolCheckEntity> protocolCheckEntities;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "check_certificate",
             joinColumns = @JoinColumn(name = "domain_check_id"),
