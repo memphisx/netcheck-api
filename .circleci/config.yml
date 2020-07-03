@@ -81,6 +81,17 @@ jobs:
             VERSION=`cat ./version.txt`
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
 
+  publish-github-maven:
+    executor: docker-maven
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            mvn deploy -Dregistry=https://maven.pkg.github.com/memphisx -Dtoken=${GITHUB_TOKEN}
+
 workflows:
   version: 2
   build-master:
@@ -92,6 +103,12 @@ workflows:
       - publish-github-release:
           requires:
             - maven-test
+          filters:
+            branches:
+              only: master
+      - publish-github-maven:
+          requires:
+            - publish-github-release
           filters:
             branches:
               only: master
