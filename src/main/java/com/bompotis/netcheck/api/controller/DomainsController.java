@@ -100,10 +100,12 @@ public class DomainsController {
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}/states")
     public ResponseEntity<CollectionModel<StateModel>> getDomainsStates(@PathVariable("domain") String domain,
                                                                         @RequestParam(name = "protocol", required = false) String protocol,
+                                                                        @RequestParam(name = "includeCertificates", required = false) Boolean includeCertificates,
                                                                         @RequestParam(name = "page", required = false) Integer page,
                                                                         @RequestParam(name = "size", required = false) Integer size) {
         final var normalizedProtocol = Optional.ofNullable(protocol).orElse("HTTPS").toUpperCase();
-        return ok(new StateModelAssembler().toCollectionModel(domainService.getDomainStates(domain, normalizedProtocol, page, size), domain, normalizedProtocol));
+        final var includeCertificateChanges = Optional.ofNullable(includeCertificates).orElse(false);
+        return ok(new StateModelAssembler().toCollectionModel(domainService.getDomainStates(domain, normalizedProtocol, includeCertificateChanges, page, size), domain, normalizedProtocol, includeCertificateChanges));
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history/{id}")

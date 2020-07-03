@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
+import java.time.Duration;
+import java.time.Period;
 import java.util.Date;
 
 /**
@@ -21,6 +23,7 @@ public class StateModel extends RepresentationModel<StateModel> {
     private final String protocol;
     private final String redirectUri;
     private final String reason;
+    private final Long durationSeconds;
 
     @JsonCreator
     public StateModel(
@@ -31,7 +34,8 @@ public class StateModel extends RepresentationModel<StateModel> {
             @JsonProperty("dnsResolves") Boolean dnsResolves,
             @JsonProperty("protocol") String protocol,
             @JsonProperty("redirectUri") String redirectUri,
-            @JsonProperty("isUp") Boolean isUp) {
+            @JsonProperty("isUp") Boolean isUp,
+            @JsonProperty("durationSeconds") Long durationSeconds) {
         this.isUp = isUp;
         this.hostname = hostname;
         this.statusCode = statusCode;
@@ -40,6 +44,7 @@ public class StateModel extends RepresentationModel<StateModel> {
         this.dnsResolves = dnsResolves;
         this.protocol = protocol;
         this.redirectUri = redirectUri;
+        this.durationSeconds = durationSeconds;
     }
 
     public Integer getStatusCode() {
@@ -73,5 +78,9 @@ public class StateModel extends RepresentationModel<StateModel> {
 
     public String getReason() {
         return reason;
+    }
+
+    public Long getDurationSeconds() {
+        return durationSeconds;
     }
 }
