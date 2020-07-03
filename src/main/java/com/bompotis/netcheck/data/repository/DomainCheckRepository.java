@@ -33,6 +33,18 @@ public interface DomainCheckRepository extends JpaRepository<DomainCheckEntity, 
     Page<DomainCheckEntity> findAllStateChanges(String domain, PageRequest pageRequest);
 
     @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
+            "and d.httpCheckChange = true")
+    Page<DomainCheckEntity> findAllHttpStateChanges(String domain, PageRequest pageRequest);
+
+    @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
+            "and d.httpsCheckChange = true")
+    Page<DomainCheckEntity> findAllHttpsStateChanges(String domain, PageRequest pageRequest);
+
+    @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
+            "and (d.httpsCheckChange = true or d.certificatesChange = true)")
+    Page<DomainCheckEntity> findAllHttpsAndCertificateStateChanges(String domain, PageRequest pageRequest);
+
+    @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
             "and d.createdAt >= ?2 and d.createdAt < ?3")
     Set<DomainCheckEntity> findAllBetweenDates(String domain, Date startDate, Date endDate);
 }

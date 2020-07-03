@@ -1,5 +1,6 @@
 package com.bompotis.netcheck.service.dto;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,6 +19,7 @@ public class StateDto {
     private final boolean certificatesChange;
     private final boolean httpCheckChange;
     private final boolean httpsCheckChange;
+    private final Duration duration;
 
     public Integer getStatusCode() {
         return statusCode;
@@ -61,22 +63,38 @@ public class StateDto {
 
     public String getReason() {
         if (certificatesChange && httpCheckChange && httpsCheckChange) {
-            return "New Entry";
+            return "First Check";
         }
-        if (protocol.equals("HTTPS") && certificatesChange) {
-            return "Certificates Changed";
+        if (protocol.equals("HTTPS") && httpsCheckChange) {
+            if (!dnsResolves) {
+                return "Website went DOWN. Domain name cannot be resolved";
+            }
+            if (!isUp()) {
+                return "Website went DOWN. HTTP RESPONSE STATUS CODE " + statusCode;
+            }
+            if (certificatesChange) {
+                return "Certificates Changed";
+            }
+            else {
+                return "Website went UP. HTTP RESPONSE STATUS CODE " + statusCode;
+            }
         }
-        if (!dnsResolves) {
-            return "Domain name cannot be resolved";
+        if (protocol.equals("HTTP") && httpCheckChange) {
+            if (!dnsResolves) {
+                return "Website went DOWN. Domain name cannot be resolved";
+            }
+            if (!isUp()) {
+                return "Website went DOWN. HTTP RESPONSE STATUS CODE " + statusCode;
+            }
+            else {
+                return "Website went UP. HTTP RESPONSE STATUS CODE " + statusCode;
+            }
         }
-        if (Optional.ofNullable(redirectUri).isPresent()) {
-            return "Website redirects. HTTP RESPONSE STATUS CODE " + statusCode;
-        }
-        if (!isUp()) {
-            return "Website is down. HTTP RESPONSE STATUS CODE " + statusCode;
-        }
-        return "Website went UP";
+        return "Website went UP. HTTP RESPONSE STATUS CODE " + statusCode;
+    }
 
+    public Duration getDuration() {
+        return duration;
     }
 
     public static class Builder {
@@ -87,9 +105,10 @@ public class StateDto {
         private String hostname;
         private String protocol;
         private String redirectUri;
-        private boolean certificatesChange;
-        private boolean httpCheckChange;
-        private boolean httpsCheckChange;
+        private boolean certificatesChange = false;
+        private boolean httpCheckChange = false;
+        private boolean httpsCheckChange = false;
+        private Duration duration;
 
         public Builder id(String id) {
             this.id = id;
@@ -141,6 +160,11 @@ public class StateDto {
             return this;
         }
 
+        public Builder duration(Duration duration) {
+            this.duration = duration;
+            return this;
+        }
+
         public StateDto build() {
             return new StateDto(this);
         }
@@ -157,5 +181,6 @@ public class StateDto {
         this.certificatesChange = b.certificatesChange;
         this.httpCheckChange = b.httpCheckChange;
         this.httpsCheckChange = b.httpsCheckChange;
+        this.duration = b.duration;
     }
 }

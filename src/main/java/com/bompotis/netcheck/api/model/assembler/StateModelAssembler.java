@@ -32,26 +32,27 @@ public class StateModelAssembler extends PaginatedRepresentationModelAssemblerSu
                 stateDto.getDnsResolves(),
                 stateDto.getProtocol(),
                 stateDto.getRedirectUri(),
-                stateDto.isUp());
+                stateDto.isUp(),
+                stateDto.getDuration().getSeconds());
     }
 
-    public CollectionModel<StateModel> toCollectionModel(PaginatedDto<StateDto> paginatedStatesDto, String domain, String protocol) {
+    public CollectionModel<StateModel> toCollectionModel(PaginatedDto<StateDto> paginatedStatesDto, String domain, String protocol, Boolean includeCertificates) {
         final var stateModels = this.toCollectionModel(paginatedStatesDto.getDtoList()).getContent();
         final var links = new ArrayList<Link>();
         links.add(linkTo(methodOn(DomainsController.class)
-                .getDomainsStates(domain,protocol,paginatedStatesDto.getNumber(), paginatedStatesDto.getSize()))
+                .getDomainsStates(domain, protocol, includeCertificates, paginatedStatesDto.getNumber(), paginatedStatesDto.getSize()))
                 .withSelfRel()
         );
         if (isValidPage(paginatedStatesDto.getNumber(),paginatedStatesDto.getTotalPages())) {
             if (isNotLastPage(paginatedStatesDto.getNumber(), paginatedStatesDto.getTotalPages())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomainsStates(domain, protocol, paginatedStatesDto.getNumber()+1, paginatedStatesDto.getSize()))
+                        .getDomainsStates(domain, protocol, includeCertificates, paginatedStatesDto.getNumber()+1, paginatedStatesDto.getSize()))
                         .withRel(IanaLinkRelations.NEXT)
                 );
             }
             if (isNotFirstPage(paginatedStatesDto.getNumber())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomainsStates(domain, protocol, paginatedStatesDto.getNumber()-1, paginatedStatesDto.getSize()))
+                        .getDomainsStates(domain, protocol, includeCertificates,paginatedStatesDto.getNumber()-1, paginatedStatesDto.getSize()))
                         .withRel(IanaLinkRelations.PREVIOUS)
                 );
             }
