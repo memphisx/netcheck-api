@@ -11,7 +11,7 @@ RUN mvn clean install -DskipTests
 FROM adoptopenjdk/openjdk11-openj9:alpine-jre
 WORKDIR /var/app/netcheck/
 COPY --from=builder /var/app/src/netcheck/target/netcheck.jar ./netcheck.jar
-RUN addgroup -S netcheck && adduser -S netcheck -G netcheck
+RUN addgroup -S netcheck && adduser -S netcheck -G netcheck && apk --no-cache add curl
 USER netcheck
 VOLUME /tmp
 EXPOSE 8080 8081
