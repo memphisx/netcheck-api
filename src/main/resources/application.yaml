@@ -1,3 +1,15 @@
+info:
+  app:
+    name: WebCheck API
+    description: Website performance and availability monitoring app
+  java:
+    vendor: ${java.specification.vendor}
+    version: ${java.version}
+    vm-name: ${java.vm.name}
+    vm-version: ${java.vm.version}
+    version-date: ${java.version.date}
+  os:
+    name: ${os.name}
 spring:
   datasource:
     hikari:
@@ -18,13 +30,19 @@ settings:
     origin: "*"
 management:
   endpoints:
+    enabled-by-default: false
     web:
       exposure:
         include: "*"
       cors:
         allowed-origins: ${settings.cors.origin}
-        allowed-methods: "GET,POST"
+        allowed-methods: "GET"
   endpoint:
+    info:
+      enabled: true
+    metrics:
+      enabled: true
     health:
+      enabled: true
       show-details: always
       show-components: always
