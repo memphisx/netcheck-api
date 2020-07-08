@@ -30,13 +30,19 @@ settings:
     origin: "*"
 management:
   endpoints:
+    enabled-by-default: false
     web:
       exposure:
         include: "*"
       cors:
         allowed-origins: ${settings.cors.origin}
-        allowed-methods: "GET,POST"
+        allowed-methods: "GET"
   endpoint:
+    info:
+      enabled: true
+    metrics:
+      enabled: true
     health:
+      enabled: true
       show-details: always
       show-components: always
