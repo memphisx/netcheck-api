@@ -8,8 +8,12 @@ RUN mvn dependency:go-offline
 COPY ./src ./src
 RUN mvn clean install -DskipTests
 
-FROM adoptopenjdk:11-jre-openj9
+FROM adoptopenjdk/openjdk11-openj9:alpine-jre
 WORKDIR /var/app/netcheck/
 COPY --from=builder /var/app/src/netcheck/target/netcheck.jar ./netcheck.jar
+RUN addgroup -S netcheck && adduser -S netcheck -G netcheck
+USER netcheck
+VOLUME /tmp
 EXPOSE 8080 8081
-CMD ["java", "-jar", "/var/app/netcheck/netcheck.jar"]
+ENTRYPOINT ["java", "-noverify", "-jar", "/var/app/netcheck/netcheck.jar"]
+HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD curl -sSL "http://localhost:8080/actuator/health" || exit 1

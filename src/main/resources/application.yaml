@@ -1,6 +1,6 @@
 info:
   app:
-    name: WebCheck API
+    name: NetCheck API
     description: Website performance and availability monitoring app
   java:
     vendor: ${java.specification.vendor}
@@ -11,6 +11,8 @@ info:
   os:
     name: ${os.name}
 spring:
+  jmx:
+    enabled: false
   datasource:
     hikari:
       connectionTimeout: 20000
