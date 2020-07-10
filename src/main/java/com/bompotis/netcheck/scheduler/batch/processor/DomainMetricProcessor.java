@@ -9,10 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 
+import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -40,10 +39,10 @@ public class DomainMetricProcessor implements ItemProcessor<DomainEntity, List<D
 
     @Override
     public List<DomainMetricEntity> process(DomainEntity domainEntity) {
-        return generateMetric(domainEntity,new Timeframe(this.period));
+        return generateMetric(domainEntity,new TimeFrame(this.period));
     }
 
-    public List<DomainMetricEntity> generateMetric(DomainEntity domainEntity, Timeframe timeframe) {
+    public List<DomainMetricEntity> generateMetric(DomainEntity domainEntity, TimeFrame timeframe) {
         log.info("Generating last {} metrics for {}", timeframe.getPeriod().name().toLowerCase(), domainEntity.getDomain());
         var endDate = timeframe.getEndDate();
         var startDate = timeframe.getStartDate();
@@ -73,16 +72,14 @@ public class DomainMetricProcessor implements ItemProcessor<DomainEntity, List<D
                 }
             }
         }
-        var httpMetrics = checkEntities
-                .stream()
-                .mapToLong(DomainCheckEntity::getHttpResponseTimeNs)
-                .summaryStatistics();
+        var httpMetrics = new Stats(checkEntities, ProtocolCheckEntity.Protocol.HTTP);
+
         var httpMetricEntity = new DomainMetricEntity.Builder()
                 .domain(domainEntity.getDomain())
                 .domainEntity(domainEntity)
-                .minResponseTimeNs(httpMetrics.getMin())
-                .maxResponseTimeNs(httpMetrics.getMax())
-                .avgResponseTimeNs(Math.round(httpMetrics.getAverage()))
+                .minResponseTimeNs(httpMetrics.getMinResponseTime())
+                .maxResponseTimeNs(httpMetrics.getMaxResponseTime())
+                .avgResponseTimeNs(httpMetrics.getAvgResponseTime())
                 .endPeriod(endDate)
                 .startPeriod(startDate)
                 .periodType(timeframe.getPeriod())
@@ -91,17 +88,14 @@ public class DomainMetricProcessor implements ItemProcessor<DomainEntity, List<D
                 .protocol("HTTP")
                 .build();
 
-        var httpsMetrics = checkEntities
-                .stream()
-                .mapToLong(DomainCheckEntity::getHttpsResponseTimeNs)
-                .summaryStatistics();
+        var httpsMetrics = new Stats(checkEntities, ProtocolCheckEntity.Protocol.HTTP);
 
         var httpsMetricEntity = new DomainMetricEntity.Builder()
                 .domain(domainEntity.getDomain())
                 .domainEntity(domainEntity)
-                .minResponseTimeNs(httpsMetrics.getMin())
-                .maxResponseTimeNs(httpsMetrics.getMax())
-                .avgResponseTimeNs(Math.round(httpsMetrics.getAverage()))
+                .minResponseTimeNs(httpsMetrics.getMinResponseTime())
+                .maxResponseTimeNs(httpsMetrics.getMaxResponseTime())
+                .avgResponseTimeNs(httpsMetrics.getAvgResponseTime())
                 .endPeriod(endDate)
                 .startPeriod(startDate)
                 .periodType(timeframe.getPeriod())
@@ -113,12 +107,66 @@ public class DomainMetricProcessor implements ItemProcessor<DomainEntity, List<D
         return List.of(httpMetricEntity,httpsMetricEntity);
     }
 
-    private static class Timeframe {
+    private static class Stats {
+        private final Long minResponseTime;
+        private final Long maxResponseTime;
+        private final Long avgResponseTime;
+
+        private Stats(Set<DomainCheckEntity> checkEntities, ProtocolCheckEntity.Protocol protocol) {
+            Long min;
+            Long max;
+            Long avg;
+
+            try {
+                var stats = (protocol.equals(ProtocolCheckEntity.Protocol.HTTP)) ?  getHttpStats(checkEntities) : getHttpsStats(checkEntities);
+                min = stats.getMin();
+                max = stats.getMax();
+                avg = Math.round(stats.getAverage());
+            } catch (NullPointerException e) {
+                min = null;
+                max = null;
+                avg = null;
+            }
+            this.maxResponseTime = max;
+            this.minResponseTime = min;
+            this.avgResponseTime = avg;
+        }
+
+        public Long getMinResponseTime() {
+            return minResponseTime;
+        }
+
+        public Long getMaxResponseTime() {
+            return maxResponseTime;
+        }
+
+        public Long getAvgResponseTime() {
+            return avgResponseTime;
+        }
+
+        private LongSummaryStatistics getHttpStats(Set<DomainCheckEntity> checkEntities) {
+            return checkEntities
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .mapToLong(DomainCheckEntity::getHttpResponseTimeNs)
+                    .summaryStatistics();
+        }
+
+        private LongSummaryStatistics getHttpsStats(Set<DomainCheckEntity> checkEntities) {
+            return checkEntities
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .mapToLong(DomainCheckEntity::getHttpsResponseTimeNs)
+                    .summaryStatistics();
+        }
+    }
+
+    private static class TimeFrame {
         private final Date startDate;
         private final Date endDate;
         private final DomainMetricEntity.Period period;
 
-        Timeframe(Period period) {
+        TimeFrame(Period period) {
             if (period.equals(Period.LAST_HOUR)) {
                 this.period = DomainMetricEntity.Period.HOUR;
                 this.endDate = Date.from(ZonedDateTime.now().minusHours(1).withMinute(59).withSecond(59).toInstant());

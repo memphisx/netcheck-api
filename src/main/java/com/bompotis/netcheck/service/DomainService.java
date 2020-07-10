@@ -78,9 +78,6 @@ public class DomainService {
 
         if (previousDomainCheck.isEmpty()) {
             return domainCheckEntityBuilder
-                    .httpCheckChange(true)
-                    .httpsCheckChange(true)
-                    .certificatesChange(true)
                     .protocolCheckEntities(newProtocolChecks)
                     .certificateEntities(newCertificates)
                     .build();
@@ -100,9 +97,11 @@ public class DomainService {
                                                                   Set<ProtocolCheckEntity> newProtocolChecks,
                                                                   HashSet<CertificateEntity> newCertificates) {
         if (oldProtocolChecks.isEmpty()) {
-            domainCheckEntityBuilder.protocolCheckEntities(newProtocolChecks).httpsCheckChange(true).httpCheckChange(true);
+            domainCheckEntityBuilder.protocolCheckEntities(newProtocolChecks);
         } else if (oldProtocolChecks.equals(newProtocolChecks)) {
-            domainCheckEntityBuilder.protocolCheckEntities(oldProtocolChecks).httpsCheckChange(false).httpCheckChange(false);
+            domainCheckEntityBuilder
+                    .protocolCheckEntities(oldProtocolChecks)
+                    .previousProtocolCheckEntities(oldProtocolChecks);
         } else {
             final var finalProtocolsSet = new HashSet<ProtocolCheckEntity>();
             final var oldProtocolCheckMap = oldProtocolChecks
@@ -111,32 +110,23 @@ public class DomainService {
             for (var newProtocolCheck : newProtocolChecks) {
                 final var protocol = newProtocolCheck.getProtocol();
                 if (newProtocolCheck.equals(oldProtocolCheckMap.get(protocol))) {
-                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTP)) {
-                        domainCheckEntityBuilder.httpCheckChange(false);
-                    }
-                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTPS)) {
-                        domainCheckEntityBuilder.httpsCheckChange(false);
-                    }
                     finalProtocolsSet.add(oldProtocolCheckMap.get(protocol));
                 } else {
-                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTP)) {
-                        domainCheckEntityBuilder.httpCheckChange(true);
-                    }
-                    if (protocol.equals(ProtocolCheckEntity.Protocol.HTTPS)) {
-                        domainCheckEntityBuilder.httpsCheckChange(true);
-                    }
                     finalProtocolsSet.add(newProtocolCheck);
                 }
             }
-            domainCheckEntityBuilder.protocolCheckEntities(finalProtocolsSet);
+            domainCheckEntityBuilder
+                    .previousProtocolCheckEntities(oldProtocolChecks)
+                    .protocolCheckEntities(finalProtocolsSet);
         }
 
         if (oldCertificates.isEmpty()) {
-            domainCheckEntityBuilder.certificateEntities(newCertificates).certificatesChange(true);
+            domainCheckEntityBuilder.certificateEntities(newCertificates);
         } else if (oldCertificates.equals(newCertificates)) {
-            domainCheckEntityBuilder.certificateEntities(oldCertificates).certificatesChange(false);
+            domainCheckEntityBuilder
+                    .certificateEntities(oldCertificates)
+                    .previousCertificateEntities(oldCertificates);
         } else {
-            domainCheckEntityBuilder.certificatesChange(true);
             final var finalCertificateSet = new HashSet<CertificateEntity>();
             final var oldCertificateMap = oldCertificates
                     .stream()
@@ -149,7 +139,9 @@ public class DomainService {
                     finalCertificateSet.add(newCertificate);
                 }
             }
-            domainCheckEntityBuilder.certificateEntities(finalCertificateSet);
+            domainCheckEntityBuilder
+                    .previousCertificateEntities(oldCertificates)
+                    .certificateEntities(finalCertificateSet);
         }
 
         return domainCheckEntityBuilder.build();
@@ -312,6 +304,12 @@ public class DomainService {
                     .collect(Collectors.toMap(protocolCheck -> protocolCheck.getProtocol().toString(), protocolCheck -> protocolCheck, (a, b) -> b))
                     .get(protocol.toUpperCase());
 
+            var previousCheck = domainCheckEntity
+                    .getPreviousProtocolCheckEntities()
+                    .stream()
+                    .collect(Collectors.toMap(protocolCheck -> protocolCheck.getProtocol().toString(), protocolCheck -> protocolCheck, (a, b) -> b))
+                    .get(protocol.toUpperCase());
+
             Duration duration;
             if (veryNextDomainChekEntity.isEmpty()) {
                 duration = Duration.between(
@@ -329,25 +327,26 @@ public class DomainService {
                     .hostname(check.getHostname())
                     .dnsResolves(check.getDnsResolves())
                     .redirectUri(check.getRedirectUri())
+                    .connectionAccepted(check.isConnectionAccepted())
+                    .changeType(domainCheckEntity.getChangeType())
                     .id(check.getId())
                     .statusCode(check.getStatusCode())
                     .protocol(check.getProtocol().toString())
                     .timeCheckedOn(domainCheckEntity.getTimeCheckedOn())
                     .duration(duration);
-            if (domainCheckEntity.isHttpCheckChange() && domainCheckEntity.isHttpsCheckChange() && domainCheckEntity.isCertificatesChange()) {
-                builder.httpCheckChange(domainCheckEntity.isHttpCheckChange())
-                        .httpsCheckChange(domainCheckEntity.isHttpsCheckChange())
-                        .certificatesChange(domainCheckEntity.isCertificatesChange());
-            } else {
-                if (protocol.equals("HTTP")) {
-                    builder.httpCheckChange(domainCheckEntity.isHttpCheckChange());
-                }
-                if (protocol.equals("HTTPS")) {
-                    builder.httpsCheckChange(domainCheckEntity.isHttpsCheckChange());
-                    if (includeCertificates) {
-                        builder.certificatesChange(domainCheckEntity.isCertificatesChange());
-                    }
-                }
+
+            if (Optional.ofNullable(previousCheck).isPresent()) {
+                builder.previousState(
+                        new StateDto.Builder()
+                                .hostname(previousCheck.getHostname())
+                                .dnsResolves(previousCheck.getDnsResolves())
+                                .redirectUri(previousCheck.getRedirectUri())
+                                .connectionAccepted(previousCheck.isConnectionAccepted())
+                                .id(previousCheck.getId())
+                                .statusCode(previousCheck.getStatusCode())
+                                .protocol(previousCheck.getProtocol().toString())
+                                .build()
+                );
             }
 
             stateList.add(builder.build());
