@@ -24,6 +24,9 @@ public interface DomainCheckRepository extends JpaRepository<DomainCheckEntity, 
 
     Page<DomainCheckEntity> findAllByDomain(String domain, Pageable pageable);
 
+    @Query("select d from DomainCheckEntity d where d.timeCheckedOn < ?1")
+    Page<DomainCheckEntity> findAllCheckedBeforeDate(Date beforeDate, Pageable pageable);
+
     @Query("select d from DomainCheckEntity d where d.createdAt = (" +
             "select max(d1.createdAt) from DomainCheckEntity d1 where d1.domain = d.domain ) ")
     Page<DomainCheckEntity> findAllLastChecksPerDomain(PageRequest pageRequest);

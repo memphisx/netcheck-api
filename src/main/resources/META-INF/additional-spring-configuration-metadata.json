@@ -19,6 +19,16 @@
       "name": "settings.notifications.pushover.userIdToken",
       "type": "java.lang.String",
       "description": "Pushover User ID token."
+    },
+    {
+      "name": "settings.schedulers.cleanup.enabled",
+      "type": "java.lang.String",
+      "description": "Enable or disable deletion of older checks every month."
+    },
+    {
+      "name": "settings.schedulers.cleanup.deleteOlderThan",
+      "type": "java.lang.String",
+      "description": "Minimum amount of months a check should be consider old enough to be deleted."
     }
   ]
 }

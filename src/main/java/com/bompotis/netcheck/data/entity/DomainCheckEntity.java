@@ -33,28 +33,28 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
         HTTPS_CERTS_CHANGE
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "check_protocol",
             joinColumns = @JoinColumn(name = "domain_check_id"),
             inverseJoinColumns = @JoinColumn(name = "protocol_check_id"))
     private Set<ProtocolCheckEntity> protocolCheckEntities;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "check_certificate",
             joinColumns = @JoinColumn(name = "domain_check_id"),
             inverseJoinColumns = @JoinColumn(name = "certificate_id"))
     private Set<CertificateEntity> certificateEntities;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "previous_check_certificate",
             joinColumns = @JoinColumn(name = "domain_check_id"),
             inverseJoinColumns = @JoinColumn(name = "certificate_id"))
     private Set<CertificateEntity> previousCertificateEntities;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "previous_check_protocol",
             joinColumns = @JoinColumn(name = "domain_check_id"),

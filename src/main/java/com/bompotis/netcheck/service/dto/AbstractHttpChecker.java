@@ -63,11 +63,11 @@ public abstract class AbstractHttpChecker {
                     .responseTimeNs(System.nanoTime() - beginTime)
                     .statusCode(responseCode);
         } catch (UnknownHostException e) {
-            LOG.error("Unknown Host for {}.", hostname);
+            LOG.error("Unknown Host for {}.", hostname, e);
             httpCheckDtoBuilder.dnsResolved(false).connectionAccepted(false);
             connectedSuccessfully = false;
         } catch (ConnectException e) {
-            LOG.error("Connection Exception for {}.", hostname);
+            LOG.error("Connection Exception for {}.", hostname, e);
             httpCheckDtoBuilder.connectionAccepted(false).dnsResolved(true);
             connectedSuccessfully = false;
         }
