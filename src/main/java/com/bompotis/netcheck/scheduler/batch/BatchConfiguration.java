@@ -10,6 +10,7 @@ import com.bompotis.netcheck.scheduler.batch.processor.DomainMetricProcessor;
 import com.bompotis.netcheck.scheduler.batch.reader.OldDomainCheckItemReader;
 import com.bompotis.netcheck.scheduler.batch.writer.DomainMetricListWriter;
 import com.bompotis.netcheck.scheduler.batch.writer.NotificationItemWriter;
+import com.bompotis.netcheck.service.MetricService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -49,6 +50,8 @@ public class BatchConfiguration {
 
     private final DomainRepository domainRepository;
 
+    private final MetricService metricService;
+
     private final DomainCheckRepository domainCheckRepository;
 
     private final EntityManagerFactory entityManagerFactory;
@@ -61,12 +64,14 @@ public class BatchConfiguration {
                               StepBuilderFactory stepBuilderFactory,
                               DomainCheckRepository domainCheckRepository,
                               EntityManagerFactory entityManagerFactory,
-                              DomainRepository domainRepository) {
+                              DomainRepository domainRepository,
+                              MetricService metricService) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.entityManagerFactory = entityManagerFactory;
         this.domainCheckRepository = domainCheckRepository;
         this.domainRepository = domainRepository;
+        this.metricService = metricService;
     }
 
     @Bean
@@ -276,26 +281,26 @@ public class BatchConfiguration {
 
     @Bean
     public Step generateHourlyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter, TaskExecutor asyncTaskExecutor) {
-        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, DomainMetricProcessor.Period.LAST_HOUR);
+        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, MetricService.ScheduledPeriod.LAST_HOUR);
     }
 
     @Bean
     public Step generateDailyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter, TaskExecutor asyncTaskExecutor) {
-        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, DomainMetricProcessor.Period.LAST_DAY);
+        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, MetricService.ScheduledPeriod.LAST_DAY);
     }
 
     @Bean
     public Step generateWeeklyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter, TaskExecutor asyncTaskExecutor) {
-        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, DomainMetricProcessor.Period.LAST_WEEK);
+        return generateMetricsStep(domainMetricEntityListWriter,asyncTaskExecutor, MetricService.ScheduledPeriod.LAST_WEEK);
     }
 
     private Step generateMetricsStep(DomainMetricListWriter domainMetricEntityListWriter,
-                                           TaskExecutor asyncTaskExecutor,
-                                           DomainMetricProcessor.Period period) {
+                                     TaskExecutor asyncTaskExecutor,
+                                     MetricService.ScheduledPeriod period) {
         return stepBuilderFactory.get("generate"+ period.name().replace("_","") +"MetricsStep")
                 .<DomainEntity, List<DomainMetricEntity>> chunk(10)
                 .reader(domainReader())
-                .processor(new DomainMetricProcessor(period,domainCheckRepository))
+                .processor(new DomainMetricProcessor(period,metricService))
                 .writer(domainMetricEntityListWriter)
                 .taskExecutor(asyncTaskExecutor)
                 .throttleLimit(1)

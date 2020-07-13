@@ -3,6 +3,7 @@ package com.bompotis.netcheck.api.controller;
 import com.bompotis.netcheck.api.model.*;
 import com.bompotis.netcheck.api.model.assembler.*;
 import com.bompotis.netcheck.service.DomainService;
+import com.bompotis.netcheck.service.MetricService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +29,12 @@ public class DomainsController {
 
     private final DomainService domainService;
 
+    private final MetricService metricService;
+
     @Autowired
-    public DomainsController(DomainService domainService) {
+    public DomainsController(DomainService domainService, MetricService metricService) {
         this.domainService = domainService;
+        this.metricService = metricService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -84,7 +88,7 @@ public class DomainsController {
                                                                           @RequestParam(name = "page", required = false) Integer page,
                                                                           @RequestParam(name = "size", required = false) Integer size) {
         return ok(new MetricModelAssembler().toCollectionModel(
-                domainService.getDomainMetrics(
+                metricService.getDomainMetrics(
                         domain,
                         period.toUpperCase(),
                         protocol.toUpperCase(),

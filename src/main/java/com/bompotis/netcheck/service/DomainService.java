@@ -1,14 +1,14 @@
 package com.bompotis.netcheck.service;
 
-import com.bompotis.netcheck.data.entity.*;
+import com.bompotis.netcheck.data.entity.CertificateEntity;
+import com.bompotis.netcheck.data.entity.DomainCheckEntity;
+import com.bompotis.netcheck.data.entity.DomainEntity;
+import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
 import com.bompotis.netcheck.data.repository.DomainCheckRepository;
-import com.bompotis.netcheck.data.repository.DomainMetricRepository;
 import com.bompotis.netcheck.data.repository.DomainRepository;
 import com.bompotis.netcheck.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,21 +24,17 @@ import java.util.stream.Collectors;
  * Created by Kyriakos Bompotis on 30/11/18.
  */
 @Service
-public class DomainService {
+public class DomainService extends AbstractService{
 
     private final DomainRepository domainRepository;
 
     private final DomainCheckRepository domainCheckRepository;
 
-    private final DomainMetricRepository domainMetricRepository;
-
     @Autowired
     public DomainService(DomainRepository domainRepository,
-                         DomainCheckRepository domainCheckRepository,
-                         DomainMetricRepository domainMetricRepository) {
+                         DomainCheckRepository domainCheckRepository) {
         this.domainRepository = domainRepository;
         this.domainCheckRepository = domainCheckRepository;
-        this.domainMetricRepository = domainMetricRepository;
     }
 
     public DomainCheckDto check(String domain) throws IOException, NoSuchAlgorithmException, KeyManagementException {
@@ -266,14 +262,6 @@ public class DomainService {
                 .build();
     }
 
-    private PageRequest getDefaultPageRequest(Integer page, Integer size) {
-        return PageRequest.of(
-                Optional.ofNullable(page).orElse(0),
-                Optional.ofNullable(size).orElse(10),
-                Sort.by("createdAt").descending()
-        );
-    }
-
     public PaginatedDto<StateDto> getDomainStates(String domain, String protocol, Boolean includeCertificates, Integer page, Integer size) {
         final ArrayList<StateDto> stateList = new ArrayList<>();
         Page<DomainCheckEntity> domainCheckEntities;
@@ -359,38 +347,6 @@ public class DomainService {
                 domainCheckEntities.getTotalPages(),
                 domainCheckEntities.getNumber(),
                 domainCheckEntities.getNumberOfElements()
-        );
-    }
-
-    public PaginatedDto<MetricDto> getDomainMetrics(String domain, String period, String protocol, Integer page, Integer size) {
-        var httpMetrics = new ArrayList<MetricDto>();
-        var domainMetricEntities =
-                domainMetricRepository.findAllByDomainAndProtocolAndPeriodType(
-                        domain,
-                        DomainMetricEntity.Protocol.valueOf(protocol),
-                        DomainMetricEntity.Period.valueOf(period),
-                        getDefaultPageRequest(page, size)
-                );
-
-        for (var domainMetricEntity : domainMetricEntities) {
-            var httpMetric = new MetricDto.Builder()
-                    .maxResponseTime(domainMetricEntity.getMaxResponseTimeNs())
-                    .totalChecks(domainMetricEntity.getTotalChecks())
-                    .successfulChecks(domainMetricEntity.getSuccessfulChecks())
-                    .averageResponseTime(domainMetricEntity.getAvgResponseTimeNs())
-                    .minResponseTime(domainMetricEntity.getMinResponseTimeNs())
-                    .metricPeriodStart(domainMetricEntity.getStartPeriod())
-                    .metricPeriodEnd(domainMetricEntity.getEndPeriod())
-                    .protocol(protocol)
-                    .build();
-            httpMetrics.add(httpMetric);
-        }
-        return new PaginatedDto<>(
-                httpMetrics,
-                domainMetricEntities.getTotalElements(),
-                domainMetricEntities.getTotalPages(),
-                domainMetricEntities.getNumber(),
-                domainMetricEntities.getNumberOfElements()
         );
     }
 }
