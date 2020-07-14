@@ -272,41 +272,51 @@ public class MetricService extends AbstractService{
         private final DomainMetricEntity.Period period;
 
         public TimeFrame(ScheduledPeriod period) {
-            if (period.equals(ScheduledPeriod.LAST_HOUR)) {
-                this.period = DomainMetricEntity.Period.HOUR;
-                this.endDate = Date.from(ZonedDateTime.now().minusHours(1).withMinute(59).withSecond(59).toInstant());
-                this.startDate = Date.from(ZonedDateTime.now().minusHours(1).withMinute(0).withSecond(0).toInstant());
-            } else if (period.equals(ScheduledPeriod.LAST_DAY)) {
-                this.period = DomainMetricEntity.Period.DAY;
-                this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
-                this.startDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(0).withMinute(0).withSecond(0).toInstant());
-            } else if (period.equals(ScheduledPeriod.LAST_WEEK)) {
-                this.period = DomainMetricEntity.Period.WEEK;
-                this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
-                this.startDate = Date.from(ZonedDateTime.now().minusDays(7).withHour(0).withMinute(0).withSecond(0).toInstant());
-            } else {
-                this.period = DomainMetricEntity.Period.MONTH;
-                this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
-                this.startDate = Date.from(ZonedDateTime.now().minusMonths(1).withHour(0).withMinute(0).withSecond(0).toInstant());
+            switch (period) {
+                case LAST_HOUR:
+                    this.period = DomainMetricEntity.Period.HOUR;
+                    this.endDate = Date.from(ZonedDateTime.now().minusHours(1).withMinute(59).withSecond(59).toInstant());
+                    this.startDate = Date.from(ZonedDateTime.now().minusHours(1).withMinute(0).withSecond(0).toInstant());
+                    break;
+                case LAST_DAY:
+                    this.period = DomainMetricEntity.Period.DAY;
+                    this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
+                    this.startDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(0).withMinute(0).withSecond(0).toInstant());
+                    break;
+                case LAST_WEEK:
+                    this.period = DomainMetricEntity.Period.WEEK;
+                    this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
+                    this.startDate = Date.from(ZonedDateTime.now().minusDays(7).withHour(0).withMinute(0).withSecond(0).toInstant());
+                    break;
+                default:
+                    this.period = DomainMetricEntity.Period.MONTH;
+                    this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
+                    this.startDate = Date.from(ZonedDateTime.now().minusMonths(1).withHour(0).withMinute(0).withSecond(0).toInstant());
+                    break;
             }
         }
 
         public TimeFrame(CalculatedPeriod period) {
             this.endDate = Date.from(ZonedDateTime.now().toInstant());
-            if (period.equals(CalculatedPeriod.THIS_HOUR)) {
-                this.period = DomainMetricEntity.Period.HOUR;
-                this.startDate = Date.from(ZonedDateTime.now().minusHours(1).toInstant());
-            } else if (period.equals(CalculatedPeriod.THIS_DAY)) {
-                this.period = DomainMetricEntity.Period.DAY;
-                this.startDate = Date.from(ZonedDateTime.now().minusDays(1).toInstant());
-            } else if (period.equals(CalculatedPeriod.THIS_WEEK)) {
-                this.period = DomainMetricEntity.Period.WEEK;
-                this.startDate = Date.from(ZonedDateTime.now().minusDays(7).toInstant());
-            } else if (period.equals(CalculatedPeriod.THIS_MONTH)) {
-                this.period = DomainMetricEntity.Period.MONTH;
-                this.startDate = Date.from(ZonedDateTime.now().minusMonths(1).toInstant());
-            } else {
-                throw new IllegalArgumentException();
+            switch (period) {
+                case THIS_HOUR:
+                    this.period = DomainMetricEntity.Period.HOUR;
+                    this.startDate = Date.from(ZonedDateTime.now().minusHours(1).toInstant());
+                    break;
+                case THIS_DAY:
+                    this.period = DomainMetricEntity.Period.DAY;
+                    this.startDate = Date.from(ZonedDateTime.now().minusDays(1).toInstant());
+                    break;
+                case THIS_WEEK:
+                    this.period = DomainMetricEntity.Period.WEEK;
+                    this.startDate = Date.from(ZonedDateTime.now().minusDays(7).toInstant());
+                    break;
+                case THIS_MONTH:
+                    this.period = DomainMetricEntity.Period.MONTH;
+                    this.startDate = Date.from(ZonedDateTime.now().minusMonths(1).toInstant());
+                    break;
+                default:
+                    throw new IllegalArgumentException();
             }
         }
 

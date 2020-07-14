@@ -20,7 +20,7 @@ public class OldDomainCheckItemReader extends RepositoryItemReader<DomainCheckEn
 
     public OldDomainCheckItemReader(DomainCheckRepository domainCheckRepository, Integer threshold) {
         this.setRepository(domainCheckRepository);
-        this.setMethodName("findAllCheckedBeforeDate");
+        this.setMethodName("findAllNonFirstCheckedBeforeDate");
         this.setPageSize(10);
         this.setSort(Map.of("createdAt", Sort.Direction.ASC));
         if (threshold > 0) {
