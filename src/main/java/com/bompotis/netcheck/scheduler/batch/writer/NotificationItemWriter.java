@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -67,55 +68,56 @@ public class NotificationItemWriter implements ItemWriter<DomainCheckEntity> {
                 continue;
             }
             var checkMap = mapChecks(check.getProtocolCheckEntities());
+            var previousCheckMap = mapChecks(check.getPreviousProtocolCheckEntities());
 
             if (check.isHttpCheckChange()) {
                 var httpCheck = checkMap.get("HTTP");
-                boolean isUp = Optional.ofNullable(httpCheck.getStatusCode()).orElse(1000) < 400;
-                var message = String.format(
-                        "%s State for %s has changed to %s with status code %s",
-                        httpCheck.getProtocol().name(),
-                        httpCheck.getHostname(),
-                        isUp ? "UP" : "DOWN",
-                        httpCheck.getStatusCode()
-                );
-                notifications.add(new NotificationDto(message));
+                var previousHttpCheck = previousCheckMap.get("HTTP");
+                notifications.add(new NotificationDto.Builder()
+                        .hostname(httpCheck.getHostname())
+                        .currentState(httpCheck)
+                        .previousState(previousHttpCheck)
+                        .connectionAccepted(httpCheck.isConnectionAccepted())
+                        .dnsResolves(httpCheck.getDnsResolves())
+                        .ipAddress(check.getHttpIpAddress())
+                        .redirectUri(httpCheck.getRedirectUri())
+                        .responseTimeNs(check.getHttpResponseTimeNs())
+                        .statusCode(httpCheck.getStatusCode())
+                        .timeCheckedOn(check.getTimeCheckedOn())
+                        .type(NotificationDto.Type.HTTP)
+                        .build());
             }
             var httpCheck = checkMap.get("HTTPS");
+            var previousHttpCheck = previousCheckMap.get("HTTP");
             if (check.isHttpsCheckChange()) {
-                boolean isUp = Optional.ofNullable(httpCheck.getStatusCode()).orElse(1000) < 400;
-                var message = String.format(
-                        "%s State for %s has changed to %s with status code %s",
-                        httpCheck.getProtocol().name(),
-                        httpCheck.getHostname(),
-                        isUp ? "UP" : "DOWN",
-                        httpCheck.getStatusCode()
-                );
-                notifications.add(new NotificationDto(message));
+                notifications.add(new NotificationDto.Builder()
+                        .hostname(httpCheck.getHostname())
+                        .currentState(httpCheck)
+                        .previousState(previousHttpCheck)
+                        .connectionAccepted(httpCheck.isConnectionAccepted())
+                        .dnsResolves(httpCheck.getDnsResolves())
+                        .ipAddress(check.getHttpIpAddress())
+                        .redirectUri(httpCheck.getRedirectUri())
+                        .responseTimeNs(check.getHttpResponseTimeNs())
+                        .statusCode(httpCheck.getStatusCode())
+                        .timeCheckedOn(check.getTimeCheckedOn())
+                        .type(NotificationDto.Type.HTTPS)
+                        .build());
             }
             var issuerCertificate = getIssuerCertificate(check.getCertificateEntities());
+            var previousIssuerCertificate = getIssuerCertificate(check.getPreviousCertificateEntities());
             if (check.isCertificatesChange() && Optional.ofNullable(issuerCertificate).isPresent()) {
-                if (issuerCertificate.getExpired()) {
-                    var message = String.format(
-                            "Certificates for %s has expired. New Expiration date: %s",
-                            httpCheck.getHostname(),
-                            issuerCertificate.getNotAfter()
-                    );
-                    notifications.add(new NotificationDto(message));
-                } else if (!issuerCertificate.isValid()) {
-                    var message = String.format(
-                            "Certificates for %s have changed. New certificate is invalid. Expiration Date: %s",
-                            httpCheck.getHostname(),
-                            issuerCertificate.getNotAfter().toString()
-                    );
-                    notifications.add(new NotificationDto(message));
-                } else {
-                    var message = String.format(
-                            "Certificates for %s have changed. New Expiration date: %s",
-                            httpCheck.getHostname(),
-                            issuerCertificate.getNotAfter().toString()
-                    );
-                    notifications.add(new NotificationDto(message));
-                }
+                notifications.add(new NotificationDto.Builder()
+                        .hostname(httpCheck.getHostname())
+                        .currentState(issuerCertificate)
+                        .previousState(previousIssuerCertificate)
+                        .connectionAccepted(httpCheck.isConnectionAccepted())
+                        .issuerCertificateExpirationDate(issuerCertificate.getNotAfter())
+                        .issuerCertificateHasExpired(issuerCertificate.getExpired())
+                        .issuerCertificateIsValid(issuerCertificate.isValid())
+                        .timeCheckedOn(check.getTimeCheckedOn())
+                        .type(NotificationDto.Type.CERTIFICATE)
+                        .build());
             }
         }
         return notifications;
@@ -132,14 +134,12 @@ public class NotificationItemWriter implements ItemWriter<DomainCheckEntity> {
     }
 
     private CertificateEntity getIssuerCertificate(Set<CertificateEntity> certificates) {
-        CertificateEntity certificate = null;
-        for (var cert: certificates) {
-            if (cert.getBasicConstraints() > 0) {
-                certificate = cert;
-                break;
-            }
-        }
-        return certificate;
+        AtomicReference<CertificateEntity> certificate = new AtomicReference<>();
+        Optional.ofNullable(certificates).ifPresentOrElse(
+                (certs) -> certs.stream().filter(cert -> cert.getBasicConstraints() > 0).findFirst().ifPresent(certificate::set),
+                () -> certificate.set(null)
+        );
+        return certificate.get();
 
     }
 }

@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
-import java.time.Duration;
-import java.time.Period;
 import java.util.Date;
 
 /**

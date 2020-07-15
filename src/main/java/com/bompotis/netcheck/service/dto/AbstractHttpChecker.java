@@ -41,8 +41,8 @@ public abstract class AbstractHttpChecker {
 
     private Boolean checkAssembler(HttpCheckDto.Builder httpCheckDtoBuilder, HttpURLConnection conn, long beginTime) throws IOException {
         var connectedSuccessfully = true;
+        var hostname = conn.getURL().getHost();
         try {
-            var hostname = conn.getURL().getHost();
             httpCheckDtoBuilder
                     .hostname(hostname)
                     .timeCheckedOn(new Date());
@@ -52,6 +52,8 @@ public abstract class AbstractHttpChecker {
             var responseCode = conn.getResponseCode();
             if (!STATUS_CODES_WITH_EMPTY_RESPONSES.contains(responseCode)) {
                 conn.getInputStream();
+            } else {
+                LOG.info("{} status code received while checking {}. Skipping data fetch.", responseCode, hostname);
             }
             if (REDIRECT_STATUS_CODES.contains(responseCode)) {
                 httpCheckDtoBuilder.redirectUri(conn.getHeaderField("Location"));
@@ -61,9 +63,11 @@ public abstract class AbstractHttpChecker {
                     .responseTimeNs(System.nanoTime() - beginTime)
                     .statusCode(responseCode);
         } catch (UnknownHostException e) {
+            LOG.error("Unknown Host for {}.", hostname, e);
             httpCheckDtoBuilder.dnsResolved(false).connectionAccepted(false);
             connectedSuccessfully = false;
         } catch (ConnectException e) {
+            LOG.error("Connection Exception for {}.", hostname, e);
             httpCheckDtoBuilder.connectionAccepted(false).dnsResolved(true);
             connectedSuccessfully = false;
         }

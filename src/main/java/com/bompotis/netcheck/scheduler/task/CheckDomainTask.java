@@ -1,5 +1,7 @@
 package com.bompotis.netcheck.scheduler.task;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -9,6 +11,7 @@ import org.springframework.batch.core.repository.JobExecutionAlreadyRunningExcep
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +20,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CheckDomainTask {
+
+    private static final Logger log = LoggerFactory.getLogger(CheckDomainTask.class);
 
     private final JobLauncher jobLauncher;
 
@@ -32,6 +37,11 @@ public class CheckDomainTask {
 
     private final Job generateWeeklyMetricsJob;
 
+    private final Job cleanUpDomainChecksJob;
+
+    @Value("${settings.schedulers.cleanup.enabled:false}")
+    private Boolean cleanupEnabled;
+
     @Autowired
     public CheckDomainTask(JobLauncher jobLauncher,
                            Job fiveMinCheckDomainsStatusJob,
@@ -39,7 +49,8 @@ public class CheckDomainTask {
                            Job fifteenMinCheckDomainsStatusJob,
                            Job generateHourlyMetricsJob,
                            Job generateDailyMetricsJob,
-                           Job generateWeeklyMetricsJob) {
+                           Job generateWeeklyMetricsJob,
+                           Job cleanUpDomainChecksJob) {
         this.jobLauncher = jobLauncher;
         this.fiveMinCheckDomainsStatusJob = fiveMinCheckDomainsStatusJob;
         this.tenMinCheckDomainsStatusJob = tenMinCheckDomainsStatusJob;
@@ -47,6 +58,19 @@ public class CheckDomainTask {
         this.generateHourlyMetricsJob = generateHourlyMetricsJob;
         this.generateDailyMetricsJob = generateDailyMetricsJob;
         this.generateWeeklyMetricsJob = generateWeeklyMetricsJob;
+        this.cleanUpDomainChecksJob = cleanUpDomainChecksJob;
+    }
+
+    @Scheduled(cron = "0 0 0 2 * *")
+    public void deleteOldDomainChecks() throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+        if (cleanupEnabled) {
+            JobParameters params = new JobParametersBuilder()
+                    .addString("JobID", String.valueOf(System.currentTimeMillis()))
+                    .toJobParameters();
+            jobLauncher.run(cleanUpDomainChecksJob, params);
+        } else {
+            log.info("Cleanup scheduler is disabled. Skipping cleanup.");
+        }
     }
 
     @Scheduled(cron = "0 */5 * * * *")

@@ -13,12 +13,12 @@ public class StateDto {
     private final Integer statusCode;
     private final Date timeCheckedOn;
     private final Boolean dnsResolves;
+    private final Boolean connectionAccepted;
     private final String hostname;
     private final String protocol;
     private final String redirectUri;
-    private final boolean certificatesChange;
-    private final boolean httpCheckChange;
-    private final boolean httpsCheckChange;
+    private final StateDto previousState;
+    private final String changeType;
     private final Duration duration;
 
     public Integer getStatusCode() {
@@ -62,39 +62,54 @@ public class StateDto {
     }
 
     public String getReason() {
-        if (certificatesChange && httpCheckChange && httpsCheckChange) {
+        if (changeType.equals("FIRST_CHECK")) {
             return "First Check";
         }
-        if (protocol.equals("HTTPS") && httpsCheckChange) {
-            if (!dnsResolves) {
-                return "Website went DOWN. Domain name cannot be resolved";
+        if (changeType.equals("NO_CHANGE")) {
+            return "WHY ARE WE HERE?";
+        }
+        if (changeType.contains(protocol + "_") && Optional.ofNullable(previousState).isPresent()) {
+            if (!dnsResolves && previousState.getDnsResolves()) {
+                return "DOWN. Domain name cannot be resolved";
             }
-            if (!isUp()) {
-                return "Website went DOWN. HTTP RESPONSE STATUS CODE " + statusCode;
+            if (!connectionAccepted && previousState.getConnectionAccepted()) {
+                return "DOWN. Connection refused";
             }
-            if (certificatesChange) {
+            if (!isUp() && previousState.isUp()) {
+                return "DOWN. HTTP RESPONSE STATUS CODE " + statusCode;
+            }
+            if (changeType.contains("CERT_")) {
                 return "Certificates Changed";
             }
-            else {
-                return "Website went UP. HTTP RESPONSE STATUS CODE " + statusCode;
+            if (Optional.ofNullable(previousState.redirectUri).isPresent()) {
+                if (!statusCode.equals(previousState.statusCode) && !redirectUri.equals(previousState.redirectUri)) {
+                    return "UP. Redirects to" + redirectUri;
+                }
+                if (statusCode.equals(previousState.statusCode) && !redirectUri.equals(previousState.redirectUri)) {
+                    return "Redirection changed to " + redirectUri;
+                }
+            }
+            if (isUp() && !previousState.isUp()) {
+                return "UP with response status code " + statusCode;
             }
         }
-        if (protocol.equals("HTTP") && httpCheckChange) {
-            if (!dnsResolves) {
-                return "Website went DOWN. Domain name cannot be resolved";
-            }
-            if (!isUp()) {
-                return "Website went DOWN. HTTP RESPONSE STATUS CODE " + statusCode;
-            }
-            else {
-                return "Website went UP. HTTP RESPONSE STATUS CODE " + statusCode;
-            }
-        }
-        return "Website went UP. HTTP RESPONSE STATUS CODE " + statusCode;
+        return "We shouldn't be here";
     }
 
     public Duration getDuration() {
         return duration;
+    }
+
+    public StateDto getPreviousState() {
+        return previousState;
+    }
+
+    public String getChangeType() {
+        return changeType;
+    }
+
+    public Boolean getConnectionAccepted() {
+        return connectionAccepted;
     }
 
     public static class Builder {
@@ -102,12 +117,12 @@ public class StateDto {
         private Integer statusCode;
         private Date timeCheckedOn;
         private Boolean dnsResolves;
+        private Boolean connectionAccepted;
         private String hostname;
+        private String changeType;
         private String protocol;
         private String redirectUri;
-        private boolean certificatesChange = false;
-        private boolean httpCheckChange = false;
-        private boolean httpsCheckChange = false;
+        private StateDto previousState;
         private Duration duration;
 
         public Builder id(String id) {
@@ -130,8 +145,18 @@ public class StateDto {
             return this;
         }
 
+        public Builder connectionAccepted(Boolean connectionAccepted) {
+            this.connectionAccepted = connectionAccepted;
+            return this;
+        }
+
         public Builder hostname(String hostname) {
             this.hostname = hostname;
+            return this;
+        }
+
+        public Builder changeType(String changeType) {
+            this.changeType = changeType;
             return this;
         }
 
@@ -145,18 +170,8 @@ public class StateDto {
             return this;
         }
 
-        public Builder certificatesChange(boolean certificatesChange) {
-            this.certificatesChange = certificatesChange;
-            return this;
-        }
-
-        public Builder httpCheckChange(boolean httpCheckChange) {
-            this.httpCheckChange = httpCheckChange;
-            return this;
-        }
-
-        public Builder httpsCheckChange(boolean httpsCheckChange) {
-            this.httpsCheckChange = httpsCheckChange;
+        public Builder previousState(StateDto previousState) {
+            this.previousState = previousState;
             return this;
         }
 
@@ -175,12 +190,12 @@ public class StateDto {
         this.statusCode = b.statusCode;
         this.timeCheckedOn = b.timeCheckedOn;
         this.dnsResolves = b.dnsResolves;
+        this.connectionAccepted = b.connectionAccepted;
         this.hostname = b.hostname;
         this.protocol = b.protocol;
         this.redirectUri = b.redirectUri;
-        this.certificatesChange = b.certificatesChange;
-        this.httpCheckChange = b.httpCheckChange;
-        this.httpsCheckChange = b.httpsCheckChange;
+        this.previousState = b.previousState;
         this.duration = b.duration;
+        this.changeType = b.changeType;
     }
 }

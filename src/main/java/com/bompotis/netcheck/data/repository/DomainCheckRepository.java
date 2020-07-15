@@ -24,24 +24,49 @@ public interface DomainCheckRepository extends JpaRepository<DomainCheckEntity, 
 
     Page<DomainCheckEntity> findAllByDomain(String domain, Pageable pageable);
 
+    @Query("select d from DomainCheckEntity d where d.timeCheckedOn < ?1 and d.changeType = 'NO_CHANGE'")
+    Page<DomainCheckEntity> findAllNonFirstCheckedBeforeDate(Date beforeDate, Pageable pageable);
+
     @Query("select d from DomainCheckEntity d where d.createdAt = (" +
             "select max(d1.createdAt) from DomainCheckEntity d1 where d1.domain = d.domain ) ")
     Page<DomainCheckEntity> findAllLastChecksPerDomain(PageRequest pageRequest);
 
+    @Query("select d from DomainCheckEntity d where d.domain = ?1 and d.createdAt = (" +
+            "select max(d1.createdAt) from DomainCheckEntity d1 where d1.domain = d.domain ) ")
+    Optional<DomainCheckEntity> findDomainWithItsLastChecks(String domain);
+
     @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
-            "and (d.httpCheckChange = true or d.httpsCheckChange = true or d.certificatesChange = true)")
+            "and not d.changeType = 'NO_CHANGE' ")
     Page<DomainCheckEntity> findAllStateChanges(String domain, PageRequest pageRequest);
 
     @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
-            "and d.httpCheckChange = true")
+            "and (" +
+                "d.changeType = 'FIRST_CHECK' or " +
+                "d.changeType = 'HTTP_CHANGE' or " +
+                "d.changeType = 'HTTP_CERTS_CHANGE' or " +
+                "d.changeType = 'HTTP_HTTPS_CHANGE' or " +
+                "d.changeType = 'HTTP_HTTPS_CERTS_CHANGE')")
     Page<DomainCheckEntity> findAllHttpStateChanges(String domain, PageRequest pageRequest);
 
     @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
-            "and d.httpsCheckChange = true")
+            "and (" +
+            "d.changeType = 'FIRST_CHECK' or " +
+            "d.changeType = 'HTTPS_CHANGE' or " +
+            "d.changeType = 'HTTPS_CERTS_CHANGE' or " +
+            "d.changeType = 'HTTP_HTTPS_CHANGE' or " +
+            "d.changeType = 'HTTP_HTTPS_CERTS_CHANGE')")
     Page<DomainCheckEntity> findAllHttpsStateChanges(String domain, PageRequest pageRequest);
 
     @Query("select d from DomainCheckEntity d where d.domain = ?1 " +
-            "and (d.httpsCheckChange = true or d.certificatesChange = true)")
+            "and (" +
+            "d.changeType = 'FIRST_CHECK' or " +
+            "d.changeType = 'HTTPS_CHANGE' or " +
+            "d.changeType = 'HTTP_CERTS_CHANGE' or " +
+            "d.changeType = 'HTTPS_CERTS_CHANGE' or " +
+            "d.changeType = 'CERTS_CHANGE' or " +
+            "d.changeType = 'HTTPS_CERTS_CHANGE' or " +
+            "d.changeType = 'HTTP_HTTPS_CHANGE' or " +
+            "d.changeType = 'HTTP_HTTPS_CERTS_CHANGE')")
     Page<DomainCheckEntity> findAllHttpsAndCertificateStateChanges(String domain, PageRequest pageRequest);
 
     @Query("select d from DomainCheckEntity d where d.domain = ?1 " +

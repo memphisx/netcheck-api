@@ -25,11 +25,16 @@ spring:
     job:
       enabled: false
   jpa:
+    open-in-view: true
     hibernate:
       ddl-auto: update
 settings:
   cors:
     origin: "*"
+  schedulers:
+    cleanup:
+      enabled: false
+      deleteOlderThan: 3
 management:
   endpoints:
     enabled-by-default: false
