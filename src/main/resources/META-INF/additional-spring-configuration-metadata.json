@@ -21,6 +21,11 @@
       "description": "Pushover User ID token."
     },
     {
+      "name": "settings.notifications.pushover.notifyOnlyFor",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Filter for only sending specific type of notifications."
+    },
+    {
       "name": "settings.schedulers.cleanup.enabled",
       "type": "java.lang.String",
       "description": "Enable or disable deletion of older checks every month."
