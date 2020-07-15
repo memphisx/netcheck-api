@@ -48,8 +48,8 @@ public class PushoverService implements NotificationService {
             log.info("Pushover notification: Request id {} - Status {}.",status.getRequestId(),status.getStatus());
         } else {
             var message = isEnabled() ?
-                    "Pushover notifications disabled. Skipping!" :
-                    "Notifications for type " + notification.getType().name() + "are disabled. Skipping!";
+                    String.format("Notifications for type %s are disabled. Skipping!",notification.getType().name()) :
+                    "Pushover notifications disabled. Skipping!";
             log.info(message);
         }
     }

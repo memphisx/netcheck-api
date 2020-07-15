@@ -16,4 +16,4 @@ USER netcheck
 VOLUME /tmp
 EXPOSE 8080 8081
 ENTRYPOINT ["java", "-noverify", "-jar", "/var/app/netcheck/netcheck.jar"]
-HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD curl -sSL "http://localhost:8080/actuator/health" || exit 1
+HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD curl -sSL "http://localhost:8080/api/v1/actuator/health" || exit 1
