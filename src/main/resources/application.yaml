@@ -21,13 +21,13 @@ spring:
     username: ${postgres.user}
     password: ${postgres.password}
   batch:
-    initialize-schema: always
+    initialize-schema: never
     job:
       enabled: false
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 settings:
   cors:
     origin: "*"
