@@ -21,7 +21,7 @@ import static org.springframework.http.ResponseEntity.ok;
  */
 @RestController
 @CrossOrigin(origins = {"${settings.cors.origin}"})
-@RequestMapping(value = "/check")
+@RequestMapping(value = "/api/v1/check")
 public class CheckController {
 
     private final DomainService domainService;

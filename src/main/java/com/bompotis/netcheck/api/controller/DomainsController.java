@@ -23,7 +23,7 @@ import static org.springframework.http.ResponseEntity.ok;
  */
 @RestController
 @CrossOrigin(origins = {"${settings.cors.origin}"})
-@RequestMapping(value = "/domains")
+@RequestMapping(value = "/api/v1/domains")
 public class DomainsController {
 
     private final DomainService domainService;
