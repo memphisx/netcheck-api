@@ -16,6 +16,9 @@
 
 	<properties>
 		<java.version>11</java.version>
+		<springdoc.version>1.4.3</springdoc.version>
+		<flyway.version>6.5.1</flyway.version>
+		<pushover-client.version>1.0.0</pushover-client.version>
 	</properties>
 
 	<dependencies>
@@ -59,7 +62,7 @@
 		<dependency>
 			<groupId>com.github.sps.pushover.net</groupId>
 			<artifactId>pushover-client</artifactId>
-			<version>1.0.0</version>
+			<version>${pushover-client.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -77,7 +80,22 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>6.5.1</version>
+			<version>${flyway.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-data-rest</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-hateoas</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.batch</groupId>

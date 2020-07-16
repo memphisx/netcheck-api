@@ -4,6 +4,12 @@ import com.bompotis.netcheck.api.model.*;
 import com.bompotis.netcheck.api.model.assembler.*;
 import com.bompotis.netcheck.service.DomainService;
 import com.bompotis.netcheck.service.MetricService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +30,7 @@ import static org.springframework.http.ResponseEntity.ok;
 @RestController
 @CrossOrigin(origins = {"${settings.cors.origin}"})
 @RequestMapping(value = "/api/v1/domains")
+@Tag(name = "Scheduled Domain Checks", description = "Operations for scheduled domain checks")
 public class DomainsController {
 
     private final DomainService domainService;
@@ -36,14 +43,22 @@ public class DomainsController {
         this.metricService = metricService;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @Operation(summary = "Get domains that are scheduled for periodical checking")
+    @GetMapping(produces={"application/hal+json"})
     public ResponseEntity<CollectionModel<DomainModel>> getDomains(
             @RequestParam(name = "page", required = false) Integer page,
             @RequestParam(name = "size", required = false) Integer size) throws IOException, KeyManagementException, NoSuchAlgorithmException {
         return ok(new DomainModelAssembler().toCollectionModel(domainService.getPaginatedDomains(page,size)));
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{domain}")
+    @Operation(summary = "Get scheduled domain config and its last checks")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Config and last checks of the domain",
+                    content = { @Content(mediaType = "application/hal+json",
+                            schema = @Schema(implementation = DomainModel.class)) }),
+            @ApiResponse(responseCode = "404", description = "Domain is not scheduled or no checks where found",
+                    content = @Content)})
+    @GetMapping(produces={"application/hal+json"}, path = "/{domain}")
     public ResponseEntity<DomainModel> getDomainStatus(@PathVariable("domain") String domain) {
         var result = new AtomicReference<ResponseEntity<DomainModel>>();
         domainService.getDomain(domain).ifPresentOrElse(
@@ -53,14 +68,16 @@ public class DomainsController {
         return result.get();
     }
 
-    @RequestMapping(method = RequestMethod.PUT, path = "/{domain}")
+    @Operation(summary = "Schedule domain for periodic checks")
+    @PutMapping(produces={"application/hal+json"}, path = "/{domain}")
     public ResponseEntity<Object> addDomainToScheduler(@PathVariable("domain") String domain,
                                                        @RequestParam(name = "frequency", required = false) Integer frequency) {
         domainService.scheduleDomainToCheck(domain, frequency);
         return ok().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history")
+    @Operation(summary = "Get all previous checks for the given domain")
+    @GetMapping(produces={"application/hal+json"}, path = "/{domain}/history")
     public ResponseEntity<CollectionModel<DomainCheckModel>> getDomainsHistory(@PathVariable("domain") String domain,
                                                                                @RequestParam(name = "page", required = false) Integer page,
                                                                                @RequestParam(name = "size", required = false) Integer size) {
@@ -70,7 +87,8 @@ public class DomainsController {
         return notFound().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/http")
+    @Operation(summary = "Get all previous HTTP checks for the given domain")
+    @GetMapping(produces={"application/hal+json"}, path = "/{domain}/http")
     public ResponseEntity<CollectionModel<HttpCheckModel>> getHttpChecks(@PathVariable("domain") String domain,
                                                                          @RequestParam(name = "page", required = false) Integer page,
                                                                          @RequestParam(name = "size", required = false) Integer size) {
@@ -80,7 +98,8 @@ public class DomainsController {
         return notFound().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/https")
+    @Operation(summary = "Get all previous HTTPS checks for the given domain")
+    @GetMapping(produces={"application/hal+json"}, path = "/{domain}/https")
     public ResponseEntity<CollectionModel<HttpCheckModel>> getHttpsChecks(@PathVariable("domain") String domain,
                                                                                @RequestParam(name = "page", required = false) Integer page,
                                                                                @RequestParam(name = "size", required = false) Integer size) {
@@ -91,7 +110,8 @@ public class DomainsController {
     }
 
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/metrics")
+    @Operation(summary = "Get all metrics for the given domain")
+    @GetMapping(produces={"application/hal+json"}, path = "/{domain}/metrics")
     public ResponseEntity<CollectionModel<MetricModel>> getDomainsMetrics(@PathVariable("domain") String domain,
                                                                           @RequestParam(name = "protocol") String protocol,
                                                                           @RequestParam(name = "period") String period,
@@ -114,7 +134,8 @@ public class DomainsController {
         return notFound().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/states")
+    @Operation(summary = "Get all previous states for the given domain")
+    @GetMapping(produces={"application/hal+json"}, path = "/{domain}/states")
     public ResponseEntity<CollectionModel<StateModel>> getDomainsStates(@PathVariable("domain") String domain,
                                                                         @RequestParam(name = "protocol", required = false) String protocol,
                                                                         @RequestParam(name = "includeCertificates", required = false) Boolean includeCertificates,
@@ -141,7 +162,14 @@ public class DomainsController {
         return notFound().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{domain}/history/{id}")
+    @Operation(summary = "Get a previous domain check by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Domain check is found",
+                    content = { @Content(mediaType = "application/hal+json",
+                            schema = @Schema(implementation = DomainCheckModel.class)) }),
+            @ApiResponse(responseCode = "404", description = "Invalid id or domain is not scheduled",
+                    content = @Content)})
+    @GetMapping(produces={"application/hal+json"}, path = "/{domain}/history/{id}")
     public ResponseEntity<DomainCheckModel> getDomainsHistoricEntry(@PathVariable("domain") String domain, @PathVariable("id") String id) {
         var result = new AtomicReference<ResponseEntity<DomainCheckModel>>();
         domainService.getDomainCheck(domain,id).ifPresentOrElse(

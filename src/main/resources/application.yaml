@@ -10,7 +10,16 @@ info:
     version-date: ${java.version.date}
   os:
     name: ${os.name}
+springdoc:
+  api-docs:
+    path: "/docs/v1/OpenAPIv3"
+  show-actuator: true
+  swagger-ui:
+    operationsSorter: method
+    path: "/docs/v1/"
 spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
   jmx:
     enabled: false
   datasource:
