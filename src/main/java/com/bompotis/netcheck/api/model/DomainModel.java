@@ -35,7 +35,7 @@ public class DomainModel extends RepresentationModel<DomainModel> {
         return domain;
     }
 
-    public DomainCheckModel getLastDomainCheckModel() {
+    public DomainCheckModel getLastChecks() {
         return lastDomainCheck;
     }
 
