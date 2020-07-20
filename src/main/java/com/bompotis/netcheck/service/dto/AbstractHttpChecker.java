@@ -36,7 +36,8 @@ public abstract class AbstractHttpChecker {
     private static final Set<Integer> REDIRECT_STATUS_CODES = Set.of(
             HttpURLConnection.HTTP_MOVED_TEMP,
             HttpURLConnection.HTTP_MOVED_PERM,
-            HttpURLConnection.HTTP_SEE_OTHER
+            HttpURLConnection.HTTP_SEE_OTHER,
+            307
     );
 
     private Boolean checkAssembler(HttpCheckDto.Builder httpCheckDtoBuilder, HttpURLConnection conn, long beginTime) throws IOException {
