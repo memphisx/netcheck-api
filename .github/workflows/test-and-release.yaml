@@ -53,4 +53,4 @@ jobs:
         run: |
           go get github.com/tcnksm/ghr
           VERSION=`cat ./version.txt`
-          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${GITHUB_REPOSITORY} -c ${GITHUB_SHA} -delete ${VERSION} ./jar/
+          ghr -t ${{ secrets.GITHUB_TOKEN }} -r ${GITHUB_REPOSITORY} -c ${GITHUB_SHA} -delete ${VERSION} ./jar/
