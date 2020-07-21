@@ -1,9 +1,8 @@
-name: Run Unit Tests
-
 on: [push]
 
 jobs:
   unit-tests:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     container: maven:3.6-adoptopenjdk-11-openj9
 
@@ -39,7 +38,7 @@ jobs:
           path: target/netcheck.jar
 
   release:
-    name: Create Github Release
+    name: Publish Github Release
     runs-on: ubuntu-latest
     container: golang
     needs: unit-tests
