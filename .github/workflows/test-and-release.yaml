@@ -49,8 +49,8 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: jar
-      - run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
-        shell: bash
+      - name: Extract repo name
+        run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
       - name: Publish Release on GitHub
         run: |
           go get github.com/tcnksm/ghr
