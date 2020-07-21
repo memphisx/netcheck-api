@@ -25,3 +25,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Install dependencies and run tests
         run: mvn clean install
+        env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgresql
+          POSTGRES_PASSWORD: letmein
+          POSTGRES_DB: test_db
