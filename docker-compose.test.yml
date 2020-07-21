@@ -14,6 +14,8 @@ services:
 
   sut:
     build: .
+    depends_on:
+      - test-db
     environment:
       POSTGRES_HOST: test-db
       POSTGRES_USER: postgresql
