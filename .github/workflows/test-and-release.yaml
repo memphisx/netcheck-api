@@ -31,3 +31,27 @@ jobs:
           POSTGRES_USER: postgresql
           POSTGRES_PASSWORD: letmein
           POSTGRES_DB: test_db
+      - name: Upload jar file
+        uses: actions/upload-artifact@v1
+        with:
+          name: jar
+          path: target/netcheck.jar
+
+  release:
+    name: Create Github Release
+    runs-on: ubuntu-latest
+    container: golang
+    needs: unit-tests
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Download jar file
+        uses: actions/download-artifact@v1
+        with:
+          name: jar
+      - name: Publish Release on GitHub
+        run: |
+          go get github.com/tcnksm/ghr
+          VERSION=`cat ./version.txt`
+          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${GITHUB_REPOSITORY} -c ${GITHUB_SHA} -delete ${VERSION} ./jar/
