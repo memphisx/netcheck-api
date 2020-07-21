@@ -1,0 +1,56 @@
+on: [push]
+
+jobs:
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    container: maven:3.6-adoptopenjdk-11-openj9
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgresql
+          POSTGRES_PASSWORD: letmein
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Install dependencies and run tests
+        run: mvn clean install
+        env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgresql
+          POSTGRES_PASSWORD: letmein
+          POSTGRES_DB: test_db
+      - name: Upload jar file
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v1
+        with:
+          name: jar
+          path: target/netcheck.jar
+
+  release:
+    name: Publish Github Release
+    runs-on: ubuntu-latest
+    container: golang
+    needs: unit-tests
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Download jar file
+        uses: actions/download-artifact@v1
+        with:
+          name: jar
+      - name: Publish Release on GitHub
+        run: |
+          go get github.com/tcnksm/ghr
+          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./jar/

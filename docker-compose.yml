@@ -7,6 +7,8 @@ services:
     env_file:
       - database.env
       - .env
+    depends_on:
+      - db
     build:
       context: ./
       dockerfile: ./Dockerfile

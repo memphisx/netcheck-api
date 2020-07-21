@@ -1,10 +1,12 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/test_db
-    username: postgresql
-    password: letmein
+    url: jdbc:postgresql://${postgres.host:localhost}:${postgres.port:5432}/${postgres.db:test_db}
+    username: ${postgres.user:postgresql}
+    password: ${postgres.password:letmein}
   batch:
     initialize-schema: always
+    job:
+      enabled: false
   jpa:
     hibernate:
       ddl-auto: create-drop
