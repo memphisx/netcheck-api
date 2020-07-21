@@ -32,6 +32,7 @@ jobs:
           POSTGRES_PASSWORD: letmein
           POSTGRES_DB: test_db
       - name: Upload jar file
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v1
         with:
           name: jar
@@ -42,6 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     container: golang
     needs: unit-tests
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
