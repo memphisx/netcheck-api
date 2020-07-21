@@ -3,7 +3,7 @@ name: Run Unit Tests
 on: [push]
 
 jobs:
-  container-job:
+  unit-tests:
     runs-on: ubuntu-latest
     container: maven:3.6-adoptopenjdk-11-openj9
 

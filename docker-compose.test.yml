@@ -12,6 +12,16 @@ services:
     ports:
       - 5432:5432
 
+  sut:
+    build: .
+    environment:
+      POSTGRES_HOST: test-db
+      POSTGRES_USER: postgresql
+      POSTGRES_PASSWORD: letmein
+      POSTGRES_DB: test_db
+      POSTGRES_PORT: 5432
+    command: curl -sSL "http://localhost:8080/api/v1/actuator/health" || exit 1
+
 volumes:
   db-test-data:
     driver: local
