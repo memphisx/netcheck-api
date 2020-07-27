@@ -57,9 +57,13 @@ management:
   endpoint:
     info:
       enabled: true
+    httptrace:
+      enabled: true
     metrics:
       enabled: true
     health:
       enabled: true
       show-details: always
       show-components: always
+server:
+  forward-headers-strategy: native
