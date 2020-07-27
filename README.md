@@ -1,5 +1,9 @@
-[![NetCheck](https://github.com/memphisx/netcheck-frontend/raw/master/src/assets/netcheck-logo.png)](https://ncheck.eu)
 <!-- prettier-ignore-start -->
+<p align="center">
+  <a href="https://ncheck.eu">
+    <img alt="NetCheck" src="https://github.com/memphisx/netcheck-frontend/raw/master/src/assets/netcheck-logo.png" />
+  </a>
+</p>
 <p align="center">
   <a aria-label="License" href="https://github.com/memphisx/netcheck-api/blob/master/LICENSE">
     <img alt="" src="https://img.shields.io/github/license/memphisx/netcheck-api?style=for-the-badge&labelColor=000000&color=blue">
