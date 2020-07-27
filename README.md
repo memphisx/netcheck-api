@@ -1,5 +1,9 @@
-[![NetCheck](https://github.com/memphisx/netcheck-frontend/raw/master/src/assets/netcheck-logo.png)](https://ncheck.eu)
 <!-- prettier-ignore-start -->
+<p align="center">
+  <a href="https://ncheck.eu">
+    <img alt="NetCheck" src="https://github.com/memphisx/netcheck-frontend/raw/master/src/assets/netcheck-logo.png" />
+  </a>
+</p>
 <p align="center">
   <a aria-label="License" href="https://github.com/memphisx/netcheck-api/blob/master/LICENSE">
     <img alt="" src="https://img.shields.io/github/license/memphisx/netcheck-api?style=for-the-badge&labelColor=000000&color=blue">
@@ -52,6 +56,10 @@ Feel free to provide feature requests or any feedback through the
 
 The fastest way to run Netcheck is through docker, and the provided docker-compose.yml file to get all the required dependancies up and running
 
+
+#### Running a private instance locally with OpenJDK
+Coming soon™
+
 #### Using docker (recommended)
 
 * Follow the official documentation to install [Docker](https://docs.docker.com/get-docker/) 
@@ -68,11 +76,8 @@ with the values you are going to get from [Pushover after creating a new app](ht
 you can do with the api or bring up the [Netcheck frontend](https://github.com/memphisx/netcheck-frontend) 
 by following the instructions in the [README file](https://github.com/memphisx/netcheck-frontend/blob/develop/README.md)
 
-#### Running locally
-TODO
-
 #### Running publicly through traefik reverse proxy
-TODO
+Coming soon™
 
 <br><br>
 
