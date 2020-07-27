@@ -8,8 +8,6 @@
     <img alt="" src="https://img.shields.io/docker/v/memphisx/netcheck-api/latest?style=for-the-badge&label=Version">
   </a>
   <img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/memphisx/netcheck-api?style=for-the-badge">
-  <img alt="GitHub milestone" src="https://img.shields.io/github/milestones/progress-percent/memphisx/netcheck-api/1?style=for-the-badge&label=V1 Completion">
-  <img alt="Docker Image Size (latest semver)" src="https://img.shields.io/docker/image-size/memphisx/netcheck-api?style=for-the-badge&label=Docker Image size">
   <a href="https://github.com/memphisx/netcheck-api/issues">
     <img alt="GitHub issues" src="https://img.shields.io/github/issues/memphisx/netcheck-api?style=for-the-badge">
   </a>
@@ -31,7 +29,7 @@
 
 <br>
 
-<h1 align="center">Selfhosted performance and availability monitoring app</h1>
+<h1 align="center">Selfhosted performance & availability monitoring app</h1>
 <h3 align="center">Built on Spring Boot & Quasar Frameworks</h3>
 <h3 align="center"><a href="https://demo.ncheck.eu" target="_blank">Check out the demo</a></h3>
 
