@@ -1,39 +1,37 @@
-<!-- prettier-ignore-start -->
 <p align="center">
-  <a href="https://ncheck.eu">
-    <img alt="NetCheck" src="https://github.com/memphisx/netcheck-frontend/raw/master/src/assets/netcheck-logo.png" />
-  </a>
+    <a href="https://ncheck.eu">
+        <img alt="NetCheck" src="https://github.com/memphisx/netcheck-frontend/raw/master/src/assets/netcheck-logo.png" />
+    </a>
 </p>
 <p align="center">
-  <a aria-label="License" href="https://github.com/memphisx/netcheck-api/blob/master/LICENSE">
-    <img alt="" src="https://img.shields.io/github/license/memphisx/netcheck-api?style=for-the-badge&labelColor=000000&color=blue">
-  </a>
-  <a aria-label="Docker image version" href="https://hub.docker.com/repository/docker/memphisx/netcheck-api">
-    <img alt="" src="https://img.shields.io/docker/v/memphisx/netcheck-api/latest?style=for-the-badge&label=Version">
-  </a>
-  <img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/memphisx/netcheck-api?style=for-the-badge">
-  <a href="https://github.com/memphisx/netcheck-api/issues">
-    <img alt="GitHub issues" src="https://img.shields.io/github/issues/memphisx/netcheck-api?style=for-the-badge">
-  </a>
-  <img alt="GitHub issues by-label" src="https://img.shields.io/github/issues/memphisx/netcheck-api/bug?style=for-the-badge">
-  <a href="https://github.com/memphisx/netcheck-api/actions">
-    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/memphisx/netcheck-api/Run%20Unit%20Tests?style=for-the-badge">
-  </a>
+    <a aria-label="License" href="https://github.com/memphisx/netcheck-api/blob/master/LICENSE">
+        <img alt="" src="https://img.shields.io/github/license/memphisx/netcheck-api?style=for-the-badge&labelColor=000000&color=blue">
+    </a>
+    <a aria-label="Docker image version" href="https://hub.docker.com/repository/docker/memphisx/netcheck-api">
+        <img alt="" src="https://img.shields.io/docker/v/memphisx/netcheck-api/latest?style=for-the-badge&label=Version">
+    </a>
+    <img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/memphisx/netcheck-api?style=for-the-badge">
+    <a href="https://github.com/memphisx/netcheck-api/issues">
+        <img alt="GitHub issues" src="https://img.shields.io/github/issues/memphisx/netcheck-api?style=for-the-badge">
+    </a>
+    <img alt="GitHub issues by-label" src="https://img.shields.io/github/issues/memphisx/netcheck-api/bug?style=for-the-badge">
+    <a href="https://github.com/memphisx/netcheck-api/actions">
+        <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/memphisx/netcheck-api/Run%20Unit%20Tests?style=for-the-badge">
+    </a>
     <a href="https://github.com/memphisx/netcheck-api/stargazers">
-      <img alt="GitHub stars" src="https://img.shields.io/github/stars/memphisx/netcheck-api?style=for-the-badge">
+        <img alt="GitHub stars" src="https://img.shields.io/github/stars/memphisx/netcheck-api?style=for-the-badge">
     </a>
     <a href="https://github.com/memphisx/netcheck-api/network">
-      <img alt="GitHub forks" src="https://img.shields.io/github/forks/memphisx/netcheck-api?style=for-the-badge">
+        <img alt="GitHub forks" src="https://img.shields.io/github/forks/memphisx/netcheck-api?style=for-the-badge">
     </a>
     <img alt="GitHub watchers" src="https://img.shields.io/github/watchers/memphisx/netcheck-api?style=for-the-badge">
-  <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/memphisx/netcheck-api?style=for-the-badge">
+    <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/memphisx/netcheck-api?style=for-the-badge">
 </p>
-<!-- prettier-ignore-end -->
 
 
 <br>
 
-<h1 align="center">Selfhosted performance & availability monitoring app</h1>
+<h1 align="center">Performance & availability monitoring app</h1>
 <h3 align="center">Built on Spring Boot & Quasar Frameworks</h3>
 <h3 align="center"><a href="https://demo.ncheck.eu" target="_blank">Check out the demo</a></h3>
 
@@ -47,8 +45,8 @@ This git repository is for the api/backend side of the app. For an easy way to c
 of your websites check out the [Netcheck Frontend Repository](https://github.com/memphisx/netcheck-frontend) and its instructions on how to run it. 
 
 **WARNING**: The app is still under heavy development and quite rough around the edges.
-Feel free to provide feature requests or any feedback through the 
-[github issues page](https://github.com/memphisx/netcheck-api/issues).
+Feel free to report any bugs you may encounter, provide feedback or request features you would love to see in the future
+through the [github issues page](https://github.com/memphisx/netcheck-api/issues).
 
 <br>
 
