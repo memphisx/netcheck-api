@@ -1,4 +1,5 @@
 on: [push]
+name: Test and release
 
 jobs:
   unit-tests:
