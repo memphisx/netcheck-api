@@ -1,0 +1,67 @@
+version: '3.6'
+
+services:
+  db:
+    image: postgres
+    env_file:
+      - database.env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  traefik:
+    image: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mainresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.mainresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.mainresolver.acme.email=<your-email-address>"
+      - "--certificatesresolvers.mainresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - letsencrypt:/letsencrypt
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  api:
+    image: memphisx/netcheck-api:latest
+    env_file:
+      - database.env
+      - .env
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.netcheck-api.rule=Host(`<netcheck-domain>`) && PathPrefix(`/api`,`/docs`)"
+      - "traefik.http.routers.netcheck-api.entrypoints=websecure"
+      - "traefik.http.routers.netcheck-api.service=netcheck-api"
+      - "traefik.http.routers.netcheck-api.tls.certresolver=mainresolver"
+      - "traefik.http.services.netcheck-api.loadbalancer.server.port=8080"
+
+
+
+  frontend:
+    image: memphisx/netcheck-frontend:latest
+    depends_on:
+      - api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.netcheck-frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.netcheck-frontend.service=netcheck-frontend"
+      - "traefik.http.routers.netcheck-frontend.rule=Host(`<netcheck-domain>`)"
+      - "traefik.http.routers.netcheck-frontend.entrypoints=websecure"
+      - "traefik.http.routers.netcheck-frontend.tls.certresolver=mainresolver"
+
+
+volumes:
+  db-data:
+    driver: local
+  letsencrypt:
+    driver: local
