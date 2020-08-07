@@ -75,8 +75,8 @@ jobs:
         run: |
           docker buildx build --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:latest --tag ${{ secrets.DOCKER_IMAGE_NAME }}:`cat ./version.txt` --platform linux/amd64,linux/arm/v7,linux/arm64 .
       - name: build the bundled image
-          run: |
-            docker buildx build --file ./withUI.Dockerfile --push --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:latest --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:`cat ./version.txt` --platform linux/amd64,linux/arm/v7,linux/arm64 .
+        run: |
+          docker buildx build --file ./withUI.Dockerfile --push --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:latest --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:`cat ./version.txt` --platform linux/amd64,linux/arm/v7,linux/arm64 .
       - name: build the bundled openj9 image
-          run: |
-            docker buildx build --file ./amd64.openj9.withUI.Dockerfile --push --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:latest-openj9 --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:`cat ./version.txt`-openj9 --platform linux/amd64 .
+        run: |
+          docker buildx build --file ./amd64.openj9.withUI.Dockerfile --push --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:latest-openj9 --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:`cat ./version.txt`-openj9 --platform linux/amd64 .
