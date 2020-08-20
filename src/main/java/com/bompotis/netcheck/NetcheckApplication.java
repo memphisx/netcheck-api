@@ -18,6 +18,7 @@
 package com.bompotis.netcheck;
 
 import com.bompotis.netcheck.scheduler.batch.notification.config.PushoverConfig;
+import com.bompotis.netcheck.scheduler.batch.notification.config.WebhookConfig;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -41,7 +42,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableJpaRepositories
 @EnableScheduling
-@EnableConfigurationProperties(PushoverConfig.class)
+@EnableConfigurationProperties({PushoverConfig.class, WebhookConfig.class})
 @PropertySource(value="classpath:META-INF/build-info.properties", ignoreResourceNotFound=true)
 public class NetcheckApplication {
 

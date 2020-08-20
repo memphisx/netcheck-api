@@ -25,11 +25,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
  */
 @Component
+@Transactional
 public class DomainCheckProcessor implements ItemProcessor<DomainEntity, DomainCheckEntity> {
 
     private final DomainService domainService;

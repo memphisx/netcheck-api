@@ -34,6 +34,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.integration.async.AsyncItemWriter;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
@@ -47,12 +48,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.batch.integration.async.AsyncItemProcessor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
@@ -94,7 +97,7 @@ public class BatchConfiguration {
     @Bean
     public ItemReader<DomainEntity> domainReader() {
         var reader = new RepositoryItemReader<DomainEntity>();
-        reader.setPageSize(10);
+        reader.setPageSize(100);
         reader.setMethodName("findAll");
         reader.setSort(Map.of("createdAt", Sort.Direction.ASC));
         reader.setRepository(domainRepository);
@@ -109,7 +112,7 @@ public class BatchConfiguration {
     @Bean
     public ItemReader<DomainEntity> fiveMinFrequencyDomainReader() {
         var reader = new JpaPagingItemReader<DomainEntity>();
-        reader.setPageSize(10);
+        reader.setPageSize(100);
         reader.setQueryString("select d from DomainEntity d where d.checkFrequency = 5");
         reader.setEntityManagerFactory(entityManagerFactory);
         return reader;
@@ -118,7 +121,7 @@ public class BatchConfiguration {
     @Bean
     public JpaPagingItemReader<DomainEntity> tenMinFrequencyDomainReader() {
         var reader = new JpaPagingItemReader<DomainEntity>();
-        reader.setPageSize(10);
+        reader.setPageSize(100);
         reader.setQueryString("select d from DomainEntity d where d.checkFrequency = 10");
         reader.setEntityManagerFactory(entityManagerFactory);
         return reader;
@@ -127,7 +130,7 @@ public class BatchConfiguration {
     @Bean
     public JpaPagingItemReader<DomainEntity> fifteenMinFrequencyDomainReader() {
         var reader = new JpaPagingItemReader<DomainEntity>();
-        reader.setPageSize(10);
+        reader.setPageSize(100);
         reader.setQueryString("select d from DomainEntity d where d.checkFrequency = 15");
         reader.setEntityManagerFactory(entityManagerFactory);
         return reader;
@@ -237,14 +240,32 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step fiveMinCheckDomainsStep(ItemWriter<DomainCheckEntity> domainCheckEntityWriter,
+    public AsyncItemProcessor<DomainEntity, DomainCheckEntity> asyncBatchCheckProcessor(
+            DomainCheckProcessor domainCheckProcessor,
+            TaskExecutor asyncTaskExecutor) {
+        var itemProcessor = new AsyncItemProcessor<DomainEntity, DomainCheckEntity>();
+        itemProcessor.setDelegate(domainCheckProcessor);
+        itemProcessor.setTaskExecutor(asyncTaskExecutor);
+        return itemProcessor;
+    }
+
+    @Bean
+    public AsyncItemWriter<DomainCheckEntity> asyncDomainCheckEntityWriter(
+            ItemWriter<DomainCheckEntity> domainCheckEntityWriter) {
+        var asyncItemWriter = new AsyncItemWriter<DomainCheckEntity>();
+        asyncItemWriter.setDelegate(domainCheckEntityWriter);
+        return asyncItemWriter;
+    }
+
+    @Bean
+    public Step fiveMinCheckDomainsStep(AsyncItemWriter<DomainCheckEntity> asyncDomainCheckEntityWriter,
                                         TaskExecutor asyncTaskExecutor,
-                                        DomainCheckProcessor domainCheckProcessor) {
+                                        AsyncItemProcessor<DomainEntity, DomainCheckEntity> asyncBatchCheckProcessor) {
         return stepBuilderFactory.get("fiveMinCheckDomainsStep")
-                .<DomainEntity, DomainCheckEntity> chunk(10)
+                .<DomainEntity, Future<DomainCheckEntity>> chunk(100)
                 .reader(fiveMinFrequencyDomainReader())
-                .processor(domainCheckProcessor)
-                .writer(domainCheckEntityWriter)
+                .processor(asyncBatchCheckProcessor)
+                .writer(asyncDomainCheckEntityWriter)
                 .taskExecutor(asyncTaskExecutor)
                 .throttleLimit(10)
                 .allowStartIfComplete(true)
@@ -252,14 +273,14 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step tenMinCheckDomainsStep(ItemWriter<DomainCheckEntity> domainCheckEntityWriter,
+    public Step tenMinCheckDomainsStep(AsyncItemWriter<DomainCheckEntity> asyncDomainCheckEntityWriter,
                                        TaskExecutor asyncTaskExecutor,
-                                       DomainCheckProcessor domainCheckProcessor) {
+                                       AsyncItemProcessor<DomainEntity, DomainCheckEntity> asyncBatchCheckProcessor) {
         return stepBuilderFactory.get("tenMinCheckDomainsStep")
-                .<DomainEntity, DomainCheckEntity> chunk(10)
+                .<DomainEntity, Future<DomainCheckEntity>> chunk(100)
                 .reader(tenMinFrequencyDomainReader())
-                .processor(domainCheckProcessor)
-                .writer(domainCheckEntityWriter)
+                .processor(asyncBatchCheckProcessor)
+                .writer(asyncDomainCheckEntityWriter)
                 .taskExecutor(asyncTaskExecutor)
                 .throttleLimit(10)
                 .allowStartIfComplete(true)
@@ -267,14 +288,14 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step fifteenMinCheckDomainsStep(ItemWriter<DomainCheckEntity> domainCheckEntityWriter,
+    public Step fifteenMinCheckDomainsStep(AsyncItemWriter<DomainCheckEntity> asyncDomainCheckEntityWriter,
                                            TaskExecutor asyncTaskExecutor,
-                                           DomainCheckProcessor domainCheckProcessor) {
+                                           AsyncItemProcessor<DomainEntity, DomainCheckEntity> asyncBatchCheckProcessor) {
         return stepBuilderFactory.get("fifteenMinCheckDomainsStep")
-                .<DomainEntity, DomainCheckEntity> chunk(10)
+                .<DomainEntity, Future<DomainCheckEntity>>chunk(100)
                 .reader(fifteenMinFrequencyDomainReader())
-                .processor(domainCheckProcessor)
-                .writer(domainCheckEntityWriter)
+                .processor(asyncBatchCheckProcessor)
+                .writer(asyncDomainCheckEntityWriter)
                 .taskExecutor(asyncTaskExecutor)
                 .throttleLimit(10)
                 .allowStartIfComplete(true)
@@ -286,7 +307,7 @@ public class BatchConfiguration {
                                         ItemWriter<DomainCheckEntity> domainCheckEntityDeleter,
                                         TaskExecutor asyncTaskExecutor) {
         return stepBuilderFactory.get("cleanUpDomainChecksStep")
-                .<DomainCheckEntity, DomainCheckEntity> chunk(10)
+                .<DomainCheckEntity, DomainCheckEntity> chunk(100)
                 .reader(olderThanThreeMonthsDomainCheckReader)
                 .processor(new PassThroughItemProcessor<>())
                 .writer(domainCheckEntityDeleter)

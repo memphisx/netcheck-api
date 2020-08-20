@@ -17,11 +17,12 @@
  */
 package com.bompotis.netcheck.scheduler.batch.notification;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by Kyriakos Bompotis on 1/7/20.
@@ -65,9 +66,9 @@ public class NotificationDto {
 
     private final Boolean rootCertificatesChanged;
 
-    private final JsonObject currentState;
+    private final Map<String, Object> currentState;
 
-    private final JsonObject previousState;
+    private final Map<String, Object> previousState;
 
     public String getMessage() {
         switch (type) {
@@ -116,7 +117,7 @@ public class NotificationDto {
         return isUp ? Status.UP : Status.DOWN;
     }
 
-    public boolean isDnsResolves() {
+    public Boolean isDnsResolves() {
         return dnsResolves;
     }
 
@@ -144,11 +145,11 @@ public class NotificationDto {
         return type;
     }
 
-    public JsonObject getPreviousState() {
+    public Map<String, Object> getPreviousState() {
         return previousState;
     }
 
-    public JsonObject getCurrentState() {
+    public Map<String, Object> getCurrentState() {
         return currentState;
     }
 
@@ -165,13 +166,16 @@ public class NotificationDto {
         private Boolean issuerCertificateIsValid;
         private Date issuerCertificateExpirationDate;
         private Boolean rootCertificatesChanged;
-        private JsonObject currentState;
-        private JsonObject previousState;
+        private Map<String, Object> currentState;
+        private Map<String, Object> previousState;
         private String redirectUri;
         private String hostname;
         private Date timeCheckedOn;
         private Long responseTimeNs;
         private String ipAddress;
+        private final ObjectMapper oMapper = new ObjectMapper()
+                .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         public Builder statusCode(Integer statusCode) {
             this.statusCode = statusCode;
@@ -184,12 +188,12 @@ public class NotificationDto {
         }
 
         public Builder currentState(Object currentState) {
-            this.currentState = new Gson().toJsonTree(currentState).getAsJsonObject();
+            this.currentState = Optional.ofNullable(currentState).isPresent() ? oMapper.convertValue(currentState, Map.class) : null;
             return this;
         }
 
         public Builder previousState(Object previousState) {
-            this.previousState = new Gson().toJsonTree(previousState).getAsJsonObject();
+            this.previousState = Optional.ofNullable(previousState).isPresent() ? oMapper.convertValue(previousState, Map.class) : null;
             return this;
         }
 

@@ -215,26 +215,45 @@ public class DomainService extends AbstractService{
         return Optional.of(convertDomainCheckEntityToDto(domainCheckEntity));
     }
 
-    public PaginatedDto<DomainDto> getPaginatedDomains(Integer page, Integer size) {
+    public PaginatedDto<DomainDto> getPaginatedDomains(Integer page, Integer size, Boolean showLastChecks) {
         var domains = new ArrayList<DomainDto>();
-        var paginatedQueryResult = domainCheckRepository.findAllLastChecksPerDomain(getDefaultPageRequest(page, size));
-        paginatedQueryResult.forEach(
-                (domain) -> domains.add(new DomainDto.Builder()
-                        .domain(domain.getDomain())
-                        .checkFrequencyMinutes(domain.getDomainEntity().getCheckFrequency())
-                        .createdAt(domain.getDomainEntity().getCreatedAt())
-                        .lastDomainCheck(convertDomainCheckEntityToDto(domain))
-                        .build()
-                )
-        );
+        if (showLastChecks) {
+            Page<DomainCheckEntity> paginatedQueryResult = domainCheckRepository.findAllLastChecksPerDomain(getDefaultPageRequest(page, size));
+            paginatedQueryResult.forEach(
+                    (domain) -> domains.add(new DomainDto.Builder()
+                            .domain(domain.getDomain())
+                            .checkFrequencyMinutes(domain.getDomainEntity().getCheckFrequency())
+                            .createdAt(domain.getDomainEntity().getCreatedAt())
+                            .lastDomainCheck(convertDomainCheckEntityToDto(domain))
+                            .build()
+                    )
+            );
+            return new PaginatedDto<>(
+                    domains,
+                    paginatedQueryResult.getTotalElements(),
+                    paginatedQueryResult.getTotalPages(),
+                    paginatedQueryResult.getNumber(),
+                    paginatedQueryResult.getNumberOfElements()
+            );
+        } else {
+            var paginatedQueryResult = domainRepository.findAll(getDefaultPageRequest(page,size));
+            paginatedQueryResult.forEach(
+                    (domain) -> domains.add(new DomainDto.Builder()
+                            .domain(domain.getDomain())
+                            .checkFrequencyMinutes(domain.getCheckFrequency())
+                            .createdAt(domain.getCreatedAt())
+                            .build()
+                    )
+            );
 
-        return new PaginatedDto<>(
-                domains,
-                paginatedQueryResult.getTotalElements(),
-                paginatedQueryResult.getTotalPages(),
-                paginatedQueryResult.getNumber(),
-                paginatedQueryResult.getNumberOfElements()
-        );
+            return new PaginatedDto<>(
+                    domains,
+                    paginatedQueryResult.getTotalElements(),
+                    paginatedQueryResult.getTotalPages(),
+                    paginatedQueryResult.getNumber(),
+                    paginatedQueryResult.getNumberOfElements()
+            );
+        }
     }
 
     public void scheduleDomainToCheck(String domain, Integer frequency) {
