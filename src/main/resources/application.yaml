@@ -67,3 +67,6 @@ management:
       show-components: always
 server:
   forward-headers-strategy: native
+  compression:
+    enabled: true
+  port: 8080

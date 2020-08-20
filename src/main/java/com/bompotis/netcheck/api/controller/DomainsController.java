@@ -64,8 +64,10 @@ public class DomainsController {
     @GetMapping(produces={"application/hal+json"})
     public ResponseEntity<CollectionModel<DomainModel>> getDomains(
             @RequestParam(name = "page", required = false) Integer page,
-            @RequestParam(name = "size", required = false) Integer size) throws IOException, KeyManagementException, NoSuchAlgorithmException {
-        return ok(new DomainModelAssembler().toCollectionModel(domainService.getPaginatedDomains(page,size)));
+            @RequestParam(name = "size", required = false) Integer size,
+            @RequestParam(name = "showLastChecks", required = false) Boolean showLastChecks) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+        var withLastChecks = Optional.ofNullable(showLastChecks).orElse(true);
+        return ok(new DomainModelAssembler().toCollectionModel(domainService.getPaginatedDomains(page, size, withLastChecks),withLastChecks));
     }
 
     @Operation(summary = "Get scheduled domain config and its last checks")
@@ -88,7 +90,8 @@ public class DomainsController {
     @Operation(summary = "Schedule domain for periodic checks")
     @PutMapping(produces={"application/hal+json"}, path = "/{domain}")
     public ResponseEntity<Object> addDomainToScheduler(@PathVariable("domain") String domain,
-                                                       @RequestParam(name = "frequency", required = false) Integer frequency) {
+                                                       @RequestBody(required = false) DomainModel domainModel) {
+        var frequency = Optional.ofNullable(domainModel).isPresent() ? domainModel.getCheckFrequencyMinutes() : null;
         domainService.scheduleDomainToCheck(domain, frequency);
         return ok().build();
     }

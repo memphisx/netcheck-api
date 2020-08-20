@@ -47,6 +47,7 @@ public class NotificationItemWriter implements ItemWriter<DomainCheckEntity> {
     public NotificationItemWriter(List<NotificationService> notificationServices) {
         var enabledNotificationServices = new ArrayList<NotificationService>();
         for (var notificationService : notificationServices) {
+            log.info("Notification provider: {} - Enabled: {}", notificationService.getClass(), notificationService.isEnabled());
             if (notificationService.isEnabled()) {
                 enabledNotificationServices.add(notificationService);
             }
@@ -105,8 +106,8 @@ public class NotificationItemWriter implements ItemWriter<DomainCheckEntity> {
                         .build());
             }
             var httpCheck = checkMap.get("HTTPS");
-            var previousHttpCheck = previousCheckMap.get("HTTP");
             if (check.isHttpsCheckChange()) {
+                var previousHttpCheck = previousCheckMap.get("HTTPS");
                 notifications.add(new NotificationDto.Builder()
                         .hostname(httpCheck.getHostname())
                         .currentState(httpCheck)
@@ -153,7 +154,7 @@ public class NotificationItemWriter implements ItemWriter<DomainCheckEntity> {
     private CertificateEntity getIssuerCertificate(Set<CertificateEntity> certificates) {
         AtomicReference<CertificateEntity> certificate = new AtomicReference<>();
         Optional.ofNullable(certificates).ifPresentOrElse(
-                (certs) -> certs.stream().filter(cert -> cert.getBasicConstraints() > 0).findFirst().ifPresent(certificate::set),
+                (certs) -> certs.stream().filter(cert -> cert.getBasicConstraints() < 0).findFirst().ifPresent(certificate::set),
                 () -> certificate.set(null)
         );
         return certificate.get();
