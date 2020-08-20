@@ -35,15 +35,12 @@ import java.util.Set;
 @Service
 public class PushoverService implements NotificationService {
 
-    private final PushoverRestClient pushoverRestClient;
-
     private final PushoverConfig pushoverConfig;
 
     private static final Logger log = LoggerFactory.getLogger(PushoverService.class);
 
     @Autowired
     public PushoverService(PushoverConfig pushoverConfig) {
-        this.pushoverRestClient = new PushoverRestClient();
         this.pushoverConfig = pushoverConfig;
     }
 
@@ -55,8 +52,8 @@ public class PushoverService implements NotificationService {
     @Override
     public void notify(NotificationDto notification) throws PushoverException {
         Set<String> protocols = pushoverConfig.getNotifyOnlyFor().isEmpty() ? Set.of("HTTP","HTTPS","CERTIFICATE") : Set.copyOf(pushoverConfig.getNotifyOnlyFor());
-        if (isEnabled() && protocols.contains(notification.getType().name())) {
-            var status = pushoverRestClient.pushMessage(PushoverMessage
+        if (protocols.contains(notification.getType().name())) {
+            var status = new PushoverRestClient().pushMessage(PushoverMessage
                     .builderWithApiToken(pushoverConfig.getApiToken())
                     .setUserId(pushoverConfig.getUserIdToken())
                     .setMessage(notification.getMessage())
@@ -64,10 +61,7 @@ public class PushoverService implements NotificationService {
             );
             log.info("Pushover notification: Request id {} - Status {}.",status.getRequestId(),status.getStatus());
         } else {
-            var message = isEnabled() ?
-                    String.format("Notifications for type %s are disabled. Skipping!",notification.getType().name()) :
-                    "Pushover notifications disabled. Skipping!";
-            log.info(message);
+            log.info("Pushover notifications for type {} are disabled. Skipping!", notification.getType().name());
         }
     }
 }

@@ -34,6 +34,21 @@
       "name": "settings.schedulers.cleanup.deleteOlderThan",
       "type": "java.lang.String",
       "description": "Minimum amount of months a check should be consider old enough to be deleted."
+    },
+    {
+      "name": "settings.notifications.webhook.enabled",
+      "type": "java.lang.String",
+      "description": "Enable or disable notifications through a Webhook."
+    },
+    {
+      "name": "settings.notifications.webhook.url",
+      "type": "java.lang.String",
+      "description": "Url of the webhook."
+    },
+    {
+      "name": "settings.notifications.webhook.notifyOnlyFor",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Filter for only sending specific type of notifications."
     }
   ]
 }

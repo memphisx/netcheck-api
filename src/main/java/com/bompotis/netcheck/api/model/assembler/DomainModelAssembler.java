@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -44,15 +45,17 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
 
     @Override
     public DomainModel toModel(DomainDto domainDto) {
+        var lastDomainChecks = Optional.ofNullable(domainDto.getLastDomainCheck()).isPresent() ?
+                new DomainCheckModelAssembler().toModel(domainDto.getLastDomainCheck()) : null;
         return new DomainModel(
                 domainDto.getDomain(),
-                new DomainCheckModelAssembler().toModel(domainDto.getLastDomainCheck()),
+                lastDomainChecks,
                 domainDto.getCreatedAt(),
                 domainDto.getCheckFrequencyMinutes()
         );
     }
 
-    public CollectionModel<DomainModel> toCollectionModel(PaginatedDto<DomainDto> paginatedDomainsDto) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    public CollectionModel<DomainModel> toCollectionModel(PaginatedDto<DomainDto> paginatedDomainsDto, Boolean compact) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         var domainModels = new ArrayList<DomainModel>();
         for (var domain : paginatedDomainsDto.getDtoList()) {
             var domainModel = this.toModel(domain);
@@ -63,19 +66,19 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
         }
         var links = new ArrayList<Link>();
         links.add(linkTo(methodOn(DomainsController.class)
-                .getDomains(paginatedDomainsDto.getNumber(), paginatedDomainsDto.getSize()))
+                .getDomains(paginatedDomainsDto.getNumber(), paginatedDomainsDto.getSize(), compact))
                 .withSelfRel()
         );
         if (isValidPage(paginatedDomainsDto.getNumber(),paginatedDomainsDto.getTotalPages())) {
             if (isNotLastPage(paginatedDomainsDto.getNumber(), paginatedDomainsDto.getTotalPages())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomains(paginatedDomainsDto.getNumber()+1, paginatedDomainsDto.getSize()))
+                        .getDomains(paginatedDomainsDto.getNumber()+1, paginatedDomainsDto.getSize(), compact))
                         .withRel(IanaLinkRelations.NEXT)
                 );
             }
             if (isNotFirstPage(paginatedDomainsDto.getNumber())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomains(paginatedDomainsDto.getNumber()-1, paginatedDomainsDto.getSize()))
+                        .getDomains(paginatedDomainsDto.getNumber()-1, paginatedDomainsDto.getSize(), compact))
                         .withRel(IanaLinkRelations.PREVIOUS)
                 );
             }

@@ -80,12 +80,16 @@ public abstract class AbstractHttpChecker {
                     .connectionAccepted(true)
                     .responseTimeNs(System.nanoTime() - beginTime)
                     .statusCode(responseCode);
+        } catch (SocketTimeoutException e) {
+            LOG.error("Socket timeout for {}.", hostname);
+            httpCheckDtoBuilder.dnsResolved(true).connectionAccepted(false);
+            connectedSuccessfully = false;
         } catch (UnknownHostException e) {
-            LOG.error("Unknown Host for {}.", hostname, e);
+            LOG.error("Unknown Host for {}.", hostname);
             httpCheckDtoBuilder.dnsResolved(false).connectionAccepted(false);
             connectedSuccessfully = false;
         } catch (ConnectException e) {
-            LOG.error("Connection Exception for {}.", hostname, e);
+            LOG.error("Connection Exception for {}: {}", hostname, e.getMessage());
             httpCheckDtoBuilder.connectionAccepted(false).dnsResolved(true);
             connectedSuccessfully = false;
         }
@@ -100,10 +104,12 @@ public abstract class AbstractHttpChecker {
             var beginTime = System.nanoTime();
             var connected = false;
             conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
+            conn.setConnectTimeout(30000);
+            conn.setReadTimeout(30000);
             try {
                 connected = checkAssembler(httpCheckDtoBuilder, conn, beginTime);
             } catch (SSLHandshakeException e) {
-                LOG.warn("SSL Handshake failed for domain {} probably because of invalid cert", domain, e);
+                LOG.warn("SSL Handshake failed for domain {} probably because of invalid cert: {}", domain, e.getMessage());
                 LOG.warn("Retrying with more permissive Certificate Handling to get additional details");
                 conn.disconnect();
                 beginTime = System.nanoTime();
@@ -135,6 +141,8 @@ public abstract class AbstractHttpChecker {
         try {
             var beginTime = System.nanoTime();
             conn = (HttpURLConnection) getHttpDomainUri(domain).openConnection();
+            conn.setConnectTimeout(30000);
+            conn.setReadTimeout(30000);
             checkAssembler(httpCheckDtoBuilder, conn, beginTime);
         } finally {
             Optional.ofNullable(conn)

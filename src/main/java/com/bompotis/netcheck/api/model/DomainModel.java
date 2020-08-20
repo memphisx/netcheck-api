@@ -18,6 +18,7 @@
 package com.bompotis.netcheck.api.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
@@ -52,6 +53,7 @@ public class DomainModel extends RepresentationModel<DomainModel> {
         return domain;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public DomainCheckModel getLastChecks() {
         return lastDomainCheck;
     }
