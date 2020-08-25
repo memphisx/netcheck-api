@@ -31,7 +31,7 @@ import java.util.Set;
 @ConstructorBinding
 public class PushoverConfig {
 
-    private final Boolean enabled;
+    private final boolean enabled;
 
     private final String userIdToken;
 
@@ -40,7 +40,7 @@ public class PushoverConfig {
     private final Set<String> notifyOnlyFor;
 
     public PushoverConfig(Boolean enabled, String userIdToken, String apiToken, Set<String> notifyOnlyFor) {
-        this.enabled = enabled;
+        this.enabled = Optional.ofNullable(enabled).orElse(false);
         this.userIdToken = userIdToken;
         this.apiToken = apiToken;
         var acceptableEntries = Set.of("HTTP","HTTPS","CERTIFICATE");

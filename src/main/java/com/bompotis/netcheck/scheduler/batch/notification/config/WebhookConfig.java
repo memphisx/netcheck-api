@@ -39,7 +39,7 @@ public class WebhookConfig {
     private final Set<String> notifyOnlyFor;
 
     public WebhookConfig(Boolean enabled, String baseUrl, String endpoint, Set<String> notifyOnlyFor) {
-        this.enabled = enabled;
+        this.enabled = Optional.ofNullable(enabled).orElse(false);
         this.baseUrl = baseUrl;
         this.endpoint = endpoint;
         var acceptableEntries = Set.of("HTTP","HTTPS","CERTIFICATE");
