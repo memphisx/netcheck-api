@@ -19,7 +19,14 @@ package com.bompotis.netcheck.data.entity;
 
 import org.springframework.lang.NonNull;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.Column;
+import javax.persistence.OneToMany;
+import javax.persistence.FetchType;
+import javax.persistence.CascadeType;
+
 import java.util.Objects;
 import java.util.Set;
 
