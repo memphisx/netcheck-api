@@ -28,7 +28,6 @@
     <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/memphisx/netcheck-api?style=for-the-badge">
 </p>
 
-
 <br>
 
 <h1 align="center">Performance & availability monitoring app</h1>
@@ -53,7 +52,6 @@ through the [github issues page](https://github.com/memphisx/netcheck-api/issues
 ### Quick Start
 
 The fastest way to run Netcheck is through docker, and the provided docker-compose.yml file to get all the required dependancies up and running
-
 
 #### Running a private instance locally with OpenJDK
 Coming soon™

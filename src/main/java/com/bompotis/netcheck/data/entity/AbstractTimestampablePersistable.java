@@ -23,7 +23,13 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
 
-import javax.persistence.*;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Id;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Column;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.PreRemove;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -31,13 +37,13 @@ import java.util.Date;
  * Created by Kyriakos Bompotis on 16/6/20.
  */
 @MappedSuperclass
-public abstract class AbstractTimestampablePersistable<PK extends Serializable> implements Persistable<PK> {
+public abstract class AbstractTimestampablePersistable<K extends Serializable> implements Persistable<K> {
 
     @Id
     @GeneratedValue(generator="uuid")
     @GenericGenerator(name="uuid", strategy = "uuid2")
     @Column(name = "id")
-    private PK id;
+    private K id;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -49,7 +55,7 @@ public abstract class AbstractTimestampablePersistable<PK extends Serializable> 
 
     protected AbstractTimestampablePersistable() {}
 
-    public PK getId() {
+    public K getId() {
         return this.id;
     }
 

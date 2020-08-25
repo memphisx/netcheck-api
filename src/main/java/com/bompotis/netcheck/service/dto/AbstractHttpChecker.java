@@ -163,11 +163,16 @@ public abstract class AbstractHttpChecker {
     }
 
     protected static class X509TrustEverythingManager implements X509TrustManager {
+        private static final Logger TRUSTMANAGERLOG = LoggerFactory.getLogger(X509TrustEverythingManager.class);
         @Override
-        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {}
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
+            TRUSTMANAGERLOG.info("Skipping check if client is trusted");
+        }
 
         @Override
-        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {}
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
+            TRUSTMANAGERLOG.info("Skipping check if server is trusted");
+        }
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {

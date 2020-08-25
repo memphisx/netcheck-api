@@ -21,7 +21,11 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 
-import javax.persistence.*;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Column;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.PreRemove;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -29,7 +33,7 @@ import java.util.Date;
  * Created by Kyriakos Bompotis on 16/6/20.
  */
 @MappedSuperclass
-public abstract class AbstractTimestampable<PK extends Serializable> implements Persistable<PK> {
+public abstract class AbstractTimestampable<K extends Serializable> implements Persistable<K> {
     @CreatedDate
     @Column(name = "created_at")
     private Date createdAt;
