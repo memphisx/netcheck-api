@@ -60,17 +60,21 @@ Coming soon™
 
 #### Using docker (recommended)
 
-* Follow the official documentation to install [Docker](https://docs.docker.com/get-docker/) 
+*  Follow the official documentation to install [Docker](https://docs.docker.com/get-docker/) 
 and [docker-compose](https://docs.docker.com/compose/install/).
-* copy `database.env.example` to `database.env` and change the credentials for the db to something more appropriate.
+
+*  copy `database.env.example` to `database.env` and change the credentials for the db to something more appropriate.
 This env file is going to be used both by the postgress docker container to init the db as well as the netcheck app 
 in order to connect to it. 
-* copy `.env.example` to `.env`. The default values are enough for connecting to the db in the previous step. 
+
+*  copy `.env.example` to `.env`. The default values are enough for connecting to the db in the previous step. 
 If you want Notifications support through pushover change the `SETTINGS_NOTIFICATIONS_PUSHOVER_ENABLED` to `true` 
 and fill the `SETTINGS_NOTIFICATIONS_PUSHOVER_APITOKEN` and `SETTINGS_NOTIFICATIONS_PUSHOVER_USERIDTOKEN`
 with the values you are going to get from [Pushover after creating a new app](https://pushover.net/apps/build).
-* Execute `docker-compose up -d` to bring everything up.
-* Visit [http://127.0.0.1:8080/docs/v1/](http://127.0.0.1:8080/docs/v1/) from your favorite browser to check what 
+
+*  Execute `docker-compose up -d` to bring everything up.
+
+*  Visit [http://127.0.0.1:8080/docs/v1/](http://127.0.0.1:8080/docs/v1/) from your favorite browser to check what 
 you can do with the api or bring up the [Netcheck frontend](https://github.com/memphisx/netcheck-frontend) 
 by following the instructions in the [README file](https://github.com/memphisx/netcheck-frontend/blob/develop/README.md)
 
@@ -98,7 +102,7 @@ Coming soon™
 
 <br>
 
-### What is Netcheck Designed For?
+### What is Netcheck designed for
 
 Netcheck is designed for realtime monitoring and performance metric collection of websites through scheduled checks. 
 It is similar to 3rd party services like [Pingdom](https://pingdom.com), [DownDetector](https://downdetector.co.uk) 
