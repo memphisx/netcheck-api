@@ -88,7 +88,7 @@ public abstract class AbstractHttpChecker {
             LOG.error("Unknown Host for {}.", hostname);
             httpCheckDtoBuilder.dnsResolved(false).connectionAccepted(false);
             connectedSuccessfully = false;
-        } catch (ConnectException e) {
+        } catch (NoRouteToHostException | ConnectException e) {
             LOG.error("Connection Exception for {}: {}", hostname, e.getMessage());
             httpCheckDtoBuilder.connectionAccepted(false).dnsResolved(true);
             connectedSuccessfully = false;
