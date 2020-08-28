@@ -26,6 +26,7 @@ import com.bompotis.netcheck.scheduler.batch.processor.DomainCheckProcessor;
 import com.bompotis.netcheck.scheduler.batch.processor.DomainMetricProcessor;
 import com.bompotis.netcheck.scheduler.batch.reader.OldDomainCheckItemReader;
 import com.bompotis.netcheck.scheduler.batch.writer.DomainMetricListWriter;
+import com.bompotis.netcheck.scheduler.batch.writer.CheckEventItemWriter;
 import com.bompotis.netcheck.scheduler.batch.writer.NotificationItemWriter;
 import com.bompotis.netcheck.service.MetricService;
 import org.springframework.batch.core.Job;
@@ -47,10 +48,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ApplicationEventMulticaster;
+import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.batch.integration.async.AsyncItemProcessor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.support.TaskUtils;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.List;
@@ -92,6 +96,15 @@ public class BatchConfiguration {
         this.domainCheckRepository = domainCheckRepository;
         this.domainRepository = domainRepository;
         this.metricService = metricService;
+    }
+
+
+    @Bean
+    ApplicationEventMulticaster applicationEventMulticaster() {
+        SimpleApplicationEventMulticaster eventMulticaster = new SimpleApplicationEventMulticaster();
+        eventMulticaster.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        eventMulticaster.setErrorHandler(TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER);
+        return eventMulticaster;
     }
 
     @Bean
@@ -136,18 +149,22 @@ public class BatchConfiguration {
         return reader;
     }
 
+
     @Bean
-    public ItemWriter<DomainCheckEntity> domainCheckEntityWriter(NotificationItemWriter notificationItemWriter) {
+    public ItemWriter<DomainCheckEntity> domainCheckEntityWriter(
+            NotificationItemWriter notificationItemWriter,
+            CheckEventItemWriter checkEventItemWriter) {
         var jpaItemWriter = new JpaItemWriter<DomainCheckEntity>();
         jpaItemWriter.setEntityManagerFactory(entityManagerFactory);
+        var compositeWriter = new CompositeItemWriter<DomainCheckEntity>();
         if(notificationItemWriter.isEnabled()) {
-            var compositeWriter = new CompositeItemWriter<DomainCheckEntity>();
-            compositeWriter.setDelegates(List.of(jpaItemWriter,notificationItemWriter));
-            return compositeWriter;
+            compositeWriter.setDelegates(List.of(jpaItemWriter, notificationItemWriter, checkEventItemWriter));
         } else {
-            return jpaItemWriter;
+            compositeWriter.setDelegates(List.of(jpaItemWriter, checkEventItemWriter));
         }
+        return compositeWriter;
     }
+
 
     @Bean
     public ItemWriter<DomainCheckEntity> domainCheckEntityDeleter() {
