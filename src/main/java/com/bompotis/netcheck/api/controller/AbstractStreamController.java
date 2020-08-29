@@ -35,7 +35,7 @@ public abstract class AbstractStreamController {
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     protected SseEmitter addSseEmitter() {
-        return addSseEmitter(new SseEmitter(60000L));
+        return addSseEmitter(new SseEmitter(0L));
     }
 
     protected SseEmitter addSseEmitter(SseEmitter emitter) {
