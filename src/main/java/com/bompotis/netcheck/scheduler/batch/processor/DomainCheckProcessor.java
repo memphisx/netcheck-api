@@ -27,6 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Date;
+
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
  */
@@ -45,15 +53,46 @@ public class DomainCheckProcessor implements ItemProcessor<DomainEntity, DomainC
 
     @Override
     public DomainCheckEntity process(DomainEntity domainEntity) {
-        DomainCheckEntity domainCheckEntityBuilder = null;
+        DomainCheckEntity domainCheckEntity = null;
         try {
-            log.info("Checking {}", domainEntity.getDomain());
-            var status = domainService.check(domainEntity.getDomain());
-            domainCheckEntityBuilder = domainService.convertToDomainCheckEntity(status, domainEntity);
-            log.info("Successfully checked {}. Passing to writer", domainEntity.getDomain());
+            log.info("Processing {}", domainEntity.getDomain());
+            if (isEligibleForCheck(domainEntity.getDomain())) {
+                log.info("Domain {} is eligible for check", domainEntity.getDomain());
+                domainCheckEntity = check(domainEntity);
+                log.info("Successfully checked {}. Passing to writer", domainEntity.getDomain());
+            } else {
+                log.info("Skipping check for domain {}.", domainEntity.getDomain());
+            }
         } catch (Exception e) {
             log.error("Failed to check {}", domainEntity.getDomain(), e);
         }
-        return domainCheckEntityBuilder;
+        return domainCheckEntity;
+    }
+
+    private DomainCheckEntity check(DomainEntity domainEntity) throws NoSuchAlgorithmException, IOException, KeyManagementException {
+        log.info("Checking {}", domainEntity.getDomain());
+        var status = domainService.check(domainEntity.getDomain());
+        return domainService.convertToDomainCheckEntity(status, domainEntity);
+    }
+
+    private boolean isEligibleForCheck(String domain) {
+        var optionalDomainWithLastChecks = domainService.getDomain(domain);
+        if (optionalDomainWithLastChecks.isEmpty()) {
+            log.info("No checks found for {}", domain);
+            return true;
+        }
+        var domainWithLastChecks = optionalDomainWithLastChecks.get();
+        var lastCheckDate = domainWithLastChecks
+                .getLastDomainCheck()
+                .getHttpCheckDto()
+                .getTimeCheckedOn()
+                .toInstant()
+                .atZone(ZoneOffset.UTC)
+                .toLocalDateTime()
+                .withSecond(0);
+        log.info("Last check for domain {} was triggered on {}", domain, lastCheckDate.toString());
+        var now = new Date().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
+        var nextExpectedCheck = lastCheckDate.plusMinutes(domainWithLastChecks.getCheckFrequencyMinutes());
+        return nextExpectedCheck.isBefore(now);
     }
 }
