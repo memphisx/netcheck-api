@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<springdoc.version>1.4.4</springdoc.version>
+		<springdoc.version>1.4.5</springdoc.version>
 		<flyway.version>6.5.5</flyway.version>
 		<pushover-client.version>1.0.0</pushover-client.version>
 	</properties>
