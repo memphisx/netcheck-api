@@ -25,8 +25,8 @@ import com.bompotis.netcheck.data.repository.DomainRepository;
 import com.bompotis.netcheck.scheduler.batch.processor.DomainCheckProcessor;
 import com.bompotis.netcheck.scheduler.batch.processor.DomainMetricProcessor;
 import com.bompotis.netcheck.scheduler.batch.reader.OldDomainCheckItemReader;
-import com.bompotis.netcheck.scheduler.batch.writer.DomainMetricListWriter;
 import com.bompotis.netcheck.scheduler.batch.writer.CheckEventItemWriter;
+import com.bompotis.netcheck.scheduler.batch.writer.DomainMetricListWriter;
 import com.bompotis.netcheck.scheduler.batch.writer.NotificationItemWriter;
 import com.bompotis.netcheck.service.MetricService;
 import org.springframework.batch.core.Job;
@@ -35,13 +35,13 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.integration.async.AsyncItemProcessor;
 import org.springframework.batch.integration.async.AsyncItemWriter;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
-import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.support.CompositeItemWriter;
 import org.springframework.batch.item.support.PassThroughItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.batch.integration.async.AsyncItemProcessor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.support.TaskUtils;
@@ -205,17 +204,32 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public TaskExecutor asyncTaskExecutor(){
-        return new SimpleAsyncTaskExecutor("spring_batch");
+    public TaskExecutor asyncItemProcessorExecutor(){
+        return new SimpleAsyncTaskExecutor("item_processor_executor");
+    }
+
+    @Bean
+    public TaskExecutor asyncDomainCheckExecutor(){
+        return new SimpleAsyncTaskExecutor("domain_check_step_executor");
+    }
+
+    @Bean
+    public TaskExecutor asyncCleanUpExecutor(){
+        return new SimpleAsyncTaskExecutor("cleanup_step_executor");
+    }
+
+    @Bean
+    public TaskExecutor asyncMetricExecutor(){
+        return new SimpleAsyncTaskExecutor("metric_step_executor");
     }
 
     @Bean
     public AsyncItemProcessor<DomainEntity, DomainCheckEntity> asyncBatchCheckProcessor(
             DomainCheckProcessor domainCheckProcessor,
-            TaskExecutor asyncTaskExecutor) {
+            TaskExecutor asyncItemProcessorExecutor) {
         var itemProcessor = new AsyncItemProcessor<DomainEntity, DomainCheckEntity>();
         itemProcessor.setDelegate(domainCheckProcessor);
-        itemProcessor.setTaskExecutor(asyncTaskExecutor);
+        itemProcessor.setTaskExecutor(asyncItemProcessorExecutor);
         return itemProcessor;
     }
 
@@ -229,7 +243,7 @@ public class BatchConfiguration {
 
     @Bean
     public Step checkDomainsStep(AsyncItemWriter<DomainCheckEntity> asyncDomainCheckEntityWriter,
-                                 TaskExecutor asyncTaskExecutor,
+                                 TaskExecutor asyncDomainCheckExecutor,
                                  AsyncItemProcessor<DomainEntity, DomainCheckEntity> asyncBatchCheckProcessor,
                                  ItemReader<DomainEntity> domainReader) {
         return stepBuilderFactory.get("checkDomainsStep")
@@ -237,7 +251,7 @@ public class BatchConfiguration {
                 .reader(domainReader)
                 .processor(asyncBatchCheckProcessor)
                 .writer(asyncDomainCheckEntityWriter)
-                .taskExecutor(asyncTaskExecutor)
+                .taskExecutor(asyncDomainCheckExecutor)
                 .throttleLimit(10)
                 .allowStartIfComplete(true)
                 .build();
@@ -246,13 +260,13 @@ public class BatchConfiguration {
     @Bean
     public Step cleanUpDomainChecksStep(ItemReader<DomainCheckEntity> olderThanThreeMonthsDomainCheckReader,
                                         ItemWriter<DomainCheckEntity> domainCheckEntityDeleter,
-                                        TaskExecutor asyncTaskExecutor) {
+                                        TaskExecutor asyncCleanUpExecutor) {
         return stepBuilderFactory.get("cleanUpDomainChecksStep")
                 .<DomainCheckEntity, DomainCheckEntity> chunk(100)
                 .reader(olderThanThreeMonthsDomainCheckReader)
                 .processor(new PassThroughItemProcessor<>())
                 .writer(domainCheckEntityDeleter)
-                .taskExecutor(asyncTaskExecutor)
+                .taskExecutor(asyncCleanUpExecutor)
                 .throttleLimit(10)
                 .allowStartIfComplete(true)
                 .build();
@@ -260,11 +274,11 @@ public class BatchConfiguration {
 
     @Bean
     public Step generateHourlyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter,
-                                          TaskExecutor asyncTaskExecutor,
+                                          TaskExecutor asyncCleanUpExecutor,
                                           ItemReader<DomainEntity> domainReader) {
         return generateMetricsStep(
                 domainMetricEntityListWriter,
-                asyncTaskExecutor,
+                asyncCleanUpExecutor,
                 MetricService.ScheduledPeriod.LAST_HOUR,
                 domainReader
         );
@@ -272,22 +286,22 @@ public class BatchConfiguration {
 
     @Bean
     public Step generateDailyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter,
-                                         TaskExecutor asyncTaskExecutor,
+                                         TaskExecutor asyncMetricExecutor,
                                          ItemReader<DomainEntity> domainReader) {
         return generateMetricsStep(
                 domainMetricEntityListWriter,
-                asyncTaskExecutor,
+                asyncMetricExecutor,
                 MetricService.ScheduledPeriod.LAST_DAY,
                 domainReader);
     }
 
     @Bean
     public Step generateWeeklyMetricsStep(DomainMetricListWriter domainMetricEntityListWriter,
-                                          TaskExecutor asyncTaskExecutor,
+                                          TaskExecutor asyncMetricExecutor,
                                           ItemReader<DomainEntity> domainReader) {
         return generateMetricsStep(
                 domainMetricEntityListWriter,
-                asyncTaskExecutor,
+                asyncMetricExecutor,
                 MetricService.ScheduledPeriod.LAST_WEEK,
                 domainReader
         );

@@ -23,12 +23,13 @@ import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
 import com.bompotis.netcheck.data.repository.DomainCheckRepository;
 import com.bompotis.netcheck.data.repository.DomainRepository;
+import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
 import com.bompotis.netcheck.service.dto.DomainCheckDto;
-import com.bompotis.netcheck.service.dto.DomainDto;
-import com.bompotis.netcheck.service.dto.HttpCheckDto;
 import com.bompotis.netcheck.service.dto.PaginatedDto;
-import com.bompotis.netcheck.service.dto.StateDto;
 import com.bompotis.netcheck.service.dto.HttpsCheckDto;
+import com.bompotis.netcheck.service.dto.HttpCheckDto;
+import com.bompotis.netcheck.service.dto.DomainDto;
+import com.bompotis.netcheck.service.dto.StateDto;
 import com.bompotis.netcheck.service.dto.CertificateDetailsDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -221,10 +222,12 @@ public class DomainService extends AbstractService{
         return Optional.of(convertDomainCheckEntityToDto(domainCheckEntity));
     }
 
-    public PaginatedDto<DomainDto> getPaginatedDomains(Integer page, Integer size, Boolean showLastChecks) {
+    public PaginatedDto<DomainDto> getPaginatedDomains(DomainsOptionsDto options) {
         var domains = new ArrayList<DomainDto>();
-        if (showLastChecks) {
-            Page<DomainCheckEntity> paginatedQueryResult = domainCheckRepository.findAllLastChecksPerDomain(getDefaultPageRequest(page, size));
+        if (options.getShowLastChecks()) {
+            var paginatedQueryResult = options.getFilter().isBlank() ?
+                    domainCheckRepository.findAllLastChecksPerDomain(options.getPageRequest()) :
+                    domainCheckRepository.findAllLastChecksPerDomainFiltered(options.getFilter(), options.getPageRequest());
             paginatedQueryResult.forEach(
                     (domain) -> domains.add(new DomainDto.Builder()
                             .domain(domain.getDomain())
@@ -242,7 +245,10 @@ public class DomainService extends AbstractService{
                     paginatedQueryResult.getNumberOfElements()
             );
         } else {
-            var paginatedQueryResult = domainRepository.findAll(getDefaultPageRequest(page,size));
+            var paginatedQueryResult = options.getFilter().isBlank() ?
+                    domainRepository.findAll(options.getPageRequest()) :
+                    domainRepository.findAllFiltered(options.getFilter(), options.getPageRequest());
+
             paginatedQueryResult.forEach(
                     (domain) -> domains.add(new DomainDto.Builder()
                             .domain(domain.getDomain())

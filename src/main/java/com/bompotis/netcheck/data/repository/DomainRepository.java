@@ -21,6 +21,7 @@ import com.bompotis.netcheck.data.entity.DomainEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -30,5 +31,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DomainRepository extends JpaRepository<DomainEntity, String> {
-    Page<DomainEntity> findAllByCheckFrequency(int frequency, Pageable pageable);
+    @Query("select d from DomainEntity d where d.domain like %?1%")
+    Page<DomainEntity> findAllFiltered(String filter, Pageable pageable);
 }

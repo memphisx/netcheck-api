@@ -50,6 +50,10 @@ public interface DomainCheckRepository extends JpaRepository<DomainCheckEntity, 
             "select max(d1.createdAt) from DomainCheckEntity d1 where d1.domain = d.domain ) ")
     Page<DomainCheckEntity> findAllLastChecksPerDomain(PageRequest pageRequest);
 
+    @Query("select d from DomainCheckEntity d where d.domain like %?1% and d.createdAt = (" +
+            "select max(d1.createdAt) from DomainCheckEntity d1 where d1.domain = d.domain ) ")
+    Page<DomainCheckEntity> findAllLastChecksPerDomainFiltered(String filter, PageRequest pageRequest);
+
     @Query("select d from DomainCheckEntity d where d.domain = ?1 and d.createdAt = (" +
             "select max(d1.createdAt) from DomainCheckEntity d1 where d1.domain = d.domain ) ")
     Optional<DomainCheckEntity> findDomainWithItsLastChecks(String domain);
