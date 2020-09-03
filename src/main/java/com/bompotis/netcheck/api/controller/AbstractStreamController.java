@@ -64,6 +64,10 @@ public abstract class AbstractStreamController {
         this.emitters.forEach(emitter -> {
             try {
                 consumer.accept(emitter);
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+                failedEmitters.add(emitter);
+                logger.error("Emitter failed: {} - {}", emitter, e.getMessage());
             } catch (Exception e) {
                 emitter.completeWithError(e);
                 failedEmitters.add(emitter);
