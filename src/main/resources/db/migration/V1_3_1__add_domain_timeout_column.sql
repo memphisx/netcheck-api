@@ -1,0 +1,1 @@
+ALTER TABLE public."domain" ADD COLUMN timeout_ms int4;

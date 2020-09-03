@@ -36,7 +36,7 @@ import java.util.Date;
 public abstract class AbstractTimestampable<K extends Serializable> implements Persistable<K> {
     @CreatedDate
     @Column(name = "created_at")
-    private Date createdAt;
+    protected Date createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
