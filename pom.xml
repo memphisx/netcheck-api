@@ -19,6 +19,8 @@
 		<springdoc.version>1.4.4</springdoc.version>
 		<flyway.version>6.5.5</flyway.version>
 		<pushover-client.version>1.0.0</pushover-client.version>
+		<hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
+		<hibernate-types.version>2.9.13</hibernate-types.version>
 	</properties>
 
 	<dependencies>
@@ -90,6 +92,16 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-hateoas</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.vladmihalcea</groupId>
+			<artifactId>hibernate-types-52</artifactId>
+			<version>${hibernate-types.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>${hibernate-validator.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
