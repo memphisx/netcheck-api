@@ -47,6 +47,7 @@ public abstract class AbstractHttpChecker {
             HttpURLConnection.HTTP_VERSION,
             HttpURLConnection.HTTP_INTERNAL_ERROR,
             HttpURLConnection.HTTP_FORBIDDEN,
+            HttpURLConnection.HTTP_BAD_GATEWAY,
             422
     );
 
