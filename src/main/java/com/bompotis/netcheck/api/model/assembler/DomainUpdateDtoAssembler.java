@@ -39,17 +39,17 @@ public class DomainUpdateDtoAssembler {
             "add", Operation.Action.ADD
     );
 
-    public DomainUpdateDtoAssembler(String domain) {
-        this.domain = domain;
-    }
-
-    private final Set<String> validFields = Set.of(
+    private static final Set<String> VALID_FIELDS = Set.of(
             "frequency",
             "endpoint",
             "header",
             "headers",
             "timeout"
     );
+
+    public DomainUpdateDtoAssembler(String domain) {
+        this.domain = domain;
+    }
 
     public DomainUpdateDto toDto(List<PatchOperation> patchOperations) {
         var dto = new DomainUpdateDto.Builder(domain);
@@ -62,7 +62,7 @@ public class DomainUpdateDtoAssembler {
             }
             var action = OPERATIONS_TO_ACTION_MAP.get(op);
             var value = validateValue(patchOperation.getValue(), action);
-            if (!validFields.contains(field)) {
+            if (!VALID_FIELDS.contains(field)) {
                 throw new IllegalArgumentException("Invalid value for property `field`: " + field);
             }
             var operation = new Operation(field, action, value, path);
