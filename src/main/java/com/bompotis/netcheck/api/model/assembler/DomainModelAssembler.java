@@ -19,7 +19,6 @@ package com.bompotis.netcheck.api.model.assembler;
 
 import com.bompotis.netcheck.api.controller.DomainsController;
 import com.bompotis.netcheck.api.model.DomainResponse;
-import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.service.dto.DomainDto;
 import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
 import com.bompotis.netcheck.service.dto.PaginatedDto;
@@ -33,9 +32,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;

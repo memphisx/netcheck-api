@@ -236,7 +236,9 @@ public class MetricService extends AbstractService{
         private final long avgResponseTime;
 
         private Stats(Set<DomainCheckEntity> checkEntities, ProtocolCheckEntity.Protocol protocol) {
-            long min = 0L, max = 0L, avg = 0L;
+            long min = 0L;
+            long max = 0L;
+            long avg = 0L;
 
             var stats = getResponseTimes(checkEntities, protocol)
                     .stream()

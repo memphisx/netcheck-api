@@ -30,25 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class NotificationDto {
 
-    public String getMessage() {
-        return message;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public enum Status {
-        UP,
-        DOWN
-    }
-
-    public enum Type {
-        HTTP,
-        HTTPS,
-        CERTIFICATE
-    }
-
     private final Type type;
 
     private final String hostname;
@@ -82,6 +63,17 @@ public class NotificationDto {
     private final String message;
 
     private final Status status;
+
+    public enum Status {
+        UP,
+        DOWN
+    }
+
+    public enum Type {
+        HTTP,
+        HTTPS,
+        CERTIFICATE
+    }
 
     public Integer getStatusCode() {
         return statusCode;
@@ -129,6 +121,14 @@ public class NotificationDto {
 
     public Boolean getRootCertificatesChanged() {
         return rootCertificatesChanged;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     public static class Builder {

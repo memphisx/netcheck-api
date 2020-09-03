@@ -30,8 +30,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotificationEventService implements NotificationService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CheckEventItemWriter.class);
-
     private final ApplicationEventPublisher eventPublisher;
 
     @Autowired

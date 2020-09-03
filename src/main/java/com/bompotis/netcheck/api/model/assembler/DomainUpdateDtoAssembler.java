@@ -1,3 +1,20 @@
+/*
+ * Copyright 2020 the original author or authors.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.bompotis.netcheck.api.model.assembler;
 
 import com.bompotis.netcheck.api.model.PatchOperation;
@@ -16,15 +33,15 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DomainUpdateDtoAssembler {
     private final String domain;
 
-    public DomainUpdateDtoAssembler(String domain) {
-        this.domain = domain;
-    }
-
-    private final Map<String, Operation.Action> operationToActionMap = Map.of(
+    private static final Map<String, Operation.Action> OPERATIONS_TO_ACTION_MAP = Map.of(
             "delete", Operation.Action.REMOVE,
             "replace", Operation.Action.UPDATE,
             "add", Operation.Action.ADD
     );
+
+    public DomainUpdateDtoAssembler(String domain) {
+        this.domain = domain;
+    }
 
     private final Set<String> validFields = Set.of(
             "frequency",
@@ -40,10 +57,10 @@ public class DomainUpdateDtoAssembler {
             var field = validateObject(patchOperation.getField(), "field");
             var path = validatePath(patchOperation.getPath(), field);
             var op = validateObject(patchOperation.getOp(), "op");
-            if (!operationToActionMap.containsKey(op)) {
+            if (!OPERATIONS_TO_ACTION_MAP.containsKey(op)) {
                 throw new IllegalArgumentException("Invalid value for property `op`: " + op);
             }
-            var action = operationToActionMap.get(op);
+            var action = OPERATIONS_TO_ACTION_MAP.get(op);
             var value = validateValue(patchOperation.getValue(), action);
             if (!validFields.contains(field)) {
                 throw new IllegalArgumentException("Invalid value for property `field`: " + field);

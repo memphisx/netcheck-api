@@ -17,8 +17,19 @@
  */
 package com.bompotis.netcheck.api.controller;
 
-import com.bompotis.netcheck.api.model.*;
-import com.bompotis.netcheck.api.model.assembler.*;
+import com.bompotis.netcheck.api.model.DomainCheckModel;
+import com.bompotis.netcheck.api.model.DomainRequest;
+import com.bompotis.netcheck.api.model.DomainResponse;
+import com.bompotis.netcheck.api.model.HttpCheckModel;
+import com.bompotis.netcheck.api.model.MetricModel;
+import com.bompotis.netcheck.api.model.PatchOperation;
+import com.bompotis.netcheck.api.model.StateModel;
+import com.bompotis.netcheck.api.model.assembler.DomainCheckModelAssembler;
+import com.bompotis.netcheck.api.model.assembler.DomainModelAssembler;
+import com.bompotis.netcheck.api.model.assembler.DomainUpdateDtoAssembler;
+import com.bompotis.netcheck.api.model.assembler.HttpCheckModelAssembler;
+import com.bompotis.netcheck.api.model.assembler.MetricModelAssembler;
+import com.bompotis.netcheck.api.model.assembler.StateModelAssembler;
 import com.bompotis.netcheck.service.DomainService;
 import com.bompotis.netcheck.service.MetricService;
 import com.bompotis.netcheck.service.dto.DomainDto;

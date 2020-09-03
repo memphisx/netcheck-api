@@ -99,7 +99,7 @@ public class BatchConfiguration {
 
 
     @Bean
-    ApplicationEventMulticaster applicationEventMulticaster() {
+    public ApplicationEventMulticaster applicationEventMulticaster() {
         SimpleApplicationEventMulticaster eventMulticaster = new SimpleApplicationEventMulticaster();
         eventMulticaster.setTaskExecutor(new SimpleAsyncTaskExecutor());
         eventMulticaster.setErrorHandler(TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER);

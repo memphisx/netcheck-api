@@ -20,8 +20,6 @@ package com.bompotis.netcheck.service.dto;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Kyriakos Bompotis on 10/6/20.
