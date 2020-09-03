@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline
 COPY ./src ./src
 RUN apt-get update && \
     apt-get install -y --no-install-recommends wget=1.19.4-1ubuntu2.2 unzip=6.0-21ubuntu1 && \
-    wget https://github.com/memphisx/netcheck-frontend/releases/download/0.6.0/spa-release.zip && \
+    wget https://github.com/memphisx/netcheck-frontend/releases/download/0.7.0/spa-release.zip && \
     mkdir ./src/main/resources/static && \
     unzip spa-release.zip -d ./src/main/resources/static && \
     rm spa-release.zip
@@ -21,5 +21,5 @@ RUN addgroup -S netcheck && adduser -S netcheck -G netcheck && apk --no-cache ad
 USER netcheck
 VOLUME /tmp
 EXPOSE 8080 8081
-ENTRYPOINT ["java", "-noverify", "-jar", "/var/app/netcheck/netcheck.jar"]
+ENTRYPOINT ["java", "-Dhibernate.types.print.banner=false", "-noverify", "-jar", "/var/app/netcheck/netcheck.jar"]
 HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD curl -sSL "http://localhost:8080/api/v1/actuator/health" || exit 1

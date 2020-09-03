@@ -24,12 +24,13 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by Kyriakos Bompotis on 9/6/20.
  */
 @Relation(collectionRelation = "domains", itemRelation = "domain")
-public class DomainModel extends RepresentationModel<DomainModel> {
+public class DomainResponse extends RepresentationModel<DomainResponse> {
     private final String domain;
 
     private final DomainCheckModel lastDomainCheck;
@@ -38,15 +39,27 @@ public class DomainModel extends RepresentationModel<DomainModel> {
 
     private final Date dateAdded;
 
+    private final String endpoint;
+
+    private final Map<String,String> headers;
+
+    private final Integer timeoutMs;
+
     @JsonCreator
-    public DomainModel(@JsonProperty("domain") String domain,
-                       @JsonProperty("lastDomainCheck") DomainCheckModel lastDomainCheck,
-                       @JsonProperty("dateAdded") Date dateAdded,
-                       @JsonProperty("checkFrequencyMinutes") Integer checkFrequencyMinutes) {
+    public DomainResponse(@JsonProperty("domain") String domain,
+                          @JsonProperty("lastDomainCheck") DomainCheckModel lastDomainCheck,
+                          @JsonProperty("dateAdded") Date dateAdded,
+                          @JsonProperty("checkFrequencyMinutes") Integer checkFrequencyMinutes,
+                          @JsonProperty("endpoint") String endpoint,
+                          @JsonProperty("headers") Map<String,String> headers,
+                          @JsonProperty("timeoutMs") Integer timeoutMs) {
         this.domain = domain;
         this.lastDomainCheck = lastDomainCheck;
         this.dateAdded = dateAdded;
         this.checkFrequencyMinutes = checkFrequencyMinutes;
+        this.endpoint = endpoint;
+        this.headers = headers;
+        this.timeoutMs = timeoutMs;
     }
 
     public String getDomain() {
@@ -64,5 +77,17 @@ public class DomainModel extends RepresentationModel<DomainModel> {
 
     public Integer getCheckFrequencyMinutes() {
         return checkFrequencyMinutes;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public Integer getTimeoutMs() {
+        return timeoutMs;
     }
 }

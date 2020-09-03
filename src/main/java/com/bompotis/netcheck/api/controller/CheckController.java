@@ -18,8 +18,10 @@
 package com.bompotis.netcheck.api.controller;
 
 import com.bompotis.netcheck.api.model.DomainCheckModel;
+import com.bompotis.netcheck.api.model.DomainRequest;
 import com.bompotis.netcheck.api.model.assembler.DomainCheckModelAssembler;
 import com.bompotis.netcheck.service.DomainService;
+import com.bompotis.netcheck.service.dto.DomainDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,12 +30,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -66,8 +71,36 @@ public class CheckController {
             @ApiResponse(responseCode = "400", description = "Invalid domain",
                     content = @Content)})
     @GetMapping(produces={"application/hal+json"}, path = "/{domain}")
-    public ResponseEntity<DomainCheckModel> getDomainStatus(@PathVariable("domain") String domain) throws IOException, KeyManagementException, NoSuchAlgorithmException {
-        var status = domainService.check(domain);
+    public ResponseEntity<DomainCheckModel> getDomainStatusWithDefaultConfig(
+            @PathVariable("domain") String domain
+    ) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+        var domainDto = new DomainDto.Builder().domain(domain).build();
+        var status = domainService.check(domainDto);
+        var domainCheckModel = new DomainCheckModelAssembler().toModel(status);
+        domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain)).withSelfRel());
+        return ok(domainCheckModel);
+    }
+
+    @Operation(summary = "Get current status of a domain")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Current status of the domain",
+                    content = { @Content(mediaType = "application/hal+json",
+                            schema = @Schema(implementation = DomainCheckModel.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid domain",
+                    content = @Content)})
+    @PostMapping(produces={"application/hal+json"}, path = "/{domain}")
+    public ResponseEntity<DomainCheckModel> getDomainStatusWithConfig(
+            @PathVariable("domain") String domain,
+            @Valid @RequestBody DomainRequest domainRequest
+    ) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+        var domainDto = new DomainDto.Builder()
+                .domain(domain)
+                .withHeaders(domainRequest.getHeaders())
+                .endpoint(domainRequest.getEndpoint())
+                .checkFrequencyMinutes(domainRequest.getCheckFrequencyMinutes())
+                .timeoutMs(domainRequest.getTimeoutMs())
+                .build();
+        var status = domainService.check(domainDto);
         var domainCheckModel = new DomainCheckModelAssembler().toModel(status);
         domainCheckModel.add(linkTo(methodOn(DomainsController.class).getDomainStatus(domain)).withSelfRel());
         return ok(domainCheckModel);

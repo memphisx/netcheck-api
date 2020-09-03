@@ -15,22 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.bompotis.netcheck.data.repository;
+package com.bompotis.netcheck.scheduler.batch.notification;
 
-import com.bompotis.netcheck.data.entity.DomainEntity;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
- * Domain specific extension of {@link org.springframework.data.jpa.repository.JpaRepository}.
- *
- * @author Kyriakos Bompotis
+ * Created by Kyriakos Bompotis on 26/8/20.
  */
-@Repository
-public interface DomainRepository extends JpaRepository<DomainEntity, String> {
-    @Query("select d from DomainEntity d where d.domain like %?1%")
-    Page<DomainEntity> findAllFiltered(String filter, Pageable pageable);
+public interface EventDto {
+    SseEmitter.SseEventBuilder getEvent();
 }

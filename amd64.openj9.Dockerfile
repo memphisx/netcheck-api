@@ -15,5 +15,5 @@ RUN addgroup -S netcheck && adduser -S netcheck -G netcheck && apk --no-cache ad
 USER netcheck
 VOLUME /tmp
 EXPOSE 8080 8081
-ENTRYPOINT ["java", "-noverify", "-jar", "/var/app/netcheck/netcheck.jar"]
+ENTRYPOINT ["java", "-Dhibernate.types.print.banner=false", "-noverify", "-jar", "/var/app/netcheck/netcheck.jar"]
 HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD curl -sSL "http://localhost:8080/api/v1/actuator/health" || exit 1

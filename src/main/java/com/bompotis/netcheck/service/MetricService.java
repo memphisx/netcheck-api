@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * Created by Kyriakos Bompotis on 13/7/20.
@@ -230,56 +231,46 @@ public class MetricService extends AbstractService{
     }
 
     private static class Stats {
-        private final Long minResponseTime;
-        private final Long maxResponseTime;
-        private final Long avgResponseTime;
+        private final long minResponseTime;
+        private final long maxResponseTime;
+        private final long avgResponseTime;
 
         private Stats(Set<DomainCheckEntity> checkEntities, ProtocolCheckEntity.Protocol protocol) {
-            Long min;
-            Long max;
-            Long avg;
+            long min = 0L;
+            long max = 0L;
+            long avg = 0L;
 
-            try {
-                var stats = (protocol.equals(ProtocolCheckEntity.Protocol.HTTP)) ?  getHttpStats(checkEntities) : getHttpsStats(checkEntities);
+            var stats = getResponseTimes(checkEntities, protocol)
+                    .stream()
+                    .mapToLong(Long::longValue)
+                    .summaryStatistics();
+            if (stats.getCount() > 0) {
                 min = stats.getMin();
                 max = stats.getMax();
                 avg = Math.round(stats.getAverage());
-            } catch (NullPointerException e) {
-                min = null;
-                max = null;
-                avg = null;
             }
             this.maxResponseTime = max;
             this.minResponseTime = min;
             this.avgResponseTime = avg;
         }
 
-        public Long getMinResponseTime() {
+        public long getMinResponseTime() {
             return minResponseTime;
         }
 
-        public Long getMaxResponseTime() {
+        public long getMaxResponseTime() {
             return maxResponseTime;
         }
 
-        public Long getAvgResponseTime() {
+        public long getAvgResponseTime() {
             return avgResponseTime;
         }
 
-        private LongSummaryStatistics getHttpStats(Set<DomainCheckEntity> checkEntities) {
-            return checkEntities
-                    .stream()
+        private List<Long> getResponseTimes (Set<DomainCheckEntity> checkEntities, ProtocolCheckEntity.Protocol protocol) {
+            return checkEntities.stream()
+                    .map(entity -> protocol.equals(ProtocolCheckEntity.Protocol.HTTP) ? entity.getHttpResponseTimeNs() : entity.getHttpsResponseTimeNs())
                     .filter(Objects::nonNull)
-                    .mapToLong(DomainCheckEntity::getHttpResponseTimeNs)
-                    .summaryStatistics();
-        }
-
-        private LongSummaryStatistics getHttpsStats(Set<DomainCheckEntity> checkEntities) {
-            return checkEntities
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .mapToLong(DomainCheckEntity::getHttpsResponseTimeNs)
-                    .summaryStatistics();
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
     }
 

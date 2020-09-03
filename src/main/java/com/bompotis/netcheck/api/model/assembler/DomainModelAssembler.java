@@ -18,8 +18,9 @@
 package com.bompotis.netcheck.api.model.assembler;
 
 import com.bompotis.netcheck.api.controller.DomainsController;
-import com.bompotis.netcheck.api.model.DomainModel;
+import com.bompotis.netcheck.api.model.DomainResponse;
 import com.bompotis.netcheck.service.dto.DomainDto;
+import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
 import com.bompotis.netcheck.service.dto.PaginatedDto;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -38,25 +40,38 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 /**
  * Created by Kyriakos Bompotis on 17/6/20.
  */
-public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerSupport<DomainDto, DomainModel> {
+public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerSupport<DomainDto, DomainResponse> {
     public DomainModelAssembler() {
-        super(DomainsController.class, DomainModel.class);
+        super(DomainsController.class, DomainResponse.class);
     }
 
     @Override
-    public DomainModel toModel(DomainDto domainDto) {
+    public DomainResponse toModel(DomainDto domainDto) {
         var lastDomainChecks = Optional.ofNullable(domainDto.getLastDomainCheck()).isPresent() ?
                 new DomainCheckModelAssembler().toModel(domainDto.getLastDomainCheck()) : null;
-        return new DomainModel(
+        var obfuscatedHeaders = new HashMap<String, String>();
+        Optional.ofNullable(domainDto.getHeaders()).orElse(new HashMap<>()).keySet().forEach(key -> {
+            if (key.toLowerCase().contains("authorization") || key.toLowerCase().contains("authenticate")) {
+                obfuscatedHeaders.put(key, "*****");
+            } else {
+                obfuscatedHeaders.put(key, domainDto.getHeaders().get(key));
+            }
+        });
+        return new DomainResponse(
                 domainDto.getDomain(),
                 lastDomainChecks,
                 domainDto.getCreatedAt(),
-                domainDto.getCheckFrequencyMinutes()
+                domainDto.getCheckFrequencyMinutes(),
+                domainDto.getEndpoint(),
+                obfuscatedHeaders,
+                domainDto.getTimeoutMs()
         );
     }
 
-    public CollectionModel<DomainModel> toCollectionModel(PaginatedDto<DomainDto> paginatedDomainsDto, Boolean compact) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        var domainModels = new ArrayList<DomainModel>();
+    public CollectionModel<DomainResponse> toCollectionModel(
+            PaginatedDto<DomainDto> paginatedDomainsDto,
+            DomainsOptionsDto options) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        var domainModels = new ArrayList<DomainResponse>();
         for (var domain : paginatedDomainsDto.getDtoList()) {
             var domainModel = this.toModel(domain);
             domainModel.add(
@@ -66,19 +81,37 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
         }
         var links = new ArrayList<Link>();
         links.add(linkTo(methodOn(DomainsController.class)
-                .getDomains(paginatedDomainsDto.getNumber(), paginatedDomainsDto.getSize(), compact))
+                .getDomains(
+                        paginatedDomainsDto.getNumber(),
+                        paginatedDomainsDto.getSize(),
+                        options.getShowLastChecks(),
+                        options.getFilter(),
+                        options.getSortBy(),
+                        options.getDesc()))
                 .withSelfRel()
         );
         if (isValidPage(paginatedDomainsDto.getNumber(),paginatedDomainsDto.getTotalPages())) {
             if (isNotLastPage(paginatedDomainsDto.getNumber(), paginatedDomainsDto.getTotalPages())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomains(paginatedDomainsDto.getNumber()+1, paginatedDomainsDto.getSize(), compact))
+                        .getDomains(
+                                paginatedDomainsDto.getNumber()+1,
+                                paginatedDomainsDto.getSize(),
+                                options.getShowLastChecks(),
+                                options.getFilter(),
+                                options.getSortBy(),
+                                options.getDesc()))
                         .withRel(IanaLinkRelations.NEXT)
                 );
             }
             if (isNotFirstPage(paginatedDomainsDto.getNumber())) {
                 links.add(linkTo(methodOn(DomainsController.class)
-                        .getDomains(paginatedDomainsDto.getNumber()-1, paginatedDomainsDto.getSize(), compact))
+                        .getDomains(
+                                paginatedDomainsDto.getNumber()-1,
+                                paginatedDomainsDto.getSize(),
+                                options.getShowLastChecks(),
+                                options.getFilter(),
+                                options.getSortBy(),
+                                options.getDesc()))
                         .withRel(IanaLinkRelations.PREVIOUS)
                 );
             }

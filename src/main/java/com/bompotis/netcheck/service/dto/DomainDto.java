@@ -18,6 +18,9 @@
 package com.bompotis.netcheck.service.dto;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by Kyriakos Bompotis on 19/6/20.
@@ -27,6 +30,9 @@ public class DomainDto {
     private final DomainCheckDto lastDomainCheck;
     private final Date createdAt;
     private final Integer checkFrequencyMinutes;
+    private final String endpoint;
+    private final Map<String,String> headers;
+    private final Integer timeoutMs;
 
     public DomainCheckDto getLastDomainCheck() {
         return lastDomainCheck;
@@ -44,11 +50,26 @@ public class DomainDto {
         return checkFrequencyMinutes;
     }
 
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public Integer getTimeoutMs() {
+        return timeoutMs;
+    }
+
     public static class Builder {
         private DomainCheckDto lastDomainCheck;
         private String domain;
         private Date createdAt;
-        private Integer checkFrequencyMinutes;
+        private Integer checkFrequencyMinutes = 10;
+        private String endpoint = "";
+        private Map<String,String> headers = new HashMap<>();
+        private Integer timeoutMs = 30000;
 
         public Builder lastDomainCheck(DomainCheckDto lastDomainCheck) {
             this.lastDomainCheck = lastDomainCheck;
@@ -61,12 +82,40 @@ public class DomainDto {
         }
 
         public Builder checkFrequencyMinutes(Integer checkFrequencyMinutes) {
-            this.checkFrequencyMinutes = checkFrequencyMinutes;
+            this.checkFrequencyMinutes = Optional.ofNullable(checkFrequencyMinutes).orElse(10);
             return this;
         }
 
         public Builder createdAt(Date createdAt) {
             this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder endpoint(String endpoint) {
+            this.endpoint = Optional.ofNullable(endpoint).orElse("");
+            return this;
+        }
+
+        public Builder timeoutMs(Integer timeoutMs) {
+            this.timeoutMs = Optional.ofNullable(timeoutMs).orElse(30000);
+            return this;
+        }
+
+        public Builder withHeader(String key, String value) {
+            if (Optional.ofNullable(this.headers).isEmpty()) {
+                this.headers = new HashMap<>();
+            }
+            this.headers.put(key,value);
+            return this;
+        }
+
+        public Builder withHeaders(Map<String,String> headers) {
+            if (Optional.ofNullable(headers).isPresent()) {
+                if (Optional.ofNullable(this.headers).isEmpty()) {
+                    this.headers = new HashMap<>();
+                }
+                this.headers.putAll(headers);
+            }
             return this;
         }
 
@@ -80,5 +129,8 @@ public class DomainDto {
         this.domain = b.domain;
         this.createdAt = b.createdAt;
         this.checkFrequencyMinutes = b.checkFrequencyMinutes;
+        this.endpoint = b.endpoint;
+        this.headers = Optional.ofNullable(b.headers).isPresent() ? Map.copyOf(b.headers) : null;
+        this.timeoutMs = b.timeoutMs;
     }
 }

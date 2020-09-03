@@ -77,13 +77,13 @@ public class DomainCheckDto {
             return this;
         }
 
-        public Builder withCurrentHttpCheck() throws IOException {
-            this.httpCheckDto = checkHttp(this.domain);
+        public Builder withCurrentHttpCheck(DomainCheckConfigDto config) throws IOException {
+            this.httpCheckDto = checkHttp(config);
             return this;
         }
 
-        public Builder withCurrentHttpsCheck() throws IOException, KeyManagementException, NoSuchAlgorithmException {
-            this.httpsCheckDto = checkHttps(this.domain);
+        public Builder withCurrentHttpsCheck(DomainCheckConfigDto config) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+            this.httpsCheckDto = checkHttps(config);
             return this;
         }
 

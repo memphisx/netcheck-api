@@ -20,6 +20,7 @@ package com.bompotis.netcheck.scheduler.batch.notification;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,17 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Created by Kyriakos Bompotis on 1/7/20.
  */
 public class NotificationDto {
-
-    public enum Status {
-        UP,
-        DOWN
-    }
-
-    public enum Type {
-        HTTP,
-        HTTPS,
-        CERTIFICATE
-    }
 
     private final Type type;
 
@@ -70,38 +60,19 @@ public class NotificationDto {
 
     private final Map<String, Object> previousState;
 
-    public String getMessage() {
-        switch (type) {
-            case CERTIFICATE:
-                if (issuerCertificateHasExpired) {
-                    return String.format(
-                            "Certificates for %s has expired. New Expiration date: %s",
-                            hostname,
-                            issuerCertificateExpirationDate
-                    );
-                } else if (!issuerCertificateIsValid) {
-                    return String.format(
-                            "Certificates for %s have changed. New certificate is invalid. Expiration Date: %s",
-                            hostname,
-                            issuerCertificateExpirationDate.toString()
-                    );
-                } else {
-                    return String.format(
-                            "Certificates for %s have changed. New Expiration date: %s",
-                            hostname,
-                            issuerCertificateExpirationDate.toString()
-                    );
-                }
-            case HTTP:
-            case HTTPS:
-            default:
-                return String.format(
-                        "%s State for %s has changed to %s with status code %s",
-                        type.name(),
-                        hostname,
-                        getStatus().name(),
-                        statusCode);
-        }
+    private final String message;
+
+    private final Status status;
+
+    public enum Status {
+        UP,
+        DOWN
+    }
+
+    public enum Type {
+        HTTP,
+        HTTPS,
+        CERTIFICATE
     }
 
     public Integer getStatusCode() {
@@ -110,11 +81,6 @@ public class NotificationDto {
 
     public String getHostname() {
         return hostname;
-    }
-
-    public Status getStatus() {
-        boolean isUp = Optional.ofNullable(this.getStatusCode()).orElse(1000) < 400;
-        return isUp ? Status.UP : Status.DOWN;
     }
 
     public Boolean isDnsResolves() {
@@ -157,7 +123,16 @@ public class NotificationDto {
         return rootCertificatesChanged;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
     public static class Builder {
+        private final Set<String> STATE_PROPERTIES_BLACKLIST = Set.of("id", "createdAt", "updatedAt", "new");
         private Type type;
         private Integer statusCode;
         private Boolean dnsResolves;
@@ -187,13 +162,19 @@ public class NotificationDto {
             return this;
         }
 
+        private Map<String, Object> convertToMap(Object state) {
+            var map = oMapper.convertValue(state, Map.class);
+            map.keySet().removeAll(STATE_PROPERTIES_BLACKLIST);
+            return map;
+        }
+
         public Builder currentState(Object currentState) {
-            this.currentState = Optional.ofNullable(currentState).isPresent() ? oMapper.convertValue(currentState, Map.class) : null;
+            this.currentState = Optional.ofNullable(currentState).isPresent() ? convertToMap(currentState) : null;
             return this;
         }
 
         public Builder previousState(Object previousState) {
-            this.previousState = Optional.ofNullable(previousState).isPresent() ? oMapper.convertValue(previousState, Map.class) : null;
+            this.previousState = Optional.ofNullable(previousState).isPresent() ? convertToMap(previousState) : null;
             return this;
         }
 
@@ -251,6 +232,44 @@ public class NotificationDto {
             return this;
         }
 
+        private Status getStatus() {
+            boolean isUp = Optional.ofNullable(this.statusCode).orElse(1000) < 400;
+            return isUp ? Status.UP : Status.DOWN;
+        }
+        private String getMessage() {
+            switch (type) {
+                case CERTIFICATE:
+                    if (issuerCertificateHasExpired) {
+                        return String.format(
+                                "Certificates for %s has expired. New Expiration date: %s",
+                                hostname,
+                                issuerCertificateExpirationDate
+                        );
+                    } else if (!issuerCertificateIsValid) {
+                        return String.format(
+                                "Certificates for %s have changed. New certificate is invalid. Expiration Date: %s",
+                                hostname,
+                                issuerCertificateExpirationDate.toString()
+                        );
+                    } else {
+                        return String.format(
+                                "Certificates for %s have changed. New Expiration date: %s",
+                                hostname,
+                                issuerCertificateExpirationDate.toString()
+                        );
+                    }
+                case HTTP:
+                case HTTPS:
+                default:
+                    return String.format(
+                            "%s State for %s has changed to %s with status code %s",
+                            type.name(),
+                            hostname,
+                            getStatus().name(),
+                            statusCode);
+            }
+        }
+
         public NotificationDto build() {
             return new NotificationDto(this);
         }
@@ -272,5 +291,7 @@ public class NotificationDto {
         this.rootCertificatesChanged = b.rootCertificatesChanged;
         this.currentState = b.currentState;
         this.previousState = b.previousState;
+        this.message = b.getMessage();
+        this.status = b.getStatus();
     }
 }
