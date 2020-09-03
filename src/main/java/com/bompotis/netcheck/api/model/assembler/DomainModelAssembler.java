@@ -18,7 +18,8 @@
 package com.bompotis.netcheck.api.model.assembler;
 
 import com.bompotis.netcheck.api.controller.DomainsController;
-import com.bompotis.netcheck.api.model.DomainModel;
+import com.bompotis.netcheck.api.model.DomainResponse;
+import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.service.dto.DomainDto;
 import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
 import com.bompotis.netcheck.service.dto.PaginatedDto;
@@ -31,7 +32,10 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -39,27 +43,38 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 /**
  * Created by Kyriakos Bompotis on 17/6/20.
  */
-public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerSupport<DomainDto, DomainModel> {
+public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerSupport<DomainDto, DomainResponse> {
     public DomainModelAssembler() {
-        super(DomainsController.class, DomainModel.class);
+        super(DomainsController.class, DomainResponse.class);
     }
 
     @Override
-    public DomainModel toModel(DomainDto domainDto) {
+    public DomainResponse toModel(DomainDto domainDto) {
         var lastDomainChecks = Optional.ofNullable(domainDto.getLastDomainCheck()).isPresent() ?
                 new DomainCheckModelAssembler().toModel(domainDto.getLastDomainCheck()) : null;
-        return new DomainModel(
+        var obfuscatedHeaders = new HashMap<String, String>();
+        Optional.ofNullable(domainDto.getHeaders()).orElse(new HashMap<>()).keySet().forEach(key -> {
+            if (key.toLowerCase().contains("authorization") || key.toLowerCase().contains("authenticate")) {
+                obfuscatedHeaders.put(key, "*****");
+            } else {
+                obfuscatedHeaders.put(key, domainDto.getHeaders().get(key));
+            }
+        });
+        return new DomainResponse(
                 domainDto.getDomain(),
                 lastDomainChecks,
                 domainDto.getCreatedAt(),
-                domainDto.getCheckFrequencyMinutes()
+                domainDto.getCheckFrequencyMinutes(),
+                domainDto.getEndpoint(),
+                obfuscatedHeaders,
+                domainDto.getTimeoutMs()
         );
     }
 
-    public CollectionModel<DomainModel> toCollectionModel(
+    public CollectionModel<DomainResponse> toCollectionModel(
             PaginatedDto<DomainDto> paginatedDomainsDto,
             DomainsOptionsDto options) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        var domainModels = new ArrayList<DomainModel>();
+        var domainModels = new ArrayList<DomainResponse>();
         for (var domain : paginatedDomainsDto.getDtoList()) {
             var domainModel = this.toModel(domain);
             domainModel.add(

@@ -23,14 +23,16 @@ import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
 import com.bompotis.netcheck.data.repository.DomainCheckRepository;
 import com.bompotis.netcheck.data.repository.DomainRepository;
-import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
-import com.bompotis.netcheck.service.dto.DomainCheckDto;
-import com.bompotis.netcheck.service.dto.PaginatedDto;
-import com.bompotis.netcheck.service.dto.HttpsCheckDto;
-import com.bompotis.netcheck.service.dto.HttpCheckDto;
-import com.bompotis.netcheck.service.dto.DomainDto;
-import com.bompotis.netcheck.service.dto.StateDto;
 import com.bompotis.netcheck.service.dto.CertificateDetailsDto;
+import com.bompotis.netcheck.service.dto.DomainCheckConfigDto;
+import com.bompotis.netcheck.service.dto.DomainCheckDto;
+import com.bompotis.netcheck.service.dto.DomainDto;
+import com.bompotis.netcheck.service.dto.DomainUpdateDto;
+import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
+import com.bompotis.netcheck.service.dto.HttpCheckDto;
+import com.bompotis.netcheck.service.dto.HttpsCheckDto;
+import com.bompotis.netcheck.service.dto.PaginatedDto;
+import com.bompotis.netcheck.service.dto.StateDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,11 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -61,12 +67,18 @@ public class DomainService extends AbstractService{
         this.domainCheckRepository = domainCheckRepository;
     }
 
-    public DomainCheckDto check(String domain) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        var monitored = domainRepository.findById(domain).isPresent();
-        return new DomainCheckDto.Builder(domain)
+    public DomainCheckDto check(DomainDto domainDto) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        var monitored = domainRepository.findById(domainDto.getDomain()).isPresent();
+        var config = new DomainCheckConfigDto.Builder()
+                .domain(domainDto.getDomain())
+                .endpoint(domainDto.getEndpoint())
+                .timeoutMs(domainDto.getTimeoutMs())
+                .withHeaders(domainDto.getHeaders())
+                .build();
+        return new DomainCheckDto.Builder(domainDto.getDomain())
                 .monitored(monitored)
-                .withCurrentHttpCheck()
-                .withCurrentHttpsCheck()
+                .withCurrentHttpCheck(config)
+                .withCurrentHttpsCheck(config)
                 .build();
     }
 
@@ -233,6 +245,9 @@ public class DomainService extends AbstractService{
                             .domain(domain.getDomain())
                             .checkFrequencyMinutes(domain.getDomainEntity().getCheckFrequency())
                             .createdAt(domain.getDomainEntity().getCreatedAt())
+                            .withHeaders(domain.getDomainEntity().getHeaders())
+                            .timeoutMs(domain.getDomainEntity().getTimeoutMs())
+                            .endpoint(domain.getDomainEntity().getEndpoint())
                             .lastDomainCheck(convertDomainCheckEntityToDto(domain))
                             .build()
                     )
@@ -252,6 +267,9 @@ public class DomainService extends AbstractService{
             paginatedQueryResult.forEach(
                     (domain) -> domains.add(new DomainDto.Builder()
                             .domain(domain.getDomain())
+                            .endpoint(domain.getEndpoint())
+                            .withHeaders(domain.getHeaders())
+                            .timeoutMs(domain.getTimeoutMs())
                             .checkFrequencyMinutes(domain.getCheckFrequency())
                             .createdAt(domain.getCreatedAt())
                             .build()
@@ -268,10 +286,13 @@ public class DomainService extends AbstractService{
         }
     }
 
-    public void scheduleDomainToCheck(String domain, Integer frequency) {
+    public void scheduleDomainToCheck(DomainDto domainDto) {
         domainRepository.save(new DomainEntity.Builder()
-                .frequency(Optional.ofNullable(frequency).orElse(10))
-                .domain(domain)
+                .frequency(domainDto.getCheckFrequencyMinutes())
+                .domain(domainDto.getDomain())
+                .timeoutMs(domainDto.getTimeoutMs())
+                .endpoint(domainDto.getEndpoint())
+                .headers(domainDto.getHeaders())
                 .build()
         );
     }
@@ -417,5 +438,29 @@ public class DomainService extends AbstractService{
 
     public boolean domainIsScheduled(String domain) {
         return domainRepository.existsById(domain);
+    }
+
+    public boolean deleteScheduledDomain(String domain) {
+        var optionalDomainEntity = domainRepository.findById(domain);
+        if (optionalDomainEntity.isPresent()) {
+            domainRepository.delete(optionalDomainEntity.get());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean updateDomainConfig(DomainUpdateDto dto) {
+        var optionalDomainEntity = domainRepository.findById(dto.getDomain());
+        if (optionalDomainEntity.isPresent()) {
+            var entity = new DomainEntity.Builder()
+                    .fromExistingEntity(optionalDomainEntity.get())
+                    .withUpdatedValues(dto.getOperations())
+                    .build();
+            domainRepository.save(entity);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

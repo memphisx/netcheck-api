@@ -20,6 +20,7 @@ package com.bompotis.netcheck.scheduler.batch.processor;
 import com.bompotis.netcheck.data.entity.DomainCheckEntity;
 import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.service.DomainService;
+import com.bompotis.netcheck.service.dto.DomainDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -71,7 +72,13 @@ public class DomainCheckProcessor implements ItemProcessor<DomainEntity, DomainC
 
     private DomainCheckEntity check(DomainEntity domainEntity) throws NoSuchAlgorithmException, IOException, KeyManagementException {
         log.info("Checking {}", domainEntity.getDomain());
-        var status = domainService.check(domainEntity.getDomain());
+        var domainDto = new DomainDto.Builder()
+                .domain(domainEntity.getDomain())
+                .endpoint(domainEntity.getEndpoint())
+                .withHeaders(domainEntity.getHeaders())
+                .timeoutMs(domainEntity.getTimeoutMs())
+                .build();
+        var status = domainService.check(domainDto);
         return domainService.convertToDomainCheckEntity(status, domainEntity);
     }
 

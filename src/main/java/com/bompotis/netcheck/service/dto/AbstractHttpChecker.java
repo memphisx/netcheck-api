@@ -97,24 +97,23 @@ public abstract class AbstractHttpChecker {
         return connectedSuccessfully;
     }
 
-    protected HttpsCheckDto checkHttps(String domain) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected HttpsCheckDto checkHttps(DomainCheckConfigDto config) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         var httpsCheckDtoBuilder = new HttpsCheckDto.Builder();
         var httpCheckDtoBuilder = new HttpCheckDto.Builder().protocol("HTTPS");
         HttpsURLConnection conn = null;
         try {
             var beginTime = System.nanoTime();
             var connected = false;
-            conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(30000);
+            conn = (HttpsURLConnection) getHttpsDomainUri(config.getDomain(), config.getEndpoint()).openConnection();
+            assignHeaders(config, conn);
             try {
                 connected = checkAssembler(httpCheckDtoBuilder, conn, beginTime);
             } catch (SSLHandshakeException e) {
-                LOG.warn("SSL Handshake failed for domain {} probably because of invalid cert: {}", domain, e.getMessage());
+                LOG.warn("SSL Handshake failed for domain {} probably because of invalid cert: {}", config.getDomain(), e.getMessage());
                 LOG.warn("Retrying with more permissive Certificate Handling to get additional details");
                 conn.disconnect();
                 beginTime = System.nanoTime();
-                conn = (HttpsURLConnection) getHttpsDomainUri(domain).openConnection();
+                conn = (HttpsURLConnection) getHttpsDomainUri(config.getDomain(),config.getEndpoint()).openConnection();
                 SSLContext sc = SSLContext.getInstance("SSL");
                 sc.init(null, new X509TrustEverythingManager[]{new X509TrustEverythingManager()}, new SecureRandom());
                 conn.setHostnameVerifier(new AllHostnamesValidVerifier());
@@ -136,14 +135,13 @@ public abstract class AbstractHttpChecker {
     }
 
 
-    protected HttpCheckDto checkHttp(String domain) throws IOException {
+    protected HttpCheckDto checkHttp(DomainCheckConfigDto config) throws IOException {
         var httpCheckDtoBuilder = new HttpCheckDto.Builder().protocol("HTTP");
         HttpURLConnection conn = null;
         try {
             var beginTime = System.nanoTime();
-            conn = (HttpURLConnection) getHttpDomainUri(domain).openConnection();
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(30000);
+            conn = (HttpURLConnection) getHttpDomainUri(config.getDomain(), config.getEndpoint()).openConnection();
+            assignHeaders(config, conn);
             checkAssembler(httpCheckDtoBuilder, conn, beginTime);
         } finally {
             Optional.ofNullable(conn)
@@ -152,15 +150,24 @@ public abstract class AbstractHttpChecker {
         return httpCheckDtoBuilder.build();
     }
 
-
-
-    private URL getHttpsDomainUri(String domain) throws MalformedURLException {
-        return new URL("https://" + domain);
+    private void assignHeaders(DomainCheckConfigDto config, HttpURLConnection conn) {
+        if (Optional.ofNullable(config.getHeaders()).isPresent() && !config.getHeaders().isEmpty()) {
+            for (var key : config.getHeaders().keySet()) {
+                conn.setRequestProperty(key,config.getHeaders().get(key));
+            }
+        }
+        conn.setConnectTimeout(config.getTimeoutMs());
+        conn.setReadTimeout(config.getTimeoutMs());
     }
 
 
-    private URL getHttpDomainUri(String domain) throws MalformedURLException {
-        return new URL("http://" + domain);
+    private URL getHttpsDomainUri(String domain, String endpoint) throws MalformedURLException {
+        return new URL("https://" + domain + Optional.ofNullable(endpoint).orElse(""));
+    }
+
+
+    private URL getHttpDomainUri(String domain, String endpoint) throws MalformedURLException {
+        return new URL("http://" + domain + Optional.ofNullable(endpoint).orElse(""));
     }
 
     protected static class X509TrustEverythingManager implements X509TrustManager {

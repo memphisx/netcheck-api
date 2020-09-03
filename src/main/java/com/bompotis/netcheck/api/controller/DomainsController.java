@@ -17,18 +17,11 @@
  */
 package com.bompotis.netcheck.api.controller;
 
-import com.bompotis.netcheck.api.model.DomainModel;
-import com.bompotis.netcheck.api.model.DomainCheckModel;
-import com.bompotis.netcheck.api.model.StateModel;
-import com.bompotis.netcheck.api.model.HttpCheckModel;
-import com.bompotis.netcheck.api.model.MetricModel;
-import com.bompotis.netcheck.api.model.assembler.DomainModelAssembler;
-import com.bompotis.netcheck.api.model.assembler.DomainCheckModelAssembler;
-import com.bompotis.netcheck.api.model.assembler.StateModelAssembler;
-import com.bompotis.netcheck.api.model.assembler.HttpCheckModelAssembler;
-import com.bompotis.netcheck.api.model.assembler.MetricModelAssembler;
+import com.bompotis.netcheck.api.model.*;
+import com.bompotis.netcheck.api.model.assembler.*;
 import com.bompotis.netcheck.service.DomainService;
 import com.bompotis.netcheck.service.MetricService;
+import com.bompotis.netcheck.service.dto.DomainDto;
 import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,25 +31,29 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.springframework.http.ResponseEntity.notFound;
-import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.*;
 
 /**
  * Created by Kyriakos Bompotis on 28/11/18.
@@ -80,7 +77,7 @@ public class DomainsController {
 
     @Operation(summary = "Get domains that are scheduled for periodical checking")
     @GetMapping(produces={"application/hal+json"})
-    public ResponseEntity<CollectionModel<DomainModel>> getDomains(
+    public ResponseEntity<CollectionModel<DomainResponse>> getDomains(
             @RequestParam(name = "page", required = false) Integer page,
             @RequestParam(name = "size", required = false) Integer size,
             @RequestParam(name = "showLastChecks", required = false) Boolean showLastChecks,
@@ -106,12 +103,12 @@ public class DomainsController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Config and last checks of the domain",
                     content = { @Content(mediaType = "application/hal+json",
-                            schema = @Schema(implementation = DomainModel.class)) }),
+                            schema = @Schema(implementation = DomainResponse.class)) }),
             @ApiResponse(responseCode = "404", description = "Domain is not scheduled or no checks where found",
                     content = @Content)})
     @GetMapping(produces={"application/hal+json"}, path = "/{domain}")
-    public ResponseEntity<DomainModel> getDomainStatus(@PathVariable("domain") String domain) {
-        var result = new AtomicReference<ResponseEntity<DomainModel>>();
+    public ResponseEntity<DomainResponse> getDomainStatus(@PathVariable("domain") String domain) {
+        var result = new AtomicReference<ResponseEntity<DomainResponse>>();
         domainService.getDomain(domain).ifPresentOrElse(
                 domainDto -> result.set(ok(new DomainModelAssembler().toModel(domainDto))),
                 () -> result.set(notFound().build())
@@ -120,14 +117,48 @@ public class DomainsController {
     }
 
     @Operation(summary = "Schedule domain for periodic checks")
-    @PutMapping(produces={"application/hal+json"}, path = "/{domain}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Domain was successfully added"),
+            @ApiResponse(responseCode = "409", description = "Domain is already scheduled for checks")
+    })
+    @PutMapping(path = "/{domain}", consumes={"application/json"})
     public ResponseEntity<Object> addDomainToScheduler(@PathVariable("domain") String domain,
-                                                       @RequestBody(required = false) DomainModel domainModel) {
-        var frequency = Optional.ofNullable(domainModel).isPresent() ?
-                domainModel.getCheckFrequencyMinutes() :
-                null;
-        domainService.scheduleDomainToCheck(domain, frequency);
+                                                       @Valid @RequestBody(required = false) DomainRequest domainRequest) {
+        if (domainService.domainIsScheduled(domain)) {
+            return status(HttpStatus.CONFLICT).build();
+        }
+        var domainDtoBuilder = new DomainDto.Builder().domain(domain);
+        if (Optional.ofNullable(domainRequest).isPresent()) {
+            domainDtoBuilder.checkFrequencyMinutes(domainRequest.getCheckFrequencyMinutes())
+                            .endpoint(domainRequest.getEndpoint())
+                            .timeoutMs(domainRequest.getTimeoutMs())
+                            .withHeaders(domainRequest.getHeaders());
+        }
+        domainService.scheduleDomainToCheck(domainDtoBuilder.build());
         return ok().build();
+    }
+
+    @Operation(summary = "Update configuration of a domain")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Domain was successfully updated"),
+            @ApiResponse(responseCode = "404", description = "Domain not found")
+    })
+    @PatchMapping(path = "/{domain}")
+    public ResponseEntity<Object> updateScheduledDomain(@PathVariable("domain") String domain,
+                                                       @Valid @RequestBody List<PatchOperation> patchOperations) {
+        return domainService.updateDomainConfig(new DomainUpdateDtoAssembler(domain).toDto(patchOperations)) ?
+                ok().build() :
+                notFound().build();
+    }
+
+    @Operation(summary = "Remove domain from schedule checks list")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Domain was successfully deleted"),
+            @ApiResponse(responseCode = "404", description = "Domain not found")
+    })
+    @DeleteMapping(path = "/{domain}")
+    public ResponseEntity<Object> deleteScheduledDomain(@PathVariable("domain") String domain) {
+        return domainService.deleteScheduledDomain(domain) ? ok().build() : notFound().build();
     }
 
     @Operation(summary = "Get all previous checks for the given domain")
