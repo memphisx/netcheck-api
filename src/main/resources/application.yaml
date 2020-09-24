@@ -70,3 +70,5 @@ server:
   compression:
     enabled: true
   port: 8080
+  http2:
+    enabled: true
