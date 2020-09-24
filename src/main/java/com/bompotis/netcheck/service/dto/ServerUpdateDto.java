@@ -17,29 +17,30 @@
  */
 package com.bompotis.netcheck.service.dto;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Kyriakos Bompotis on 2/9/20.
  */
-public class DomainUpdateDto {
-    private final String domain;
+public class ServerUpdateDto {
+    private final String serverId;
     private final List<Operation> operations;
 
-    public String getDomain() {
-        return domain;
+    public String getServerId() {
+        return serverId;
     }
 
     public List<Operation> getOperations() {
         return operations;
     }
 
-    public static class Builder implements PatchDtoBuilder<DomainUpdateDto> {
-        private final String domain;
+    public static class Builder implements PatchDtoBuilder<ServerUpdateDto>{
+        private final String serverId;
         private final List<Operation> operations = new ArrayList<>();
 
-        public Builder(String domain) {
-            this.domain = domain;
+        public Builder(String serverId) {
+            this.serverId = serverId;
         }
 
         public Builder addOperation(Operation operation) {
@@ -47,13 +48,13 @@ public class DomainUpdateDto {
             return this;
         }
 
-        public DomainUpdateDto build() {
-            return new DomainUpdateDto(this);
+        public ServerUpdateDto build() {
+            return new ServerUpdateDto(this);
         }
     }
 
-    private DomainUpdateDto(Builder b) {
-        this.domain = b.domain;
+    private ServerUpdateDto(Builder b) {
+        this.serverId = b.serverId;
         this.operations = b.operations;
     }
 }

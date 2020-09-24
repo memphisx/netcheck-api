@@ -117,7 +117,7 @@ public class DomainEntity extends AbstractTimestampable<String>{
         return timeoutMs;
     }
 
-    public static class Builder {
+    public static class Builder implements EntityBuilder<DomainEntity> {
         private String domain;
         private Set<DomainCheckEntity> domainHistoryEntries;
         private int frequency = 10;
@@ -125,77 +125,6 @@ public class DomainEntity extends AbstractTimestampable<String>{
         private Map<String,String> headers = new HashMap<>();
         private Set<DomainMetricEntity> domainMetricEntries;
         private int timeoutMs = 30000;
-        private Date createdAt = null;
-
-        public Builder fromExistingEntity(DomainEntity entity) {
-            this.domain = entity.domain;
-            this.domainHistoryEntries = entity.domainHistoryEntries;
-            this.frequency = entity.checkFrequency;
-            this.endpoint = entity.endpoint;
-            this.headers = entity.headers;
-            this.domainMetricEntries = entity.domainMetricEntries;
-            this.timeoutMs = entity.timeoutMs;
-            this.createdAt = entity.getCreatedAt();
-            return this;
-        }
-
-        public Builder withUpdatedValues(List<Operation> operations) {
-            for (var operation : operations) {
-                switch (operation.getAction()) {
-                    case REMOVE:
-                        removeField(operation.getField(), operation.getPath());
-                        break;
-                    case ADD:
-                    case UPDATE:
-                        updateField(operation.getField(), operation.getPath(), operation.getValue());
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Invalid operation");
-                }
-            }
-            return this;
-        }
-
-        private void removeField(String field, String path) {
-            switch (field) {
-                case "frequency":
-                    this.frequency = 10;
-                    break;
-                case "endpoint":
-                    this.endpoint = "";
-                    break;
-                case "timeout":
-                    this.timeoutMs = 30000;
-                    break;
-                case "headers":
-                    this.headers = new HashMap<>();
-                    break;
-                case "header":
-                    this.headers.remove(path);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid property for removal: " + field);
-            }
-        }
-
-        private void updateField(String field, String path, String value) {
-            switch (field) {
-                case "frequency":
-                    this.frequency = Integer.parseInt(value);
-                    break;
-                case "endpoint":
-                    this.endpoint = value;
-                    break;
-                case "timeout":
-                    this.timeoutMs = Integer.parseInt(value);
-                    break;
-                case "header":
-                    this.headers.put(path,value);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid property to update/add: " + field);
-            }
-        }
 
         public Builder domainHistoryEntries(Set<DomainCheckEntity> domainHistoryEntries) {
             this.domainHistoryEntries = domainHistoryEntries;
@@ -239,7 +168,89 @@ public class DomainEntity extends AbstractTimestampable<String>{
         }
     }
 
+    public static class Updater implements OperationUpdater<DomainEntity> {
+        private final String domain;
+        private final Set<DomainCheckEntity> domainHistoryEntries;
+        private int frequency = 10;
+        private String endpoint = "";
+        private Map<String,String> headers;
+        private final Set<DomainMetricEntity> domainMetricEntries;
+        private int timeoutMs;
+        private final Date createdAt;
+
+        public Updater(DomainEntity entity) {
+            this.domain = entity.domain;
+            this.domainHistoryEntries = entity.domainHistoryEntries;
+            this.frequency = entity.checkFrequency;
+            this.endpoint = entity.endpoint;
+            this.headers = entity.headers;
+            this.domainMetricEntries = entity.domainMetricEntries;
+            this.timeoutMs = entity.timeoutMs;
+            this.createdAt = entity.getCreatedAt();
+        }
+
+        public Updater withUpdatedValues(List<Operation> operations) {
+            operations.forEach(this::processOperation);
+            return this;
+        }
+
+        public void removeField(String field, String path) {
+            switch (field) {
+                case "frequency":
+                    this.frequency = 10;
+                    break;
+                case "endpoint":
+                    this.endpoint = "";
+                    break;
+                case "timeout":
+                    this.timeoutMs = 30000;
+                    break;
+                case "headers":
+                    this.headers = new HashMap<>();
+                    break;
+                case "header":
+                    this.headers.remove(path);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid property for removal: " + field);
+            }
+        }
+
+        public void updateField(String field, String path, String value) {
+            switch (field) {
+                case "frequency":
+                    this.frequency = Integer.parseInt(value);
+                    break;
+                case "endpoint":
+                    this.endpoint = value;
+                    break;
+                case "timeout":
+                    this.timeoutMs = Integer.parseInt(value);
+                    break;
+                case "header":
+                    this.headers.put(path,value);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid property to update/add: " + field);
+            }
+        }
+
+        public DomainEntity build() {
+            return new DomainEntity(this);
+        }
+    }
+
     private DomainEntity(Builder b) {
+        this.domain = b.domain;
+        this.domainHistoryEntries = b.domainHistoryEntries != null ? Set.copyOf(b.domainHistoryEntries) : null;
+        this.domainMetricEntries = b.domainMetricEntries != null ? Set.copyOf(b.domainMetricEntries) : null;
+        this.checkFrequency = b.frequency;
+        this.endpoint = b.endpoint;
+        this.headers = Map.copyOf(b.headers);
+        this.timeoutMs = b.timeoutMs;
+    }
+
+    private DomainEntity(Updater b) {
         this.domain = b.domain;
         this.domainHistoryEntries = b.domainHistoryEntries != null ? Set.copyOf(b.domainHistoryEntries) : null;
         this.domainMetricEntries = b.domainMetricEntries != null ? Set.copyOf(b.domainMetricEntries) : null;

@@ -62,7 +62,7 @@ public class DomainDto {
         return timeoutMs;
     }
 
-    public static class Builder {
+    public static class Builder implements DtoBuilder<DomainDto> {
         private DomainCheckDto lastDomainCheck;
         private String domain;
         private Date createdAt;

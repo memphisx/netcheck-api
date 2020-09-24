@@ -64,7 +64,7 @@ public class MetricDto {
         return successfulChecks;
     }
 
-    public static class Builder {
+    public static class Builder implements DtoBuilder<MetricDto>{
         private Date metricPeriodStart;
         private Date metricPeriodEnd;
         private Integer totalChecks;

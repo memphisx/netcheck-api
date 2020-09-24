@@ -60,6 +60,7 @@ public abstract class AbstractTimestampable<K extends Serializable> implements P
 
     @PreUpdate
     protected void preUpdate() {
+        if (this.createdAt == null) createdAt = new Date();
         this.updatedAt = new Date();
     }
 

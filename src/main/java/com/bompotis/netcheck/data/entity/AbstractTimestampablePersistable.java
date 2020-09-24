@@ -43,11 +43,11 @@ public abstract class AbstractTimestampablePersistable<K extends Serializable> i
     @GeneratedValue(generator="uuid")
     @GenericGenerator(name="uuid", strategy = "uuid2")
     @Column(name = "id")
-    private K id;
+    protected K id;
 
     @CreatedDate
     @Column(name = "created_at")
-    private Date createdAt;
+    protected Date createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")

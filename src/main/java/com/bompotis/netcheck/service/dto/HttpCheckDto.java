@@ -90,7 +90,7 @@ public class HttpCheckDto {
         return result.get();
     }
 
-    public static class Builder {
+    public static class Builder implements DtoBuilder<HttpCheckDto>{
         private Long responseTimeNs;
         private String hostname;
         private Integer statusCode;

@@ -18,6 +18,7 @@
 package com.bompotis.netcheck.api.model.assembler;
 
 import com.bompotis.netcheck.api.controller.DomainsController;
+import com.bompotis.netcheck.api.exception.EntityNotFoundException;
 import com.bompotis.netcheck.api.model.DomainResponse;
 import com.bompotis.netcheck.service.dto.DomainDto;
 import com.bompotis.netcheck.service.dto.DomainsOptionsDto;
@@ -70,7 +71,7 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
 
     public CollectionModel<DomainResponse> toCollectionModel(
             PaginatedDto<DomainDto> paginatedDomainsDto,
-            DomainsOptionsDto options) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+            DomainsOptionsDto options) throws IOException, NoSuchAlgorithmException, KeyManagementException, EntityNotFoundException {
         var domainModels = new ArrayList<DomainResponse>();
         for (var domain : paginatedDomainsDto.getDtoList()) {
             var domainModel = this.toModel(domain);

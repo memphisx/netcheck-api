@@ -17,25 +17,24 @@
  */
 package com.bompotis.netcheck.scheduler.batch.notification;
 
+import com.bompotis.netcheck.service.dto.ServerMetricDto;
 import com.google.gson.Gson;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-/**
- * Created by Kyriakos Bompotis on 25/8/20.
- */
-public class NotificationEventDto extends ApplicationEvent implements EventDto {
+
+public class ServerMetricEventDto extends ApplicationEvent implements EventDto {
 
     private final SseEmitter.SseEventBuilder event;
 
-    public NotificationEventDto(Object source, NotificationDto notificationDto) {
+    public ServerMetricEventDto(Object source, ServerMetricDto.ServerMetricEvent serverMetricEvent) {
         super(source);
         event = SseEmitter.event()
-                .data(new Gson().toJson(notificationDto), APPLICATION_JSON)
+                .data(new Gson().toJson(serverMetricEvent), APPLICATION_JSON)
                 .reconnectTime(1000L)
-                .name("Notification");
+                .name("ServerMetrics_" + serverMetricEvent.getServerId());
     }
 
     public SseEmitter.SseEventBuilder getEvent() {

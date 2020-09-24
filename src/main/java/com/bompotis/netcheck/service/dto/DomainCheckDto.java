@@ -51,7 +51,7 @@ public class DomainCheckDto {
         return monitored;
     }
 
-    public static class Builder extends AbstractHttpChecker{
+    public static class Builder extends AbstractHttpChecker implements DtoBuilder<DomainCheckDto>{
         private HttpCheckDto httpCheckDto;
         private HttpsCheckDto httpsCheckDto;
         private final String domain;
