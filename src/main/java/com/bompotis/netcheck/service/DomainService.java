@@ -17,6 +17,7 @@
  */
 package com.bompotis.netcheck.service;
 
+import com.bompotis.netcheck.api.exception.EntityNotFoundException;
 import com.bompotis.netcheck.data.entity.CertificateEntity;
 import com.bompotis.netcheck.data.entity.DomainCheckEntity;
 import com.bompotis.netcheck.data.entity.DomainEntity;
@@ -426,6 +427,11 @@ public class DomainService extends AbstractService{
         );
     }
 
+    /**
+     * Get the configuration of a scheduled domain
+     * @param domain the domain
+     * @return Optional data transferable object containing the scheduled domain's configuration
+     */
     public Optional<DomainDto> getDomain(String domain) {
         var optionalDomain = domainCheckRepository.findDomainWithItsLastChecks(domain);
         return optionalDomain.map(domainCheckEntity -> new DomainDto.Builder()
@@ -436,31 +442,34 @@ public class DomainService extends AbstractService{
                 .build());
     }
 
+    /**
+     * Indicates if a domain is scheduled for checks
+     * @param domain the domain to check
+     * @return flag indicating if the domain is scheduled for checks
+     */
     public boolean domainIsScheduled(String domain) {
         return domainRepository.existsById(domain);
     }
 
-    public boolean deleteScheduledDomain(String domain) {
-        var optionalDomainEntity = domainRepository.findById(domain);
-        if (optionalDomainEntity.isPresent()) {
-            domainRepository.delete(optionalDomainEntity.get());
-            return true;
-        } else {
-            return false;
-        }
+    /**
+     * Remove a domain from the scheduler and all gathered metrics and previous checks.
+     * @param domain the domain to be deleted and all its checks and metrics
+     * @throws EntityNotFoundException if no entity found with the provided domain
+     */
+    public void deleteScheduledDomain(String domain) throws EntityNotFoundException {
+        domainRepository.delete(domainRepository.findById(domain).orElseThrow(EntityNotFoundException::new));
     }
 
-    public boolean updateDomainConfig(DomainUpdateDto dto) {
-        var optionalDomainEntity = domainRepository.findById(dto.getDomain());
-        if (optionalDomainEntity.isPresent()) {
-            var entity = new DomainEntity.Builder()
-                    .fromExistingEntity(optionalDomainEntity.get())
-                    .withUpdatedValues(dto.getOperations())
-                    .build();
-            domainRepository.save(entity);
-            return true;
-        } else {
-            return false;
-        }
+    /**
+     * Update the configuration of a domain
+     * @param domainUpdateDto data transferable object containing the updated values for the domain config
+     * @throws EntityNotFoundException if no entity found with the provided domain in the dto
+     */
+    public void updateDomainConfig(DomainUpdateDto domainUpdateDto) throws EntityNotFoundException {
+        domainRepository.save(
+                new DomainEntity.Updater(
+                        domainRepository.findById(domainUpdateDto.getDomain()).orElseThrow(EntityNotFoundException::new)
+                ).withUpdatedValues(domainUpdateDto.getOperations()).build()
+        );
     }
 }
