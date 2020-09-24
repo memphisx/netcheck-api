@@ -26,7 +26,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 /**
  * Created by Kyriakos Bompotis on 25/8/20.
  */
-public class NotificationEventDto extends ApplicationEvent implements EventDto{
+public class NotificationEventDto extends ApplicationEvent implements EventDto {
 
     private final SseEmitter.SseEventBuilder event;
 

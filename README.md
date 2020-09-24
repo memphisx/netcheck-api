@@ -82,21 +82,22 @@ Coming soon™
 <br><br>
 
 **Features:**<br>
-⚡️ Built on Spring Boot (backend - this repo) and Quasar (<a href ="">Frontend</a>)<br>
-⚡️ Support live checking of domains through HTTP and HTTPS<br>
-⚡️ Support scheduled checks with predefined check frequency of 5,10 or 15 minutes<br>
-⚡️ HTTPS Certificate validation checks<br>
-⚡️ Metric Generation for uptime and response times<br>
-⚡️ State change notification system (currently supports <a href="https://pushover.net/">Pushover</a>)<br>
+⚡️ Built on Spring Boot (backend - this repo) and Quasar (<a href ="">Frontend</a>)<br/>
+⚡️ Supports live checking of domains through HTTP and HTTPS<br/>
+⚡️ Supports scheduled checks with custom check intervals per domain<br/>
+⚡️ Customizable endpoint, request headers and timeout threshold on all checks<br/>
+⚡️ HTTPS Certificate validation checks<br/>
+⚡️ Metric Generation for uptime and response times<br/>
+⚡ Aggregation of arbitrary metrics sent by Servers<br/>
+⚡️ State change notification system (currently supports <a href="https://en.wikipedia.org/wiki/Webhook">Webhooks</a>, <a href="https://en.wikipedia.org/wiki/Server-sent_events">SSE</a> and <a href="https://pushover.net/">Pushover</a>)<br>
 
-**Other key features coming:**<br>
-⚡️ Authentication <br>
-⚡️ Multi user support<br>
-⚡️ Additional notification providers (Pushbullet, Telegram, Discord, Slack, Kafka, etc)<br>
-⚡️ Custom endpoint checks<br>
-⚡️ Custom request headers on checks<br>
-⚡ Additional check implementations<br>
-⚡️ Multi location support for the scheduled checks<br>
+**Other key features coming:**<br/>
+⚡️ Authentication <br/>
+⚡️ Multi user/teams support through <a href="https://www.keycloak.org/">KeyCloak</a><br/>
+⚡️ Additional notification providers (Email, Pushbullet, Telegram, Discord, Slack, Kafka, etc)<br/>
+⚡ Additional check implementations (SSH, TCP, UDP, RDP, etc)<br/>
+⚡️ Multi location support for the scheduled checks<br/>
+⚡️ Scalability of the service when running in clusters (Kubernetes, Docker Swarm, etc)<br/>
 
 <br>
 

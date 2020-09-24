@@ -15,32 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.bompotis.netcheck.scheduler.batch.notification;
+package com.bompotis.netcheck.api.model;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
+import javax.validation.constraints.NotBlank;
 
 /**
- * Created by Kyriakos Bompotis on 25/8/20.
+ * Created by Kyriakos Bompotis on 4/9/20.
  */
-@Service
-public class NotificationEventService implements NotificationService {
+public class RegisterServerRequest {
+    @NotBlank(message = "serverName is mandatory")
+    private String serverName;
 
-    private final ApplicationEventPublisher eventPublisher;
+    private String description;
 
-    @Autowired
-    public NotificationEventService(ApplicationEventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
+    public RegisterServerRequest() {}
+
+    public RegisterServerRequest(String serverName, String description) {
+        this.serverName = serverName;
+        this.description = description;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public String getServerName() {
+        return serverName;
     }
 
-    @Override
-    public void notify(NotificationDto notification) {
-        eventPublisher.publishEvent(new NotificationEventDto(this, notification));
+    public String getDescription() {
+        return description;
     }
 }

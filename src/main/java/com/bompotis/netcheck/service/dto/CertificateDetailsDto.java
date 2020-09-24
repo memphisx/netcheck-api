@@ -91,7 +91,7 @@ public class CertificateDetailsDto {
         return notYetValid;
     }
 
-    public static class Builder {
+    public static class Builder implements DtoBuilder<CertificateDetailsDto>{
         private Integer basicConstraints;
         private String issuedBy;
         private String issuedFor;

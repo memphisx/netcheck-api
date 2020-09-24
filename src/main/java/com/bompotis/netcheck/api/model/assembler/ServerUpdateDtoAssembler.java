@@ -17,8 +17,8 @@
  */
 package com.bompotis.netcheck.api.model.assembler;
 
-import com.bompotis.netcheck.service.dto.DomainUpdateDto;
 import com.bompotis.netcheck.service.dto.Operation;
+import com.bompotis.netcheck.service.dto.ServerUpdateDto;
 
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Created by Kyriakos Bompotis on 2/9/20.
  */
-public class DomainUpdateDtoAssembler implements AbstractUpdateDtoAssembler<DomainUpdateDto,DomainUpdateDto.Builder>{
+public class ServerUpdateDtoAssembler implements AbstractUpdateDtoAssembler<ServerUpdateDto,ServerUpdateDto.Builder>{
     private final String domain;
 
     private static final Map<String, Operation.Action> OPERATIONS_TO_ACTION_MAP = Map.of(
@@ -36,18 +36,12 @@ public class DomainUpdateDtoAssembler implements AbstractUpdateDtoAssembler<Doma
     );
 
     private static final Set<String> VALID_FIELDS = Set.of(
-            "frequency",
-            "endpoint",
-            "header",
-            "headers",
-            "timeout"
+            "serverName",
+            "description",
+            "password"
     );
 
-    private static final Set<String> REQUIRED_FIELDS_FOR_PATH = Set.of(
-            "header"
-    );
-
-    public DomainUpdateDtoAssembler(String domain) {
+    public ServerUpdateDtoAssembler(String domain) {
         this.domain = domain;
     }
 
@@ -63,11 +57,11 @@ public class DomainUpdateDtoAssembler implements AbstractUpdateDtoAssembler<Doma
 
     @Override
     public Set<String> getRequiredFieldsForPath() {
-        return REQUIRED_FIELDS_FOR_PATH;
+        return Set.of();
     }
 
     @Override
-    public DomainUpdateDto.Builder getDtoBuilder() {
-        return new DomainUpdateDto.Builder(domain);
+    public ServerUpdateDto.Builder getDtoBuilder() {
+        return new ServerUpdateDto.Builder(domain);
     }
 }

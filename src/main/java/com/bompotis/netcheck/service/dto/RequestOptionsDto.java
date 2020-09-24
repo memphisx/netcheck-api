@@ -23,12 +23,11 @@ import org.springframework.data.domain.Sort;
 import java.util.Optional;
 
 /**
- * Created by Kyriakos Bompotis on 31/8/20.
+ * Created by Kyriakos Bompotis on 7/9/20.
  */
-public class DomainsOptionsDto {
+public class RequestOptionsDto {
     private final Integer page;
     private final Integer size;
-    private final boolean showLastChecks;
     private final String filter;
     private final String sortBy;
     private final boolean desc;
@@ -45,10 +44,6 @@ public class DomainsOptionsDto {
         return filter;
     }
 
-    public Boolean getShowLastChecks() {
-        return showLastChecks;
-    }
-
     public Integer getSize() {
         return size;
     }
@@ -62,10 +57,9 @@ public class DomainsOptionsDto {
         return PageRequest.of(page, size, sort);
     }
 
-    public static class Builder implements DtoBuilder<DomainsOptionsDto>{
+    public static class Builder implements DtoBuilder<RequestOptionsDto>{
         private Integer page;
         private Integer size;
-        private boolean showLastChecks;
         private String filter;
         private String sortBy;
         private boolean desc;
@@ -77,11 +71,6 @@ public class DomainsOptionsDto {
 
         public Builder size(Integer size) {
             this.size = Optional.ofNullable(size).orElse(10);
-            return this;
-        }
-
-        public Builder showLastChecks(Boolean showLastChecks) {
-            this.showLastChecks = Optional.ofNullable(showLastChecks).orElse(true);
             return this;
         }
 
@@ -100,15 +89,14 @@ public class DomainsOptionsDto {
             return this;
         }
 
-        public DomainsOptionsDto build() {
-            return new DomainsOptionsDto(this);
+        public RequestOptionsDto build() {
+            return new RequestOptionsDto(this);
         }
     }
 
-    private DomainsOptionsDto(Builder b) {
+    private RequestOptionsDto(Builder b) {
         this.page = b.page;
         this.size = b.size;
-        this.showLastChecks = b.showLastChecks;
         this.filter = b.filter;
         this.sortBy = b.sortBy;
         this.desc = b.desc;

@@ -17,30 +17,27 @@
  */
 package com.bompotis.netcheck.scheduler.batch.notification;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
+import com.bompotis.netcheck.service.dto.ServerMetricDto;
+import com.google.gson.Gson;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-/**
- * Created by Kyriakos Bompotis on 25/8/20.
- */
-@Service
-public class NotificationEventService implements NotificationService {
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-    private final ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    public NotificationEventService(ApplicationEventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
+public class ServerMetricEventDto extends ApplicationEvent implements EventDto {
+
+    private final SseEmitter.SseEventBuilder event;
+
+    public ServerMetricEventDto(Object source, ServerMetricDto.ServerMetricEvent serverMetricEvent) {
+        super(source);
+        event = SseEmitter.event()
+                .data(new Gson().toJson(serverMetricEvent), APPLICATION_JSON)
+                .reconnectTime(1000L)
+                .name("ServerMetrics_" + serverMetricEvent.getServerId());
     }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public void notify(NotificationDto notification) {
-        eventPublisher.publishEvent(new NotificationEventDto(this, notification));
+    public SseEmitter.SseEventBuilder getEvent() {
+        return event;
     }
 }

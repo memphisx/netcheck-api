@@ -15,32 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.bompotis.netcheck.scheduler.batch.notification;
+package com.bompotis.netcheck.api.model;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+import java.util.Map;
 
 /**
- * Created by Kyriakos Bompotis on 25/8/20.
+ * Created by Kyriakos Bompotis on 6/9/20.
  */
-@Service
-public class NotificationEventService implements NotificationService {
+public class ServerMetricRequest {
+    @NotNull(message = "metrics are mandatory")
+    private Map<String,String> metrics;
 
-    private final ApplicationEventPublisher eventPublisher;
+    @NotNull(message = "collectedAt Date is mandatory")
+    private Date collectedAt;
 
-    @Autowired
-    public NotificationEventService(ApplicationEventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
+    public ServerMetricRequest() {}
+
+    public ServerMetricRequest(Map<String, String> metrics, Date collectedAt) {
+        this.metrics = metrics;
+        this.collectedAt = collectedAt;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public Map<String, String> getMetrics() {
+        return metrics;
     }
 
-    @Override
-    public void notify(NotificationDto notification) {
-        eventPublisher.publishEvent(new NotificationEventDto(this, notification));
+    public Date getCollectedAt() {
+        return collectedAt;
     }
 }

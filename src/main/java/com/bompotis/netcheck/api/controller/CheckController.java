@@ -17,6 +17,7 @@
  */
 package com.bompotis.netcheck.api.controller;
 
+import com.bompotis.netcheck.api.exception.EntityNotFoundException;
 import com.bompotis.netcheck.api.model.DomainCheckModel;
 import com.bompotis.netcheck.api.model.DomainRequest;
 import com.bompotis.netcheck.api.model.assembler.DomainCheckModelAssembler;
@@ -73,7 +74,7 @@ public class CheckController {
     @GetMapping(produces={"application/hal+json"}, path = "/{domain}")
     public ResponseEntity<DomainCheckModel> getDomainStatusWithDefaultConfig(
             @PathVariable("domain") String domain
-    ) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+    ) throws IOException, KeyManagementException, NoSuchAlgorithmException, EntityNotFoundException {
         var domainDto = new DomainDto.Builder().domain(domain).build();
         var status = domainService.check(domainDto);
         var domainCheckModel = new DomainCheckModelAssembler().toModel(status);
@@ -92,7 +93,7 @@ public class CheckController {
     public ResponseEntity<DomainCheckModel> getDomainStatusWithConfig(
             @PathVariable("domain") String domain,
             @Valid @RequestBody DomainRequest domainRequest
-    ) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+    ) throws IOException, KeyManagementException, NoSuchAlgorithmException, EntityNotFoundException {
         var domainDto = new DomainDto.Builder()
                 .domain(domain)
                 .withHeaders(domainRequest.getHeaders())

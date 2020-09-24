@@ -17,6 +17,7 @@
  */
 package com.bompotis.netcheck.api.controller;
 
+import com.bompotis.netcheck.api.exception.EntityNotFoundException;
 import com.bompotis.netcheck.api.model.DomainCheckModel;
 import com.bompotis.netcheck.api.model.DomainRequest;
 import com.bompotis.netcheck.api.model.DomainResponse;
@@ -98,7 +99,7 @@ public class DomainsController {
             @RequestParam(name = "filter", required = false) String filter,
             @RequestParam(name = "sortBy", required = false) String sortBy,
             @RequestParam(name = "desc", required = false) Boolean desc
-    ) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+    ) throws IOException, KeyManagementException, NoSuchAlgorithmException, EntityNotFoundException {
         var options = new DomainsOptionsDto.Builder()
                 .page(page)
                 .size(size)
@@ -121,13 +122,13 @@ public class DomainsController {
             @ApiResponse(responseCode = "404", description = "Domain is not scheduled or no checks where found",
                     content = @Content)})
     @GetMapping(produces={"application/hal+json"}, path = "/{domain}")
-    public ResponseEntity<DomainResponse> getDomainStatus(@PathVariable("domain") String domain) {
-        var result = new AtomicReference<ResponseEntity<DomainResponse>>();
-        domainService.getDomain(domain).ifPresentOrElse(
-                domainDto -> result.set(ok(new DomainModelAssembler().toModel(domainDto))),
-                () -> result.set(notFound().build())
-        );
-        return result.get();
+    public ResponseEntity<DomainResponse> getDomainStatus(
+            @PathVariable("domain") String domain
+    ) throws EntityNotFoundException {
+        return domainService
+                .getDomain(domain)
+                .map(response -> ok(new DomainModelAssembler().toModel(response)))
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     @Operation(summary = "Schedule domain for periodic checks")
@@ -159,10 +160,10 @@ public class DomainsController {
     })
     @PatchMapping(path = "/{domain}")
     public ResponseEntity<Object> updateScheduledDomain(@PathVariable("domain") String domain,
-                                                       @Valid @RequestBody List<PatchOperation> patchOperations) {
-        return domainService.updateDomainConfig(new DomainUpdateDtoAssembler(domain).toDto(patchOperations)) ?
-                ok().build() :
-                notFound().build();
+                                                       @Valid @RequestBody List<PatchOperation> patchOperations
+    ) throws EntityNotFoundException {
+        domainService.updateDomainConfig(new DomainUpdateDtoAssembler(domain).toDto(patchOperations));
+        return ok().build();
     }
 
     @Operation(summary = "Remove domain from schedule checks list")
@@ -171,8 +172,10 @@ public class DomainsController {
             @ApiResponse(responseCode = "404", description = "Domain not found")
     })
     @DeleteMapping(path = "/{domain}")
-    public ResponseEntity<Object> deleteScheduledDomain(@PathVariable("domain") String domain) {
-        return domainService.deleteScheduledDomain(domain) ? ok().build() : notFound().build();
+    public ResponseEntity<Object> deleteScheduledDomain(@PathVariable("domain") String domain)
+            throws EntityNotFoundException {
+        domainService.deleteScheduledDomain(domain);
+        return ok().build();
     }
 
     @Operation(summary = "Get all previous checks for the given domain")

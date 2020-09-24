@@ -29,7 +29,7 @@ public class DomainCheckConfigDto {
         return timeoutMs;
     }
 
-    public static class Builder {
+    public static class Builder implements DtoBuilder<DomainCheckConfigDto>{
         private String domain;
         private String endpoint = "";
         private int timeoutMs = 30000;

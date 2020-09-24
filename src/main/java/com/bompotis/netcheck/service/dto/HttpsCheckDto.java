@@ -41,7 +41,7 @@ public class HttpsCheckDto {
         return httpCheckDto;
     }
 
-    public static class Builder {
+    public static class Builder implements DtoBuilder<HttpsCheckDto> {
         private final List<CertificateDetailsDto> caCertificates = new ArrayList<>();
         private CertificateDetailsDto issuerCertificate;
         private HttpCheckDto httpCheckDto;

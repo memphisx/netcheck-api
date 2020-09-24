@@ -51,7 +51,7 @@ public class DomainMetricListWriter implements ItemWriter<List<DomainMetricEntit
     }
 
     @Override
-    public void write(List<? extends List<DomainMetricEntity>> list) throws Exception {
+    public void write(List<? extends List<DomainMetricEntity>> list) {
         List<DomainMetricEntity> metricEntities = new ArrayList<>();
         list.forEach(metricEntities::addAll);
         jpaItemWriter.write(metricEntities);
