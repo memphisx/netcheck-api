@@ -40,7 +40,7 @@ public class NotificationEventService implements NotificationService {
     }
 
     @Override
-    public void notify(NotificationDto notification) throws Exception {
+    public void notify(NotificationDto notification) {
         eventPublisher.publishEvent(new NotificationEventDto(this, notification));
     }
 }
