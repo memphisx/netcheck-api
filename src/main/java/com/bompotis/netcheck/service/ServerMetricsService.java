@@ -56,11 +56,6 @@ import java.util.stream.Stream;
 public class ServerMetricsService extends AbstractService {
 
     /**
-     * Logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ServerMetricsService.class);
-
-    /**
      * Secure random number generator
      */
     private final Random random = new SecureRandom();

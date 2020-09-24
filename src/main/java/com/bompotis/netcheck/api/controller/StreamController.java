@@ -20,7 +20,6 @@ package com.bompotis.netcheck.api.controller;
 import com.bompotis.netcheck.scheduler.batch.notification.CheckEventDto;
 import com.bompotis.netcheck.scheduler.batch.notification.NotificationEventDto;
 import com.bompotis.netcheck.scheduler.batch.notification.ServerMetricEventDto;
-import com.bompotis.netcheck.service.dto.ServerMetricDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.bind.annotation.CrossOrigin;
