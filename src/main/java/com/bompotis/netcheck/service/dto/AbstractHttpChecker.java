@@ -48,7 +48,8 @@ public abstract class AbstractHttpChecker {
             HttpURLConnection.HTTP_INTERNAL_ERROR,
             HttpURLConnection.HTTP_FORBIDDEN,
             HttpURLConnection.HTTP_BAD_GATEWAY,
-            422
+            422,
+            523
     );
 
     private static final Set<Integer> REDIRECT_STATUS_CODES = Set.of(
