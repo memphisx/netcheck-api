@@ -437,6 +437,9 @@ public class DomainService extends AbstractService{
         return optionalDomain.map(domainCheckEntity -> new DomainDto.Builder()
                 .domain(domainCheckEntity.getDomain())
                 .checkFrequencyMinutes(domainCheckEntity.getDomainEntity().getCheckFrequency())
+                .withHeaders(domainCheckEntity.getDomainEntity().getHeaders())
+                .endpoint(domainCheckEntity.getDomainEntity().getEndpoint())
+                .timeoutMs(domainCheckEntity.getDomainEntity().getTimeoutMs())
                 .createdAt(domainCheckEntity.getDomainEntity().getCreatedAt())
                 .lastDomainCheck(convertDomainCheckEntityToDto(domainCheckEntity))
                 .build());
