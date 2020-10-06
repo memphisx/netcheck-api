@@ -183,7 +183,7 @@ public class DomainEntity extends AbstractTimestampable<String>{
             this.domainHistoryEntries = entity.domainHistoryEntries;
             this.frequency = entity.checkFrequency;
             this.endpoint = entity.endpoint;
-            this.headers = entity.headers;
+            this.headers = entity.headers != null ? entity.headers : new HashMap<>();
             this.domainMetricEntries = entity.domainMetricEntries;
             this.timeoutMs = entity.timeoutMs;
             this.createdAt = entity.getCreatedAt();
@@ -256,7 +256,7 @@ public class DomainEntity extends AbstractTimestampable<String>{
         this.domainMetricEntries = b.domainMetricEntries != null ? Set.copyOf(b.domainMetricEntries) : null;
         this.checkFrequency = b.frequency;
         this.endpoint = b.endpoint;
-        this.headers = Map.copyOf(b.headers);
+        this.headers = b.headers != null ? Map.copyOf(b.headers) : Map.of();
         this.timeoutMs = b.timeoutMs;
         this.createdAt = b.createdAt;
     }
