@@ -39,7 +39,7 @@ services:
       - db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.netcheck-api.rule=Host(`<netcheck-domain>`) && PathPrefix(`/api`,`/docs`)"
+      - "traefik.http.routers.netcheck-api.rule=Host(`<netcheck-domain>`) && PathPrefix(`/api`,`/docs`,`/events`)"
       - "traefik.http.routers.netcheck-api.entrypoints=websecure"
       - "traefik.http.routers.netcheck-api.service=netcheck-api"
       - "traefik.http.routers.netcheck-api.tls.certresolver=mainresolver"
