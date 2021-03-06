@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<springdoc.version>1.5.2</springdoc.version>
+		<springdoc.version>1.5.5</springdoc.version>
 		<flyway.version>7.6.0</flyway.version>
 		<pushover-client.version>1.0.0</pushover-client.version>
 		<hibernate-validator.version>7.0.1.Final</hibernate-validator.version>
