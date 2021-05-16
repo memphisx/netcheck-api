@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline
 COPY ./src ./src
 RUN apt-get update && \
     apt-get install -y --no-install-recommends wget unzip && \
-    wget https://github.com/memphisx/netcheck-frontend/releases/download/0.8.1/spa-release.zip && \
+    wget https://github.com/memphisx/netcheck-frontend/releases/download/0.8.2/spa-release.zip && \
     mkdir ./src/main/resources/static && \
     unzip spa-release.zip -d ./src/main/resources/static && \
     rm spa-release.zip
