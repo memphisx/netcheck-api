@@ -18,7 +18,7 @@ RUN mvn clean install -DskipTests
 FROM ${ARCH}eclipse-temurin:17
 WORKDIR /var/app/netcheck/
 COPY --from=builder /var/app/src/netcheck/target/netcheck.jar ./netcheck.jar
-RUN adduser netcheck && adduser netcheck netcheck
+RUN addgroup --system netcheck && adduser --no-create-home --gecos '' --ingroup netcheck --disabled-password netcheck
 USER netcheck
 VOLUME /tmp
 EXPOSE 8080 8081
