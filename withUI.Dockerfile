@@ -1,5 +1,5 @@
 ARG ARCH=''
-FROM ${ARCH}maven:3-openjdk-17 AS builder
+FROM ${ARCH}maven:3-eclipse-temurin-17 AS builder
 WORKDIR /var/app/src/netcheck/
 COPY pom.xml .
 COPY version.txt .
@@ -15,7 +15,7 @@ RUN apt-get update && \
     rm spa-release.zip
 RUN mvn clean install -DskipTests
 
-FROM ${ARCH}eclipse-temurin:17-jre-alpine
+FROM ${ARCH}eclipse-temurin:17
 WORKDIR /var/app/netcheck/
 COPY --from=builder /var/app/src/netcheck/target/netcheck.jar ./netcheck.jar
 RUN adduser netcheck && adduser netcheck netcheck
