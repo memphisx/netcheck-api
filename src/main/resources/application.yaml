@@ -30,9 +30,10 @@ spring:
     username: ${postgres.user}
     password: ${postgres.password}
   batch:
-    initialize-schema: never
     job:
       enabled: false
+    jdbc:
+      initialize-schema: never
   jpa:
     open-in-view: true
     hibernate:
@@ -45,6 +46,9 @@ settings:
       enabled: false
       deleteOlderThan: 3
 management:
+  info:
+    env:
+      enabled: true
   endpoints:
     enabled-by-default: false
     web:

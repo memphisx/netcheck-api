@@ -1,5 +1,5 @@
 ARG ARCH=''
-FROM ${ARCH}maven:3.6-adoptopenjdk-11 AS builder
+FROM ${ARCH}maven:3-openjdk-17 AS builder
 WORKDIR /var/app/src/netcheck/
 COPY pom.xml .
 COPY version.txt .
@@ -9,10 +9,10 @@ RUN mvn dependency:go-offline
 COPY ./src ./src
 RUN mvn clean install -DskipTests
 
-FROM ${ARCH}adoptopenjdk:11-jre-hotspot
+FROM ${ARCH}eclipse-temurin:17-jre-alpine
 WORKDIR /var/app/netcheck/
 COPY --from=builder /var/app/src/netcheck/target/netcheck.jar ./netcheck.jar
-RUN adduser netcheck && adduser netcheck netcheck
+RUN addgroup -S netcheck && adduser --disabled-password --ingroup netcheck netcheck
 USER netcheck
 VOLUME /tmp
 EXPOSE 8080 8081
