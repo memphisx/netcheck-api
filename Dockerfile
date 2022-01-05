@@ -2,8 +2,6 @@ ARG ARCH=''
 FROM ${ARCH}maven:3-eclipse-temurin-17 AS builder
 WORKDIR /var/app/src/netcheck/
 COPY pom.xml .
-RUN mvn dependency:go-offline
-
 COPY ./src ./src
 RUN mvn clean install -DskipTests
 

@@ -1,8 +1,6 @@
 FROM maven:3-openjdk-17 AS builder
 WORKDIR /var/app/src/netcheck/
 COPY pom.xml .
-RUN mvn dependency:go-offline
-
 COPY ./src ./src
 RUN mvn clean install -DskipTests
 
