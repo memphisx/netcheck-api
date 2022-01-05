@@ -1,8 +1,6 @@
 FROM maven:3-openjdk-17 AS builder
 WORKDIR /var/app/src/netcheck/
 COPY pom.xml .
-COPY version.txt .
-RUN mvn versions:set -DnewVersion="$(cat ./version.txt)" && mvn versions:commit
 RUN mvn dependency:go-offline
 
 COPY ./src ./src
