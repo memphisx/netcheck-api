@@ -79,6 +79,8 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: jar-with-ui
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: Publish Release on GitHub
         run: |
           mv ./jar-with-ui/netcheck.jar ./jar/netcheck-with-ui.jar
