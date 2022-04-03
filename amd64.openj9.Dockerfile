@@ -1,12 +1,6 @@
-FROM maven:3-openjdk-17 AS builder
-WORKDIR /var/app/src/netcheck/
-COPY pom.xml .
-COPY ./src ./src
-RUN mvn clean install -DskipTests
-
 FROM ibm-semeru-runtimes:open-17-jre
 WORKDIR /var/app/netcheck/
-COPY --from=builder /var/app/src/netcheck/target/netcheck.jar ./netcheck.jar
+COPY ./target/netcheck.jar ./netcheck.jar
 RUN addgroup --system netcheck && adduser --no-create-home --gecos '' --ingroup netcheck --disabled-password netcheck
 USER netcheck
 VOLUME /tmp

@@ -1,13 +1,6 @@
-ARG ARCH=''
-FROM ${ARCH}maven:3-eclipse-temurin-17 AS builder
-WORKDIR /var/app/src/netcheck/
-COPY pom.xml .
-COPY ./src ./src
-RUN mvn clean install -DskipTests
-
 FROM ${ARCH}eclipse-temurin:17
 WORKDIR /var/app/netcheck/
-COPY --from=builder /var/app/src/netcheck/target/netcheck.jar ./netcheck.jar
+COPY ./target/netcheck.jar ./netcheck.jar
 RUN addgroup --system netcheck && adduser --no-create-home --gecos '' --ingroup netcheck --disabled-password netcheck
 USER netcheck
 VOLUME /tmp

@@ -11,7 +11,7 @@ services:
       - db
     build:
       context: ./
-      dockerfile: ./Dockerfile
+      dockerfile: ./amd64.openj9.Dockerfile
     ports:
       - "8080:8080"
       - "8081:8081"
