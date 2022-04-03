@@ -84,7 +84,7 @@ jobs:
       - name: Publish Release on GitHub
         run: |
           mv ./jar-with-ui/netcheck.jar ./jar/netcheck-with-ui.jar
-          go install github.com/tcnksm/ghr
+          go install github.com/tcnksm/ghr@latest
           ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./jar/
 
 
@@ -107,15 +107,16 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: jar
-      - name: Display structure of downloaded files
-        run: ls -R
+      - name: Prepare jar file
+        run: |
+          ls -R
+          mkdir ./target/
+          mv ./jar/netcheck.jar ./target/netcheck.jar
       - name: build the image
         run: |
-          mv ./jar/netcheck.jar ./target/netcheck.jar
           docker buildx build --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:latest --tag ${{ secrets.DOCKER_IMAGE_NAME }}:`cat ./version.txt` --platform linux/amd64,linux/arm/v7,linux/arm64 .
       - name: build the openj9 image
         run: |
-          mv ./jar/netcheck.jar ./target/netcheck.jar
           docker buildx build --file ./amd64.openj9.Dockerfile --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:latest-openj9 --tag ${{ secrets.DOCKER_IMAGE_NAME }}:`cat ./version.txt`-openj9 --platform linux/amd64 .
   push-ui-bundles-to-dockerhub:
     name: Publish docker images to hub.docker.com
@@ -137,12 +138,13 @@ jobs:
         with:
           name: jar-with-ui
       - name: Display structure of downloaded files
-        run: ls -R
+        run: | 
+          ls -R
+          mkdir ./target/
+          mv ./jar-with-ui/netcheck.jar ./target/netcheck.jar
       - name: build the bundled image
         run: |
-          mv ./jar-with-ui/netcheck.jar ./target/netcheck.jar
           docker buildx build --push --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:latest --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:`cat ./version.txt` --platform linux/amd64,linux/arm/v7,linux/arm64 .
       - name: build the bundled openj9 image
         run: |
-          mv ./jar-with-ui/netcheck.jar ./target/netcheck.jar
           docker buildx build --file ./amd64.openj9.Dockerfile --push --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:latest-openj9 --tag ${{ secrets.BUNDLED_DOCKER_IMAGE_NAME }}:`cat ./version.txt`-openj9 --platform linux/amd64 .
