@@ -81,11 +81,16 @@ jobs:
           name: jar-with-ui
       - name: Display structure of downloaded files
         run: ls -R
-      - name: Publish Release on GitHub
+      - name: Prepare files
         run: |
           mv ./jar-with-ui/netcheck.jar ./jar/netcheck-with-ui.jar
-          go get github.com/tcnksm/ghr
-          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./jar/
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ./jar/netcheck.jar
+            ./jar/netcheck-with-ui.jar
 
 
   push-to-dockerhub:
