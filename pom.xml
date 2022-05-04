@@ -20,7 +20,7 @@
 		<flyway.version>8.5.10</flyway.version>
 		<pushover-client.version>1.0.0</pushover-client.version>
 		<hibernate-validator.version>7.0.4.Final</hibernate-validator.version>
-		<hibernate-types.version>2.14.1</hibernate-types.version>
+		<hibernate-types.version>2.16.2</hibernate-types.version>
 	</properties>
 
 	<dependencies>
