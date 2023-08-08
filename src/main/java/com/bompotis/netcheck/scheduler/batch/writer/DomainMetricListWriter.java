@@ -20,10 +20,11 @@ package com.bompotis.netcheck.scheduler.batch.writer;
 import com.bompotis.netcheck.data.entity.DomainMetricEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,9 +52,9 @@ public class DomainMetricListWriter implements ItemWriter<List<DomainMetricEntit
     }
 
     @Override
-    public void write(List<? extends List<DomainMetricEntity>> list) {
-        List<DomainMetricEntity> metricEntities = new ArrayList<>();
-        list.forEach(metricEntities::addAll);
+    public void write(Chunk<? extends List<DomainMetricEntity>> chunk) throws Exception {
+        Chunk<DomainMetricEntity> metricEntities = new Chunk<>();
+        chunk.forEach(metricEntities::addAll);
         jpaItemWriter.write(metricEntities);
     }
 }

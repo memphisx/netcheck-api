@@ -17,7 +17,7 @@
  */
 package com.bompotis.netcheck.api.model;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 import java.util.Map;
 
 /**

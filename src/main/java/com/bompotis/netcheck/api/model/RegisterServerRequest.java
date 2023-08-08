@@ -17,7 +17,7 @@
  */
 package com.bompotis.netcheck.api.model;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Created by Kyriakos Bompotis on 4/9/20.

@@ -21,12 +21,11 @@ import com.bompotis.netcheck.data.entity.DomainCheckEntity;
 import com.bompotis.netcheck.scheduler.batch.notification.CheckEventDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Created by Kyriakos Bompotis on 25/8/20.
@@ -44,8 +43,8 @@ public class CheckEventItemWriter implements ItemWriter<DomainCheckEntity> {
     }
 
     @Override
-    public void write(List<? extends DomainCheckEntity> list) {
-        logger.info("Publishing {} events", list.size());
-        list.forEach((check) -> eventPublisher.publishEvent(new CheckEventDto(this,check)));
+    public void write(Chunk<? extends DomainCheckEntity> chunk) throws Exception {
+        logger.info("Publishing {} events", chunk.size());
+        chunk.forEach((check) -> eventPublisher.publishEvent(new CheckEventDto(this,check)));
     }
 }

@@ -23,6 +23,7 @@ import com.bompotis.netcheck.scheduler.batch.notification.NotificationService;
 import com.bompotis.netcheck.scheduler.batch.processor.DomainMetricProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -57,12 +58,6 @@ public class NotificationItemWriter extends AbstractNotificationWriter implement
         return !notificationServices.isEmpty();
     }
 
-    @Override
-    public void write(List<? extends DomainCheckEntity> list) {
-        var notifications = generateNotifications(list);
-        send(notifications);
-    }
-
     private void send(List<NotificationDto> notifications) {
         notifications.forEach(this::send);
     }
@@ -75,5 +70,11 @@ public class NotificationItemWriter extends AbstractNotificationWriter implement
                 log.error("Failure to send notification for service {}. Failed notification message: {}", service.getClass(), notification.getMessage(), e);
             }
         }
+    }
+
+    @Override
+    public void write(Chunk<? extends DomainCheckEntity> chunk) throws Exception {
+        var notifications = generateNotifications(chunk);
+        send(notifications);
     }
 }

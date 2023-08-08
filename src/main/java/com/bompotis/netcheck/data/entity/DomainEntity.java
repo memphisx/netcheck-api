@@ -18,19 +18,11 @@
 package com.bompotis.netcheck.data.entity;
 
 import com.bompotis.netcheck.service.dto.Operation;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.springframework.lang.NonNull;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,9 +36,6 @@ import java.util.Set;
  * Created by Kyriakos Bompotis on 8/6/20.
  */
 @Entity
-@TypeDefs({
-        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-})
 @Table(name = "domain")
 public class DomainEntity extends AbstractTimestampable<String>{
 
@@ -67,7 +56,7 @@ public class DomainEntity extends AbstractTimestampable<String>{
     private int timeoutMs;
 
     @NonNull
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "headers")
     private Map<String,String> headers;
 

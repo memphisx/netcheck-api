@@ -18,7 +18,6 @@
 package com.bompotis.netcheck.scheduler.batch.notification.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -28,7 +27,6 @@ import java.util.Set;
  * Created by Kyriakos Bompotis on 15/7/20.
  */
 @ConfigurationProperties(prefix = "settings.notifications.pushover")
-@ConstructorBinding
 public class PushoverConfig {
 
     private final boolean enabled;
