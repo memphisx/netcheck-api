@@ -17,20 +17,11 @@
  */
 package com.bompotis.netcheck.data.entity;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.springframework.lang.NonNull;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -39,9 +30,6 @@ import java.util.Objects;
  * Created by Kyriakos Bompotis on 5/9/20.
  */
 @Entity
-@TypeDefs({
-        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-})
 @Table(name = "server_metric", indexes = {
         @Index(name = "server_metrics__server_created_idx", columnList = "server_id, created_at")
 })
@@ -53,7 +41,7 @@ public class ServerMetricEntity extends AbstractTimestampablePersistable<String>
     private ServerEntity serverEntity;
 
     @NonNull
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "metrics")
     private Map<String,String> metrics;
 

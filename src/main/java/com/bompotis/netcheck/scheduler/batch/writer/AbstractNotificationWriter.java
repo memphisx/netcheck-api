@@ -21,6 +21,7 @@ import com.bompotis.netcheck.data.entity.CertificateEntity;
 import com.bompotis.netcheck.data.entity.DomainCheckEntity;
 import com.bompotis.netcheck.data.entity.ProtocolCheckEntity;
 import com.bompotis.netcheck.scheduler.batch.notification.NotificationDto;
+import org.springframework.batch.item.Chunk;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractNotificationWriter {
 
-    protected List<NotificationDto> generateNotifications(List<? extends DomainCheckEntity> list) {
+    protected List<NotificationDto> generateNotifications(Chunk<? extends DomainCheckEntity> list) {
         var notifications = new ArrayList<NotificationDto>();
         for (var check : list) {
             if (!check.isCertificatesChange() && !check.isHttpCheckChange() && !check.isHttpsCheckChange()) {
