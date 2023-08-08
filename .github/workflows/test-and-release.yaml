@@ -30,7 +30,7 @@ jobs:
           POSTGRES_PASSWORD: letmein
           POSTGRES_DB: test_db
       - name: Upload jar file
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         uses: actions/upload-artifact@v1
         with:
           name: jar
@@ -88,6 +88,7 @@ jobs:
           ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${GITHUB_ACTOR} -r ${{ github.event.repository.name }} -c ${GITHUB_SHA} -delete `cat ./version.txt` ./jar/
 
 
+
   push-to-dockerhub:
     name: Publish docker images to hub.docker.com
     runs-on: ubuntu-latest
@@ -118,6 +119,39 @@ jobs:
       - name: build the openj9 image
         run: |
           docker buildx build --file ./amd64.openj9.Dockerfile --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:latest-openj9 --tag ${{ secrets.DOCKER_IMAGE_NAME }}:`cat ./version.txt`-openj9 --platform linux/amd64 .
+          
+
+  push-dev-build-to-dockerhub:
+    name: Publish develop images to hub.docker.com
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: install buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      - name: login to docker hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Download jar file
+        uses: actions/download-artifact@v1
+        with:
+          name: jar
+      - name: Prepare jar file
+        run: |
+          ls -R
+          mkdir ./target/
+          mv ./jar/netcheck.jar ./target/netcheck.jar
+      - name: build the image
+        run: |
+          docker buildx build --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:dev --tag ${{ secrets.DOCKER_IMAGE_NAME }}:build-${{github.run_number}} --platform linux/amd64,linux/arm/v7,linux/arm64 .
+      - name: build the openj9 image
+        run: |
+          docker buildx build --file ./amd64.openj9.Dockerfile --push --tag ${{ secrets.DOCKER_IMAGE_NAME }}:dev-openj9 --tag ${{ secrets.DOCKER_IMAGE_NAME }}:build-${{github.run_number}}-openj9 --platform linux/amd64 .
+
   push-ui-bundles-to-dockerhub:
     name: Publish docker images to hub.docker.com
     runs-on: ubuntu-latest
