@@ -10,7 +10,15 @@ services:
     volumes:
       - db-test-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
+
+  wiremock:
+    ports:
+      - "5050:5050"
+      - "9000:8080"
+    image: wiremock/wiremock:3x
+    volumes:
+      - ./wiremock:/home/wiremock
 
 volumes:
   db-test-data:

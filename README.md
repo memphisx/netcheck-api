@@ -51,7 +51,10 @@ through the [github issues page](https://github.com/memphisx/netcheck-api/issues
 
 ### Quick Start
 
-The fastest way to run Netcheck is through docker, and the provided docker-compose.yml file to get all the required dependancies up and running
+The fastest way to run Netcheck is through docker, and the provided docker-compose.docker-hub.yml file to get all the required dependencies up and running.
+```shell
+docker compose -f ./docker-compose.dockerhub.yml up -d
+```
 
 #### Running a private instance locally with OpenJDK
 Coming soon™
@@ -61,8 +64,10 @@ Coming soon™
 *   Follow the official documentation to install [Docker](https://docs.docker.com/get-docker/) 
 and [docker-compose](https://docs.docker.com/compose/install/).
 
+*   Install Java 17 and maven (It is recommended to install both through [SDKMan](https://sdkman.io/))
+
 *   copy `database.env.example` to `database.env` and change the credentials for the db to something more appropriate.
-This env file is going to be used both by the postgress docker container to init the db as well as the netcheck app 
+This env file is going to be used both by the postgres docker container to init the db and the netcheck app 
 in order to connect to it. 
 
 *   copy `.env.example` to `.env`. The default values are enough for connecting to the db in the previous step. 
@@ -70,7 +75,13 @@ If you want Notifications support through pushover change the `SETTINGS_NOTIFICA
 and fill the `SETTINGS_NOTIFICATIONS_PUSHOVER_APITOKEN` and `SETTINGS_NOTIFICATIONS_PUSHOVER_USERIDTOKEN`
 with the values you are going to get from [Pushover after creating a new app](https://pushover.net/apps/build).
 
-*   Execute `docker-compose up -d` to bring everything up.
+*   Execute `docker compose -f ./test-depedancies.docker-compose.yml up -d` to bring up the required services for the integration tests
+
+*   Execute `mvn install` to install all dependencies with maven, run tests and compile the final jar file
+    Note: At that point you can execute `docker compose -f ./test-depedancies.docker-compose.yml down` to bring the previous services
+    if you are not planning on working with the source code and compiling the jar file again.
+
+*   Execute `docker-compose build && docker-compose up -d` to build the docker image and bring everything up.
 
 *   Visit [http://127.0.0.1:8080/docs/v1/](http://127.0.0.1:8080/docs/v1/) from your favorite browser to check what 
 you can do with the api or bring up the [Netcheck frontend](https://github.com/memphisx/netcheck-frontend) 

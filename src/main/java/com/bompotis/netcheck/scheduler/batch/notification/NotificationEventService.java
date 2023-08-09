@@ -40,6 +40,11 @@ public class NotificationEventService implements NotificationService {
     }
 
     @Override
+    public String name() {
+        return "NotificationEvent";
+    }
+
+    @Override
     public void notify(NotificationDto notification) {
         eventPublisher.publishEvent(new NotificationEventDto(this, notification));
     }

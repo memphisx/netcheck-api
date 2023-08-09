@@ -54,6 +54,11 @@ public class WebhookService implements NotificationService {
     }
 
     @Override
+    public String name() {
+        return "Webhook";
+    }
+
+    @Override
     public void notify(NotificationDto notification) {
         Set<String> protocols = webhookConfig.getNotifyOnlyFor().isEmpty() ? Set.of("HTTP","HTTPS","CERTIFICATE") : Set.copyOf(webhookConfig.getNotifyOnlyFor());
         if (protocols.contains(notification.getType().name())) {

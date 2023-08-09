@@ -17,10 +17,9 @@
  */
 package com.bompotis.netcheck.scheduler.batch.notification;
 
+import com.bompotis.netcheck.scheduler.batch.notification.client.PushoverMessage;
+import com.bompotis.netcheck.scheduler.batch.notification.client.PushoverRestClient;
 import com.bompotis.netcheck.scheduler.batch.notification.config.PushoverConfig;
-import net.pushover.client.PushoverException;
-import net.pushover.client.PushoverMessage;
-import net.pushover.client.PushoverRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,16 +49,22 @@ public class PushoverService implements NotificationService {
     }
 
     @Override
-    public void notify(NotificationDto notification) throws PushoverException {
-        Set<String> protocols = pushoverConfig.getNotifyOnlyFor().isEmpty() ? Set.of("HTTP","HTTPS","CERTIFICATE") : Set.copyOf(pushoverConfig.getNotifyOnlyFor());
+    public String name() {
+        return "Pushover";
+    }
+
+    @Override
+    public void notify(NotificationDto notification) {
+        var protocols = pushoverConfig.getNotifyOnlyFor().isEmpty()
+                ? Set.of("HTTP","HTTPS","CERTIFICATE")
+                : Set.copyOf(pushoverConfig.getNotifyOnlyFor());
         if (protocols.contains(notification.getType().name())) {
-            var status = new PushoverRestClient().pushMessage(PushoverMessage
+            new PushoverRestClient().pushMessage(PushoverMessage
                     .builderWithApiToken(pushoverConfig.getApiToken())
                     .setUserId(pushoverConfig.getUserIdToken())
                     .setMessage(notification.getMessage())
                     .build()
             );
-            log.info("Pushover notification: Request id {} - Status {}.",status.getRequestId(),status.getStatus());
         } else {
             log.info("Pushover notifications for type {} are disabled. Skipping!", notification.getType().name());
         }
