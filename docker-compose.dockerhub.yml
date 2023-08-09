@@ -1,0 +1,28 @@
+version: '3.6'
+
+services:
+
+  netcheck-backend:
+    container_name: netcheck-backend
+    env_file:
+      - database.env
+      - .env
+    depends_on:
+      - db
+    image: memphisx/netcheck-api:latest
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
+  db:
+    image: postgres
+    env_file:
+      - database.env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "4000:5432"
+
+volumes:
+  db-data:
+    driver: local
