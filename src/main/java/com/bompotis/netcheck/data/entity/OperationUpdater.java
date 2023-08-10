@@ -28,16 +28,10 @@ public interface OperationUpdater<T> extends EntityBuilder<T> {
     void updateField(String field, String path, String value);
 
     default void processOperation(Operation operation) {
-        switch (operation.getAction()) {
-            case REMOVE:
-                removeField(operation.getField(), operation.getPath());
-                break;
-            case ADD:
-            case UPDATE:
-                updateField(operation.getField(), operation.getPath(), operation.getValue());
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid operation");
+        switch (operation.action()) {
+            case REMOVE -> removeField(operation.field(), operation.path());
+            case ADD, UPDATE -> updateField(operation.field(), operation.path(), operation.value());
+            default -> throw new IllegalArgumentException("Invalid operation");
         }
     }
 }

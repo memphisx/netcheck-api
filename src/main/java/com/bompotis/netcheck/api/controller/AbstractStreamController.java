@@ -79,7 +79,7 @@ public abstract class AbstractStreamController {
     }
 
     @FunctionalInterface
-    private interface SseEmitterConsumer<T> {
+    protected interface SseEmitterConsumer<T> {
         void accept(T t) throws IOException;
     }
 }

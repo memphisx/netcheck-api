@@ -281,50 +281,49 @@ public class MetricService extends AbstractService{
 
         public TimeFrame(ScheduledPeriod period) {
             switch (period) {
-                case LAST_HOUR:
+                case LAST_HOUR -> {
                     this.period = DomainMetricEntity.Period.HOUR;
                     this.endDate = Date.from(ZonedDateTime.now().minusHours(1).withMinute(59).withSecond(59).toInstant());
                     this.startDate = Date.from(ZonedDateTime.now().minusHours(1).withMinute(0).withSecond(0).toInstant());
-                    break;
-                case LAST_DAY:
+                }
+                case LAST_DAY -> {
                     this.period = DomainMetricEntity.Period.DAY;
                     this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
                     this.startDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(0).withMinute(0).withSecond(0).toInstant());
-                    break;
-                case LAST_WEEK:
+                }
+                case LAST_WEEK -> {
                     this.period = DomainMetricEntity.Period.WEEK;
                     this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
                     this.startDate = Date.from(ZonedDateTime.now().minusDays(7).withHour(0).withMinute(0).withSecond(0).toInstant());
-                    break;
-                default:
+                }
+                default -> {
                     this.period = DomainMetricEntity.Period.MONTH;
                     this.endDate = Date.from(ZonedDateTime.now().minusDays(1).withHour(23).withMinute(59).withSecond(59).toInstant());
                     this.startDate = Date.from(ZonedDateTime.now().minusMonths(1).withHour(0).withMinute(0).withSecond(0).toInstant());
-                    break;
+                }
             }
         }
 
         public TimeFrame(CalculatedPeriod period) {
             this.endDate = Date.from(ZonedDateTime.now().toInstant());
             switch (period) {
-                case THIS_HOUR:
+                case THIS_HOUR -> {
                     this.period = DomainMetricEntity.Period.HOUR;
                     this.startDate = Date.from(ZonedDateTime.now().minusHours(1).toInstant());
-                    break;
-                case THIS_DAY:
+                }
+                case THIS_DAY -> {
                     this.period = DomainMetricEntity.Period.DAY;
                     this.startDate = Date.from(ZonedDateTime.now().minusDays(1).toInstant());
-                    break;
-                case THIS_WEEK:
+                }
+                case THIS_WEEK -> {
                     this.period = DomainMetricEntity.Period.WEEK;
                     this.startDate = Date.from(ZonedDateTime.now().minusDays(7).toInstant());
-                    break;
-                case THIS_MONTH:
+                }
+                case THIS_MONTH -> {
                     this.period = DomainMetricEntity.Period.MONTH;
                     this.startDate = Date.from(ZonedDateTime.now().minusMonths(1).toInstant());
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+                }
+                default -> throw new IllegalArgumentException();
             }
         }
 

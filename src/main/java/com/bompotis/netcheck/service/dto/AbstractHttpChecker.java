@@ -84,37 +84,37 @@ public abstract class AbstractHttpChecker {
                     .statusCode(responseCode);
         } catch (SocketTimeoutException e) {
             LOG.error("Socket timeout for {}.", hostname);
-            httpCheckDtoBuilder.dnsResolved(true).connectionAccepted(false);
+            httpCheckDtoBuilder.errorMessage(e.getMessage()).dnsResolved(true).connectionAccepted(false);
             connectedSuccessfully = false;
         } catch (UnknownHostException e) {
             LOG.error("Unknown Host for {}.", hostname);
-            httpCheckDtoBuilder.dnsResolved(false).connectionAccepted(false);
+            httpCheckDtoBuilder.errorMessage(e.getMessage()).dnsResolved(false).connectionAccepted(false);
             connectedSuccessfully = false;
         } catch (NoRouteToHostException | ConnectException e) {
             LOG.error("Connection Exception for {}: {}", hostname, e.getMessage());
-            httpCheckDtoBuilder.connectionAccepted(false).dnsResolved(true);
+            httpCheckDtoBuilder.errorMessage(e.getMessage()).connectionAccepted(false).dnsResolved(true);
             connectedSuccessfully = false;
         }
         return connectedSuccessfully;
     }
 
-    protected HttpsCheckDto checkHttps(DomainCheckConfigDto config) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected HttpsCheckDto checkHttps(DomainCheckConfigDto config, int port) {
         var httpsCheckDtoBuilder = new HttpsCheckDto.Builder();
         var httpCheckDtoBuilder = new HttpCheckDto.Builder().protocol("HTTPS");
         HttpsURLConnection conn = null;
         try {
             var beginTime = System.nanoTime();
             var connected = false;
-            conn = (HttpsURLConnection) getHttpsDomainUri(config.getDomain(), config.getEndpoint()).openConnection();
+            conn = (HttpsURLConnection) getHttpsDomainUri(config.getDomain(), config.getEndpoint(), port).openConnection();
             assignHeaders(config, conn);
             try {
                 connected = checkAssembler(httpCheckDtoBuilder, conn, beginTime);
-            } catch (SSLHandshakeException e) {
+            } catch(SSLException e) {
                 LOG.warn("SSL Handshake failed for domain {} probably because of invalid cert: {}", config.getDomain(), e.getMessage());
                 LOG.warn("Retrying with more permissive Certificate Handling to get additional details");
                 conn.disconnect();
                 beginTime = System.nanoTime();
-                conn = (HttpsURLConnection) getHttpsDomainUri(config.getDomain(),config.getEndpoint()).openConnection();
+                conn = (HttpsURLConnection) getHttpsDomainUri(config.getDomain(),config.getEndpoint(), port).openConnection();
                 SSLContext sc = SSLContext.getInstance("SSL");
                 sc.init(null, new X509TrustEverythingManager[]{new X509TrustEverythingManager()}, new SecureRandom());
                 conn.setHostnameVerifier(new AllHostnamesValidVerifier());
@@ -128,6 +128,9 @@ public abstract class AbstractHttpChecker {
                         .map(cert -> new CertificateDetailsDto((X509Certificate) cert))
                         .forEach(httpsCheckDtoBuilder::certificate);
             }
+        } catch(Exception e) {
+            LOG.error("Error on HTTP check",e);
+            httpCheckDtoBuilder.errorMessage(e.getMessage());
         } finally {
             Optional.ofNullable(conn)
                     .ifPresent(HttpURLConnection::disconnect);
@@ -136,17 +139,19 @@ public abstract class AbstractHttpChecker {
     }
 
 
-    protected HttpCheckDto checkHttp(DomainCheckConfigDto config) throws IOException {
+    protected HttpCheckDto checkHttp(DomainCheckConfigDto config, int port) {
         var httpCheckDtoBuilder = new HttpCheckDto.Builder().protocol("HTTP");
         HttpURLConnection conn = null;
         try {
             var beginTime = System.nanoTime();
-            conn = (HttpURLConnection) getHttpDomainUri(config.getDomain(), config.getEndpoint()).openConnection();
+            conn = (HttpURLConnection) getHttpDomainUri(config.getDomain(), config.getEndpoint(), port).openConnection();
             assignHeaders(config, conn);
             checkAssembler(httpCheckDtoBuilder, conn, beginTime);
+        } catch(Exception e) {
+            LOG.error("Error on HTTP check",e);
+          httpCheckDtoBuilder.errorMessage(e.getMessage());
         } finally {
-            Optional.ofNullable(conn)
-                    .ifPresent(HttpURLConnection::disconnect);
+            Optional.ofNullable(conn).ifPresent(HttpURLConnection::disconnect);
         }
         return httpCheckDtoBuilder.build();
     }
@@ -162,25 +167,27 @@ public abstract class AbstractHttpChecker {
     }
 
 
-    private URL getHttpsDomainUri(String domain, String endpoint) throws MalformedURLException {
-        return new URL("https://" + domain + Optional.ofNullable(endpoint).orElse(""));
+    private URL getHttpsDomainUri(String domain, String endpoint, int port) throws MalformedURLException {
+        var url = new URL("https://" + domain + Optional.ofNullable(endpoint).orElse(""));
+        return new URL(url.getProtocol(), url.getHost(), port, url.getFile());
     }
 
 
-    private URL getHttpDomainUri(String domain, String endpoint) throws MalformedURLException {
-        return new URL("http://" + domain + Optional.ofNullable(endpoint).orElse(""));
+    private URL getHttpDomainUri(String domain, String endpoint, int port) throws MalformedURLException {
+        var url = new URL("http://" + domain + Optional.ofNullable(endpoint).orElse(""));
+        return new URL(url.getProtocol(), url.getHost(), port, url.getFile());
     }
 
     protected static class X509TrustEverythingManager implements X509TrustManager {
-        private static final Logger TRUSTMANAGERLOG = LoggerFactory.getLogger(X509TrustEverythingManager.class);
+        private static final Logger TRUST_MANAGER_LOG = LoggerFactory.getLogger(X509TrustEverythingManager.class);
         @Override
         public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
-            TRUSTMANAGERLOG.info("Skipping check if client is trusted");
+            TRUST_MANAGER_LOG.info("Skipping check if client is trusted");
         }
 
         @Override
         public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
-            TRUSTMANAGERLOG.info("Skipping check if server is trusted");
+            TRUST_MANAGER_LOG.info("Skipping check if server is trusted");
         }
 
         @Override

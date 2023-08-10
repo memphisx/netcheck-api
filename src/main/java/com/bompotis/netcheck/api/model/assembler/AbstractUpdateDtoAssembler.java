@@ -62,14 +62,14 @@ public interface AbstractUpdateDtoAssembler<D,B extends PatchDtoBuilder<D> > {
     default D toDto(List<PatchOperation> patchOperations) {
         var dto = getDtoBuilder();
         for (var patchOperation : patchOperations) {
-            var field = validateObject(patchOperation.getField(), "field");
-            var path = validatePath(patchOperation.getPath(), field);
-            var op = validateObject(patchOperation.getOp(), "op");
+            var field = validateObject(patchOperation.field(), "field");
+            var path = validatePath(patchOperation.path(), field);
+            var op = validateObject(patchOperation.op(), "op");
             if (!getOperationsToActionMap().containsKey(op)) {
                 throw new IllegalArgumentException("Invalid value for property `op`: " + op);
             }
             var action = getOperationsToActionMap().get(op);
-            var value = validateValue(patchOperation.getValue(), action);
+            var value = validateValue(patchOperation.value(), action);
             if (!getValidFields().contains(field)) {
                 throw new IllegalArgumentException("Invalid value for property `field`: " + field);
             }

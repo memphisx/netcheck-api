@@ -124,6 +124,7 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
         return httpsResponseTimeNs;
     }
 
+    @NonNull
     public String getDomain() {
         return domain;
     }
@@ -132,6 +133,7 @@ public class DomainCheckEntity extends AbstractTimestampablePersistable<String>{
         return domainEntity;
     }
 
+    @NonNull
     public Date getTimeCheckedOn() {
         return timeCheckedOn;
     }

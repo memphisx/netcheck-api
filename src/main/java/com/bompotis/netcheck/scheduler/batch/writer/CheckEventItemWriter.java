@@ -43,7 +43,7 @@ public class CheckEventItemWriter implements ItemWriter<DomainCheckEntity> {
     }
 
     @Override
-    public void write(Chunk<? extends DomainCheckEntity> chunk) throws Exception {
+    public void write(Chunk<? extends DomainCheckEntity> chunk) {
         logger.info("Publishing {} events", chunk.size());
         chunk.forEach((check) -> eventPublisher.publishEvent(new CheckEventDto(this,check)));
     }

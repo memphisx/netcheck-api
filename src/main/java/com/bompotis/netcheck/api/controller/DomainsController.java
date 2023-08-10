@@ -144,10 +144,10 @@ public class DomainsController {
         }
         var domainDtoBuilder = new DomainDto.Builder().domain(domain);
         if (Optional.ofNullable(domainRequest).isPresent()) {
-            domainDtoBuilder.checkFrequencyMinutes(domainRequest.getCheckFrequencyMinutes())
-                            .endpoint(domainRequest.getEndpoint())
-                            .timeoutMs(domainRequest.getTimeoutMs())
-                            .withHeaders(domainRequest.getHeaders());
+            domainDtoBuilder.checkFrequencyMinutes(domainRequest.checkFrequencyMinutes())
+                            .endpoint(domainRequest.endpoint())
+                            .timeoutMs(domainRequest.timeoutMs())
+                            .withHeaders(domainRequest.headers());
         }
         domainService.scheduleDomainToCheck(domainDtoBuilder.build());
         return ok().build();

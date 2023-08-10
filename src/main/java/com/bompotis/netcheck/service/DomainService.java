@@ -78,8 +78,8 @@ public class DomainService extends AbstractService{
                 .build();
         return new DomainCheckDto.Builder(domainDto.getDomain())
                 .monitored(monitored)
-                .withCurrentHttpCheck(config)
-                .withCurrentHttpsCheck(config)
+                .withCurrentHttpCheck(config, domainDto.getHttpPort())
+                .withCurrentHttpsCheck(config, domainDto.getHttpsPort())
                 .build();
     }
 
@@ -336,30 +336,26 @@ public class DomainService extends AbstractService{
         final ArrayList<StateDto> stateList = new ArrayList<>();
         Page<DomainCheckEntity> domainCheckEntities;
         Optional<DomainCheckEntity> veryNextDomainCheckEntity = Optional.empty();
-        switch (protocol) {
-            case "HTTP":
-                domainCheckEntities = domainCheckRepository.findAllHttpStateChanges(domain, getDefaultPageRequest(page, size));
+        if (protocol.equals("HTTP")) {
+            domainCheckEntities = domainCheckRepository.findAllHttpStateChanges(domain, getDefaultPageRequest(page, size));
+            if (!domainCheckEntities.isEmpty() && Optional.ofNullable(page).isPresent() && page > 0) {
+                var previousPage = domainCheckRepository.findAllHttpStateChanges(domain, getDefaultPageRequest(page - 1, size));
+                veryNextDomainCheckEntity = Optional.of(previousPage.getContent().get(previousPage.getSize() - 1));
+            }
+        } else {
+            domainCheckEntities = domainCheckRepository.findAllHttpsStateChanges(domain, getDefaultPageRequest(page, size));
+            if (includeCertificates) {
+                domainCheckEntities = domainCheckRepository.findAllHttpsAndCertificateStateChanges(domain, getDefaultPageRequest(page, size));
                 if (!domainCheckEntities.isEmpty() && Optional.ofNullable(page).isPresent() && page > 0) {
-                    var previousPage = domainCheckRepository.findAllHttpStateChanges(domain, getDefaultPageRequest(page-1, size));
-                    veryNextDomainCheckEntity = Optional.of(previousPage.getContent().get(previousPage.getSize()-1));
+                    var previousPage = domainCheckRepository.findAllHttpsAndCertificateStateChanges(domain, getDefaultPageRequest(page - 1, size));
+                    veryNextDomainCheckEntity = Optional.of(previousPage.getContent().get(previousPage.getSize() - 1));
                 }
-                break;
-            case "HTTPS":
-            default:
-                domainCheckEntities = domainCheckRepository.findAllHttpsStateChanges(domain, getDefaultPageRequest(page, size));
-                if (includeCertificates) {
-                    domainCheckEntities = domainCheckRepository.findAllHttpsAndCertificateStateChanges(domain, getDefaultPageRequest(page, size));
-                    if (!domainCheckEntities.isEmpty() && Optional.ofNullable(page).isPresent() && page > 0) {
-                        var previousPage = domainCheckRepository.findAllHttpsAndCertificateStateChanges(domain, getDefaultPageRequest(page - 1, size));
-                        veryNextDomainCheckEntity = Optional.of(previousPage.getContent().get(previousPage.getSize() - 1));
-                    }
-                } else {
-                    if (!domainCheckEntities.isEmpty() && Optional.ofNullable(page).isPresent() && page > 0) {
-                        var previousPage = domainCheckRepository.findAllHttpsStateChanges(domain, getDefaultPageRequest(page-1, size));
-                        veryNextDomainCheckEntity = Optional.of(previousPage.getContent().get(previousPage.getSize()-1));
-                    }
+            } else {
+                if (!domainCheckEntities.isEmpty() && Optional.ofNullable(page).isPresent() && page > 0) {
+                    var previousPage = domainCheckRepository.findAllHttpsStateChanges(domain, getDefaultPageRequest(page - 1, size));
+                    veryNextDomainCheckEntity = Optional.of(previousPage.getContent().get(previousPage.getSize() - 1));
                 }
-                break;
+            }
         }
 
         for (DomainCheckEntity domainCheckEntity : domainCheckEntities) {

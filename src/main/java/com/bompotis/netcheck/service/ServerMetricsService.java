@@ -379,13 +379,15 @@ public class ServerMetricsService extends AbstractService {
             ServerDefinitionDto serverDefinitionDto
     ) throws EntityNotFoundException {
         var serverEntity = serverRepository.findById(serverId).orElseThrow(EntityNotFoundException::new);
-        serverMetricDefinitionRepository.save(new ServerMetricDefinitionEntity.Builder()
+        serverMetricDefinitionRepository.save(
+                new ServerMetricDefinitionEntity.Builder()
                 .fieldName(serverDefinitionDto.getFieldName())
                 .label(serverDefinitionDto.getLabel())
                 .metricKind(serverDefinitionDto.getMetricKind())
                 .serverEntity(serverEntity)
                 .suffix(serverDefinitionDto.getSuffix())
                 .valueType(serverDefinitionDto.getValueType())
-                .build());
+                .build()
+        );
     }
 }

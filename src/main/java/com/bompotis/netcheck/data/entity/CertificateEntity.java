@@ -53,15 +53,12 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
     @Column(name = "not_after")
     private Date notAfter;
 
-    @NonNull
     @Column(name = "is_valid")
     private boolean isValid;
 
-    @NonNull
     @Column(name = "expired")
     private boolean expired;
 
-    @NonNull
     @Column(name = "not_yet_valid")
     private boolean notYetValid;
 
@@ -70,22 +67,27 @@ public class CertificateEntity extends AbstractTimestampablePersistable<String>{
         return null == this.getId();
     }
 
+    @NonNull
     public Integer getBasicConstraints() {
         return basicConstraints;
     }
 
+    @NonNull
     public String getIssuedBy() {
         return issuedBy;
     }
 
+    @NonNull
     public String getIssuedFor() {
         return issuedFor;
     }
 
+    @NonNull
     public Date getNotBefore() {
         return notBefore;
     }
 
+    @NonNull
     public Date getNotAfter() {
         return notAfter;
     }

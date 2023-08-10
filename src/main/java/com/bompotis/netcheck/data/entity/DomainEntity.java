@@ -43,7 +43,6 @@ public class DomainEntity extends AbstractTimestampable<String>{
     @Column(name = "domain")
     private String domain;
 
-    @NonNull
     @Column(name = "check_frequency_minutes")
     private int checkFrequency;
 
@@ -51,7 +50,6 @@ public class DomainEntity extends AbstractTimestampable<String>{
     @Column(name = "endpoint")
     private String endpoint;
 
-    @NonNull
     @Column(name = "timeout_ms")
     private int timeoutMs;
 
@@ -90,10 +88,12 @@ public class DomainEntity extends AbstractTimestampable<String>{
         return null == domain;
     }
 
+    @NonNull
     public String getEndpoint() {
         return endpoint;
     }
 
+    @NonNull
     public Map<String, String> getHeaders() {
         return headers;
     }
@@ -160,8 +160,8 @@ public class DomainEntity extends AbstractTimestampable<String>{
     public static class Updater implements OperationUpdater<DomainEntity> {
         private final String domain;
         private final Set<DomainCheckEntity> domainHistoryEntries;
-        private int frequency = 10;
-        private String endpoint = "";
+        private int frequency;
+        private String endpoint;
         private Map<String,String> headers;
         private final Set<DomainMetricEntity> domainMetricEntries;
         private int timeoutMs;
@@ -172,7 +172,7 @@ public class DomainEntity extends AbstractTimestampable<String>{
             this.domainHistoryEntries = entity.domainHistoryEntries;
             this.frequency = entity.checkFrequency;
             this.endpoint = entity.endpoint;
-            this.headers = entity.headers != null ? entity.headers : new HashMap<>();
+            this.headers = entity.headers;
             this.domainMetricEntries = entity.domainMetricEntries;
             this.timeoutMs = entity.timeoutMs;
             this.createdAt = entity.getCreatedAt();
@@ -185,42 +185,22 @@ public class DomainEntity extends AbstractTimestampable<String>{
 
         public void removeField(String field, String path) {
             switch (field) {
-                case "frequency":
-                    this.frequency = 10;
-                    break;
-                case "endpoint":
-                    this.endpoint = "";
-                    break;
-                case "timeout":
-                    this.timeoutMs = 30000;
-                    break;
-                case "headers":
-                    this.headers = new HashMap<>();
-                    break;
-                case "header":
-                    this.headers.remove(path);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid property for removal: " + field);
+                case "frequency" -> this.frequency = 10;
+                case "endpoint" -> this.endpoint = "";
+                case "timeout" -> this.timeoutMs = 30000;
+                case "headers" -> this.headers = new HashMap<>();
+                case "header" -> this.headers.remove(path);
+                default -> throw new IllegalArgumentException("Invalid property for removal: " + field);
             }
         }
 
         public void updateField(String field, String path, String value) {
             switch (field) {
-                case "frequency":
-                    this.frequency = Integer.parseInt(value);
-                    break;
-                case "endpoint":
-                    this.endpoint = value;
-                    break;
-                case "timeout":
-                    this.timeoutMs = Integer.parseInt(value);
-                    break;
-                case "header":
-                    this.headers.put(path,value);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid property to update/add: " + field);
+                case "frequency" -> this.frequency = Integer.parseInt(value);
+                case "endpoint" -> this.endpoint = value;
+                case "timeout" -> this.timeoutMs = Integer.parseInt(value);
+                case "header" -> this.headers.put(path, value);
+                default -> throw new IllegalArgumentException("Invalid property to update/add: " + field);
             }
         }
 

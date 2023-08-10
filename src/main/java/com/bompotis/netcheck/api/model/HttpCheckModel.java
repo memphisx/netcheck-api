@@ -39,6 +39,7 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
     private final Long responseTimeNs;
     private final String protocol;
     private final String redirectUri;
+    private final String errorMessage;
 
     @JsonCreator
     public HttpCheckModel(
@@ -50,7 +51,8 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
             @JsonProperty("ipAddress") String ipAddress,
             @JsonProperty("protocol") String protocol,
             @JsonProperty("redirectUri") String redirectUri,
-            @JsonProperty("up") Boolean isUp) {
+            @JsonProperty("up") Boolean isUp,
+            @JsonProperty("errorMessage") String errorMessage) {
         this.isUp = isUp;
         this.hostname = hostname;
         this.statusCode = statusCode;
@@ -60,6 +62,7 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
         this.ipAddress = ipAddress;
         this.protocol = protocol;
         this.redirectUri = redirectUri;
+        this.errorMessage = errorMessage;
     }
 
     public Integer getStatusCode() {
@@ -97,5 +100,9 @@ public class HttpCheckModel extends RepresentationModel<HttpCheckModel> {
 
     public Boolean getUp() {
         return isUp;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }

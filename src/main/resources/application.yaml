@@ -61,8 +61,6 @@ management:
   endpoint:
     info:
       enabled: true
-    httptrace:
-      enabled: true
     metrics:
       enabled: true
     health:

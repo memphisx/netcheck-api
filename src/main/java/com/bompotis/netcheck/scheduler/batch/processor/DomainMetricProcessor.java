@@ -21,6 +21,7 @@ import com.bompotis.netcheck.data.entity.DomainEntity;
 import com.bompotis.netcheck.data.entity.DomainMetricEntity;
 import com.bompotis.netcheck.service.MetricService;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class DomainMetricProcessor implements ItemProcessor<DomainEntity, List<D
     }
 
     @Override
-    public List<DomainMetricEntity> process(DomainEntity domainEntity) {
+    public List<DomainMetricEntity> process(@NonNull DomainEntity domainEntity) {
         return metricService.generateMetric(domainEntity,new MetricService.TimeFrame(this.period));
     }
 }

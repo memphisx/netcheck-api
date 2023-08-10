@@ -27,6 +27,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -46,6 +47,7 @@ public class DomainModelAssembler extends PaginatedRepresentationModelAssemblerS
         super(DomainsController.class, DomainResponse.class);
     }
 
+    @NonNull
     @Override
     public DomainResponse toModel(DomainDto domainDto) {
         var lastDomainChecks = Optional.ofNullable(domainDto.getLastDomainCheck()).isPresent() ?

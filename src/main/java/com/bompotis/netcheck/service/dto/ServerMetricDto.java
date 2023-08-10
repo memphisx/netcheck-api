@@ -125,7 +125,7 @@ public class ServerMetricDto {
         }
     }
 
-    public class ServerMetricEvent {
+    public static class ServerMetricEvent {
         private final String id;
         private final String serverId;
         private final Map<String,String> metrics;

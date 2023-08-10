@@ -4,6 +4,7 @@ import com.bompotis.netcheck.api.controller.ServerController;
 import com.bompotis.netcheck.api.model.ServerDefinitionModel;
 import com.bompotis.netcheck.service.dto.ServerDefinitionDto;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
+import org.springframework.lang.NonNull;
 
 /**
  * Created by Kyriakos Bompotis on 9/9/20.
@@ -14,6 +15,7 @@ public class ServerDefinitionAssembler extends RepresentationModelAssemblerSuppo
         super(ServerController.class, ServerDefinitionModel.class);
     }
 
+    @NonNull
     @Override
     public ServerDefinitionModel toModel(ServerDefinitionDto entity) {
         return new ServerDefinitionModel(

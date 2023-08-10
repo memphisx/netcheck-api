@@ -25,6 +25,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.lang.NonNull;
 
 import java.util.ArrayList;
 
@@ -39,6 +40,7 @@ public class MetricModelAssembler extends PaginatedRepresentationModelAssemblerS
         super(DomainsController.class, MetricModel.class);
     }
 
+    @NonNull
     @Override
     public MetricModel toModel(MetricDto entity) {
         return new MetricModel(

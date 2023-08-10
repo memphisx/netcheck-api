@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class NotificationItemWriter extends AbstractNotificationWriter implement
     }
 
     @Override
-    public void write(Chunk<? extends DomainCheckEntity> chunk) throws Exception {
+    public void write(@NonNull Chunk<? extends DomainCheckEntity> chunk) {
         var notifications = generateNotifications(chunk);
         send(notifications);
     }

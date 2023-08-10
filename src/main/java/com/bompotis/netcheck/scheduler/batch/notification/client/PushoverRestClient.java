@@ -15,7 +15,7 @@ public class PushoverRestClient {
 
     private record PushoverErrorResponse(HttpStatusCode statusCode) {}
 
-    public static String PUSH_MESSAGE_URL = "https://api.pushover.net/1/messages.json";
+    public static final String PUSH_MESSAGE_URL = "https://api.pushover.net/1/messages.json";
 
     public static final String REQUEST_ID_HEADER = "X-Request-Id";
 
