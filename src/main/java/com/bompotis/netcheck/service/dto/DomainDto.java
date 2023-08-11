@@ -114,7 +114,7 @@ public class DomainDto {
 
         public Builder httpsPort(Integer httpsPort) {
             if (Optional.ofNullable(httpsPort).isPresent()) {
-                this.httpsPort = httpPort;
+                this.httpsPort = httpsPort;
             }
             return this;
         }

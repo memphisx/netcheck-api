@@ -14,3 +14,9 @@ spring:
 settings:
   cors:
     origin: "*"
+  notifications:
+    webhook:
+      enabled: true
+      endpoint: "/webhook"
+      base-url: "http://127.0.0.1"
+      port: 9000

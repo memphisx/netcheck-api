@@ -62,17 +62,13 @@ public class WebhookService implements NotificationService {
     public void notify(NotificationDto notification) {
         Set<String> protocols = webhookConfig.getNotifyOnlyFor().isEmpty() ? Set.of("HTTP","HTTPS","CERTIFICATE") : Set.copyOf(webhookConfig.getNotifyOnlyFor());
         if (protocols.contains(notification.getType().name())) {
-            log.info("Preparing client for domain {}", webhookConfig.getBaseUrl());
-            var client = WebClient
-                    .builder()
-                    .baseUrl(webhookConfig.getBaseUrl())
-                    .defaultCookie("cookieKey", "cookieValue")
-                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .defaultUriVariables(Collections.singletonMap("url", webhookConfig.getBaseUrl()))
-                    .build();
+            var url = Optional.ofNullable(webhookConfig.getPort()).isPresent()
+                    ? webhookConfig.getBaseUrl() + ":" + webhookConfig.getPort() + webhookConfig.getEndpoint()
+                    : webhookConfig.getBaseUrl() + webhookConfig.getEndpoint();
+            log.info("Preparing client for domain {}", url);
+            var client = WebClient.create(url);
             log.info("Sending notification to {}", webhookConfig.getEndpoint());
             var response = Objects.requireNonNull(client.post()
-                    .uri(webhookConfig.getEndpoint())
                     .body(BodyInserters.fromValue(notification))
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .exchange()

@@ -146,6 +146,8 @@ public class DomainsController {
         if (Optional.ofNullable(domainRequest).isPresent()) {
             domainDtoBuilder.checkFrequencyMinutes(domainRequest.checkFrequencyMinutes())
                             .endpoint(domainRequest.endpoint())
+                            .httpPort(domainRequest.httpPort())
+                            .httpsPort(domainRequest.httpsPort())
                             .timeoutMs(domainRequest.timeoutMs())
                             .withHeaders(domainRequest.headers());
         }
