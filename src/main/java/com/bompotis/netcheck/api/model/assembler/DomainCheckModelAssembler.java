@@ -27,6 +27,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.lang.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class DomainCheckModelAssembler extends PaginatedRepresentationModelAssem
         super(DomainsController.class, DomainCheckModel.class);
     }
 
+    @NonNull
     @Override
     public DomainCheckModel toModel(DomainCheckDto domainCheckDto) {
         var httpChecks = new ArrayList<HttpCheckModel>();

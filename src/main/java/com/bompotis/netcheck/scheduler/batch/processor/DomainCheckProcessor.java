@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,7 @@ public class DomainCheckProcessor implements ItemProcessor<DomainEntity, DomainC
     }
 
     @Override
-    public DomainCheckEntity process(DomainEntity domainEntity) {
+    public DomainCheckEntity process(@NonNull DomainEntity domainEntity) {
         DomainCheckEntity domainCheckEntity = null;
         try {
             log.info("Processing {}", domainEntity.getDomain());
@@ -95,7 +96,7 @@ public class DomainCheckProcessor implements ItemProcessor<DomainEntity, DomainC
                 .atZone(ZoneOffset.UTC)
                 .toLocalDateTime()
                 .withSecond(0);
-        log.info("Last check for domain {} was triggered on {}", domain, lastCheckDate.toString());
+        log.info("Last check for domain {} was triggered on {}", domain, lastCheckDate);
         var now = new Date().toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
         var nextExpectedCheck = lastCheckDate.plusMinutes(domainWithLastChecks.getCheckFrequencyMinutes());
         return nextExpectedCheck.isBefore(now);

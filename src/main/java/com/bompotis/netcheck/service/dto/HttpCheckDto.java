@@ -37,6 +37,7 @@ public class HttpCheckDto {
     private final Date timeCheckedOn;
     private final String protocol;
     private final String redirectUri;
+    private final String errorMessage;
 
     public Integer getStatusCode() {
         return statusCode;
@@ -90,6 +91,10 @@ public class HttpCheckDto {
         return result.get();
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
     public static class Builder implements DtoBuilder<HttpCheckDto>{
         private Long responseTimeNs;
         private String hostname;
@@ -101,6 +106,7 @@ public class HttpCheckDto {
         private Date timeCheckedOn;
         private String protocol;
         private String redirectUri;
+        private String errorMessage = null;
 
         public Builder dnsResolved(Boolean dnsResolved) {
             this.dnsResolved = dnsResolved;
@@ -152,6 +158,11 @@ public class HttpCheckDto {
             return this;
         }
 
+        public Builder errorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+            return this;
+        }
+
         public HttpCheckDto build() {
             return new HttpCheckDto(this);
         }
@@ -168,6 +179,7 @@ public class HttpCheckDto {
         this.id = b.id;
         this.redirectUri = b.redirectUri;
         this.connectionAccepted = b.connectionAccepted;
+        this.errorMessage = b.errorMessage;
     }
 
     public HttpCheckDto(ProtocolCheckEntity entity, Long responseTimeNs, Date timeCheckedOn, String ipAddress) {
@@ -181,6 +193,7 @@ public class HttpCheckDto {
         this.timeCheckedOn = timeCheckedOn;
         this.dnsResolved = entity.getDnsResolves();
         this.connectionAccepted = entity.isConnectionAccepted();
+        this.errorMessage = null;
     }
 
     public ProtocolCheckEntity toProtocolCheckEntity() {

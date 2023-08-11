@@ -21,6 +21,7 @@ import com.bompotis.netcheck.data.entity.DomainCheckEntity;
 import com.bompotis.netcheck.data.repository.DomainCheckRepository;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.NonNull;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -48,6 +49,7 @@ public class OldDomainCheckItemReader extends RepositoryItemReader<DomainCheckEn
         }
     }
 
+    @NonNull
     @Override
     protected List<DomainCheckEntity> doPageRead() throws Exception {
         this.setArguments(List.of(Date.from(LocalDateTime.now().minusDays(1).minusMonths(threshold).toInstant(ZoneOffset.UTC))));

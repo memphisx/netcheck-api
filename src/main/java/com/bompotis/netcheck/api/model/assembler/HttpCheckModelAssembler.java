@@ -26,6 +26,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -42,6 +43,7 @@ public class HttpCheckModelAssembler extends PaginatedRepresentationModelAssembl
         super(DomainsController.class, HttpCheckModel.class);
     }
 
+    @NonNull
     @Override
     public HttpCheckModel toModel(HttpCheckDto httpCheckDto) {
         return new HttpCheckModel(
@@ -53,7 +55,8 @@ public class HttpCheckModelAssembler extends PaginatedRepresentationModelAssembl
                 httpCheckDto.getIpAddress(),
                 httpCheckDto.getProtocol(),
                 httpCheckDto.getRedirectUri(),
-                httpCheckDto.isUp());
+                httpCheckDto.isUp(),
+                httpCheckDto.getErrorMessage());
     }
 
     public CollectionModel<HttpCheckModel> toCollectionModel(PaginatedDto<HttpCheckDto> paginatedHttpCheckDto, String domain, String protocol) {

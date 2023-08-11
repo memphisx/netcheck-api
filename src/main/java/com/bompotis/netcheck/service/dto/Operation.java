@@ -21,37 +21,10 @@ package com.bompotis.netcheck.service.dto;
  * Created by Kyriakos Bompotis on 2/9/20.
  */
 
-public class Operation {
+public record Operation(String field, Action action, String value, String path) {
     public enum Action {
         REMOVE,
         UPDATE,
         ADD
-    }
-    private final String field;
-    private final String path;
-    private final Action action;
-    private final String value;
-
-    public Operation(String field, Action action, String value, String path) {
-        this.field = field;
-        this.action = action;
-        this.value = value;
-        this.path = path;
-    }
-
-    public String getField() {
-        return field;
-    }
-
-    public Action getAction() {
-        return action;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public String getPath() {
-        return path;
     }
 }

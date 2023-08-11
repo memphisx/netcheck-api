@@ -23,5 +23,5 @@ package com.bompotis.netcheck.scheduler.batch.notification;
 public interface NotificationService {
     boolean isEnabled();
     String name();
-    void notify(NotificationDto notification) throws Exception;
+    void notify(NotificationDto notification);
 }

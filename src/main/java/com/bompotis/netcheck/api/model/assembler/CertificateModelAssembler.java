@@ -21,6 +21,7 @@ import com.bompotis.netcheck.api.controller.DomainsController;
 import com.bompotis.netcheck.api.model.CertificateModel;
 import com.bompotis.netcheck.service.dto.CertificateDetailsDto;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
+import org.springframework.lang.NonNull;
 
 /**
  * Created by Kyriakos Bompotis on 17/6/20.
@@ -31,6 +32,7 @@ public class CertificateModelAssembler extends RepresentationModelAssemblerSuppo
         super(DomainsController.class, CertificateModel.class);
     }
 
+    @NonNull
     @Override
     public CertificateModel toModel(CertificateDetailsDto certificateDetailsDto) {
         return new CertificateModel(

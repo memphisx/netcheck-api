@@ -17,43 +17,36 @@
  */
 package com.bompotis.netcheck.api.model;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.Map;
 
 /**
  * Created by Kyriakos Bompotis on 2/9/20.
  */
-public class DomainRequest {
-    @Min(value = 1, message = "checkFrequencyMinutes should not be less than 1")
-    private final Integer checkFrequencyMinutes;
-
-    private final String endpoint;
-
-    private final Map<String,String> headers;
-
-    @Min(value = 1, message = "timeoutMs should not be less than 1")
-    private final Integer timeoutMs;
-
-    public DomainRequest(Integer checkFrequencyMinutes, String endpoint, Map<String, String> headers, Integer timeoutMs) {
+public record DomainRequest(
+        @Min(value = 1, message = "checkFrequencyMinutes should not be less than 1") Integer checkFrequencyMinutes,
+        String endpoint,
+        @Min(value = 1, message = "port should not be less than 1") @Max(value = 65535, message = "port should be no more than 65535") Integer httpPort,
+        @Min(value = 1, message = "port should not be less than 1") @Max(value = 65535, message = "port should be no more than 65535") Integer httpsPort,
+        Map<String, String> headers,
+        @Min(value = 1, message = "timeoutMs should not be less than 1") Integer timeoutMs) {
+    public DomainRequest(Integer checkFrequencyMinutes, String endpoint, Integer httpPort, Integer httpsPort, Map<String, String> headers, Integer timeoutMs) {
         this.checkFrequencyMinutes = checkFrequencyMinutes;
         this.endpoint = endpoint;
+        this.httpPort = httpPort;
+        this.httpsPort = httpsPort;
         this.headers = headers;
         this.timeoutMs = timeoutMs;
     }
 
-    public Integer getCheckFrequencyMinutes() {
+    @Override
+    public Integer checkFrequencyMinutes() {
         return checkFrequencyMinutes;
     }
 
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    public Integer getTimeoutMs() {
+    @Override
+    public Integer timeoutMs() {
         return timeoutMs;
     }
 }

@@ -45,7 +45,6 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
     @Column(name = "connection_accepted")
     private boolean connectionAccepted;
 
-    @NonNull
     @Column(name = "dns_resolves")
     private boolean dnsResolves;
 
@@ -63,6 +62,7 @@ public class ProtocolCheckEntity extends AbstractTimestampablePersistable<String
         return dnsResolves;
     }
 
+    @NonNull
     public Protocol getProtocol() {
         return protocol;
     }

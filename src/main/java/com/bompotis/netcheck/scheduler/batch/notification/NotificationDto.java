@@ -17,10 +17,7 @@
  */
 package com.bompotis.netcheck.scheduler.batch.notification;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -237,37 +234,33 @@ public class NotificationDto {
             return isUp ? Status.UP : Status.DOWN;
         }
         private String getMessage() {
-            switch (type) {
-                case CERTIFICATE:
-                    if (issuerCertificateHasExpired) {
-                        return String.format(
-                                "Certificates for %s has expired. New Expiration date: %s",
-                                hostname,
-                                issuerCertificateExpirationDate
-                        );
-                    } else if (!issuerCertificateIsValid) {
-                        return String.format(
-                                "Certificates for %s have changed. New certificate is invalid. Expiration Date: %s",
-                                hostname,
-                                issuerCertificateExpirationDate.toString()
-                        );
-                    } else {
-                        return String.format(
-                                "Certificates for %s have changed. New Expiration date: %s",
-                                hostname,
-                                issuerCertificateExpirationDate.toString()
-                        );
-                    }
-                case HTTP:
-                case HTTPS:
-                default:
+            if (Objects.requireNonNull(type) == Type.CERTIFICATE) {
+                if (issuerCertificateHasExpired) {
                     return String.format(
-                            "%s State for %s has changed to %s with status code %s",
-                            type.name(),
+                            "Certificates for %s has expired. New Expiration date: %s",
                             hostname,
-                            getStatus().name(),
-                            statusCode);
+                            issuerCertificateExpirationDate
+                    );
+                } else if (!issuerCertificateIsValid) {
+                    return String.format(
+                            "Certificates for %s have changed. New certificate is invalid. Expiration Date: %s",
+                            hostname,
+                            issuerCertificateExpirationDate.toString()
+                    );
+                } else {
+                    return String.format(
+                            "Certificates for %s have changed. New Expiration date: %s",
+                            hostname,
+                            issuerCertificateExpirationDate.toString()
+                    );
+                }
             }
+            return String.format(
+                    "%s State for %s has changed to %s with status code %s",
+                    type.name(),
+                    hostname,
+                    getStatus().name(),
+                    statusCode);
         }
 
         public NotificationDto build() {

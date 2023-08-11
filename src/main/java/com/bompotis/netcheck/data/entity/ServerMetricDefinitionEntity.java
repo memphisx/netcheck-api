@@ -77,7 +77,6 @@ public class ServerMetricDefinitionEntity extends AbstractTimestampable<String>{
     @Column(name = "max_threshold")
     private String maxThreshold;
 
-    @NonNull
     @Column(name = "notify")
     private boolean notify;
 
@@ -118,7 +117,6 @@ public class ServerMetricDefinitionEntity extends AbstractTimestampable<String>{
         return maxThreshold;
     }
 
-    @NonNull
     public boolean isNotify() {
         return notify;
     }
@@ -161,6 +159,7 @@ public class ServerMetricDefinitionEntity extends AbstractTimestampable<String>{
         return suffix;
     }
 
+    @NonNull
     public ValueType getValueType() {
         return valueType;
     }

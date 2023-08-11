@@ -34,6 +34,10 @@ public class DomainDto {
     private final Map<String,String> headers;
     private final Integer timeoutMs;
 
+    private final Integer httpPort;
+
+    private final Integer httpsPort;
+
     public DomainCheckDto getLastDomainCheck() {
         return lastDomainCheck;
     }
@@ -62,9 +66,19 @@ public class DomainDto {
         return timeoutMs;
     }
 
+    public Integer getHttpPort() {
+        return httpPort;
+    }
+
+    public Integer getHttpsPort() {
+        return httpsPort;
+    }
+
     public static class Builder implements DtoBuilder<DomainDto> {
         private DomainCheckDto lastDomainCheck;
         private String domain;
+        private int httpPort = 80;
+        private int httpsPort = 443;
         private Date createdAt;
         private Integer checkFrequencyMinutes = 10;
         private String endpoint = "";
@@ -88,6 +102,20 @@ public class DomainDto {
 
         public Builder createdAt(Date createdAt) {
             this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder httpPort(Integer httpPort) {
+            if (Optional.ofNullable(httpPort).isPresent()) {
+                this.httpPort = httpPort;
+            }
+            return this;
+        }
+
+        public Builder httpsPort(Integer httpsPort) {
+            if (Optional.ofNullable(httpsPort).isPresent()) {
+                this.httpsPort = httpPort;
+            }
             return this;
         }
 
@@ -127,6 +155,8 @@ public class DomainDto {
     private DomainDto(Builder b) {
         this.lastDomainCheck = b.lastDomainCheck;
         this.domain = b.domain;
+        this.httpPort = b.httpPort;
+        this.httpsPort = b.httpsPort;
         this.createdAt = b.createdAt;
         this.checkFrequencyMinutes = b.checkFrequencyMinutes;
         this.endpoint = b.endpoint;

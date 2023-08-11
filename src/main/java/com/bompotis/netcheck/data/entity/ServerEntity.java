@@ -73,6 +73,7 @@ public class ServerEntity extends AbstractTimestampablePersistable<String>{
 
     protected ServerEntity() {}
 
+    @NonNull
     public String getServerName() {
         return serverName;
     }
@@ -176,35 +177,24 @@ public class ServerEntity extends AbstractTimestampablePersistable<String>{
 
         public void removeField(String field, String path) {
             switch (field) {
-                case "serverName":
-                    this.serverName = "";
-                    break;
-                case "description":
-                    this.description = null;
-                    break;
-                case "password":
-                    throw new IllegalArgumentException("Password field cannot be deleted");
-                default:
-                    throw new IllegalArgumentException("Invalid property for removal: " + field);
+                case "serverName" -> this.serverName = "";
+                case "description" -> this.description = null;
+                case "password" -> throw new IllegalArgumentException("Password field cannot be deleted");
+                default -> throw new IllegalArgumentException("Invalid property for removal: " + field);
             }
         }
 
         public void updateField(String field, String path, String value) {
             switch (field) {
-                case "serverName":
-                    this.serverName = value;
-                    break;
-                case "description":
-                    this.description = value;
-                    break;
-                case "password":
-                    if (Optional.ofNullable(value).isEmpty() || value.isBlank() || value.length() < 8 ) {
+                case "serverName" -> this.serverName = value;
+                case "description" -> this.description = value;
+                case "password" -> {
+                    if (Optional.ofNullable(value).isEmpty() || value.isBlank() || value.length() < 8) {
                         throw new IllegalArgumentException("Password cannot be empty or less than 8 characters");
                     }
                     this.password = passwordEncoder.encode(value);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid property to update/add: " + field);
+                }
+                default -> throw new IllegalArgumentException("Invalid property to update/add: " + field);
             }
         }
 
