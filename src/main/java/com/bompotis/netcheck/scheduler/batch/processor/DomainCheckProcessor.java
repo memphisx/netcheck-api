@@ -74,6 +74,8 @@ public class DomainCheckProcessor implements ItemProcessor<DomainEntity, DomainC
         var domainDto = new DomainDto.Builder()
                 .domain(domainEntity.getDomain())
                 .endpoint(domainEntity.getEndpoint())
+                .httpPort(domainEntity.getHttpPort())
+                .httpsPort(domainEntity.getHttpsPort())
                 .withHeaders(domainEntity.getHeaders())
                 .timeoutMs(domainEntity.getTimeoutMs())
                 .build();

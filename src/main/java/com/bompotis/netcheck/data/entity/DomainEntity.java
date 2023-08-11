@@ -53,6 +53,12 @@ public class DomainEntity extends AbstractTimestampable<String>{
     @Column(name = "timeout_ms")
     private int timeoutMs;
 
+    @Column(name = "http_port")
+    private int httpPort;
+
+    @Column(name = "https_port")
+    private int httpsPort;
+
     @NonNull
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "headers")
@@ -106,6 +112,14 @@ public class DomainEntity extends AbstractTimestampable<String>{
         return timeoutMs;
     }
 
+    public int getHttpPort() {
+        return httpPort;
+    }
+
+    public int getHttpsPort() {
+        return httpsPort;
+    }
+
     public static class Builder implements EntityBuilder<DomainEntity> {
         private String domain;
         private Set<DomainCheckEntity> domainHistoryEntries;
@@ -114,6 +128,10 @@ public class DomainEntity extends AbstractTimestampable<String>{
         private Map<String,String> headers = new HashMap<>();
         private Set<DomainMetricEntity> domainMetricEntries;
         private int timeoutMs = 30000;
+
+        private int httpPort = 80;
+
+        private int httpsPort = 443;
 
         public Builder domainHistoryEntries(Set<DomainCheckEntity> domainHistoryEntries) {
             this.domainHistoryEntries = domainHistoryEntries;
@@ -137,6 +155,20 @@ public class DomainEntity extends AbstractTimestampable<String>{
 
         public Builder endpoint(String endpoint) {
             this.endpoint = endpoint;
+            return this;
+        }
+
+        public Builder httpPort(Integer httpPort) {
+            if (Optional.ofNullable(httpPort).isPresent()) {
+                this.httpPort = httpPort;
+            }
+            return this;
+        }
+
+        public Builder httpsPort(Integer httpsPort) {
+            if (Optional.ofNullable(httpsPort).isPresent()) {
+                this.httpsPort = httpsPort;
+            }
             return this;
         }
 
@@ -165,6 +197,8 @@ public class DomainEntity extends AbstractTimestampable<String>{
         private Map<String,String> headers;
         private final Set<DomainMetricEntity> domainMetricEntries;
         private int timeoutMs;
+        private int httpPort;
+        private int httpsPort;
         private final Date createdAt;
 
         public Updater(DomainEntity entity) {
@@ -176,6 +210,8 @@ public class DomainEntity extends AbstractTimestampable<String>{
             this.domainMetricEntries = entity.domainMetricEntries;
             this.timeoutMs = entity.timeoutMs;
             this.createdAt = entity.getCreatedAt();
+            this.httpPort = entity.httpPort;
+            this.httpsPort = entity.httpsPort;
         }
 
         public Updater withUpdatedValues(List<Operation> operations) {
@@ -190,6 +226,8 @@ public class DomainEntity extends AbstractTimestampable<String>{
                 case "timeout" -> this.timeoutMs = 30000;
                 case "headers" -> this.headers = new HashMap<>();
                 case "header" -> this.headers.remove(path);
+                case "httpPort" -> this.httpPort = 80;
+                case "httpsPort" -> this.httpsPort = 443;
                 default -> throw new IllegalArgumentException("Invalid property for removal: " + field);
             }
         }
@@ -200,6 +238,8 @@ public class DomainEntity extends AbstractTimestampable<String>{
                 case "endpoint" -> this.endpoint = value;
                 case "timeout" -> this.timeoutMs = Integer.parseInt(value);
                 case "header" -> this.headers.put(path, value);
+                case "httpPort" -> this.httpPort = Integer.parseInt(value);
+                case "httpsPort" -> this.httpsPort = Integer.parseInt(value);
                 default -> throw new IllegalArgumentException("Invalid property to update/add: " + field);
             }
         }
@@ -217,6 +257,8 @@ public class DomainEntity extends AbstractTimestampable<String>{
         this.endpoint = b.endpoint;
         this.headers = Map.copyOf(b.headers);
         this.timeoutMs = b.timeoutMs;
+        this.httpPort = b.httpPort;
+        this.httpsPort = b.httpsPort;
     }
 
     private DomainEntity(Updater b) {
@@ -228,6 +270,8 @@ public class DomainEntity extends AbstractTimestampable<String>{
         this.headers = b.headers != null ? Map.copyOf(b.headers) : Map.of();
         this.timeoutMs = b.timeoutMs;
         this.createdAt = b.createdAt;
+        this.httpsPort = b.httpsPort;
+        this.httpPort = b.httpPort;
     }
 
     @Override

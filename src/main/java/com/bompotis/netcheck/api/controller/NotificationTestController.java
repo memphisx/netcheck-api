@@ -1,6 +1,7 @@
 package com.bompotis.netcheck.api.controller;
 
 import com.bompotis.netcheck.api.model.DomainCheckModel;
+import com.bompotis.netcheck.api.model.NotificationServiceModel;
 import com.bompotis.netcheck.scheduler.batch.notification.NotificationDto;
 import com.bompotis.netcheck.scheduler.batch.notification.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.ResponseEntity.*;
 
 @RestController
@@ -34,9 +40,19 @@ public class NotificationTestController {
 
     @Operation(summary = "Get available notification services")
     @GetMapping(produces={"application/hal+json"})
-    public ResponseEntity<ArrayList<String>> getNotificationServices() {
-        var services = new ArrayList<>(notificationServices.stream().map(NotificationService::name).toList());
-        return ok(services);
+    public ResponseEntity<CollectionModel<NotificationServiceModel>> getNotificationServices() {
+        var links = new ArrayList<Link>();
+        links.add(linkTo(methodOn(NotificationTestController.class).getNotificationServices()).withSelfRel());
+        var services = new ArrayList<>(notificationServices.stream()
+                .map(service -> new NotificationServiceModel(service.isEnabled(),service.name()))
+                .toList());
+        var pageMtd = new PagedModel.PageMetadata(
+                services.size(),
+                0,
+                services.size(),
+                1
+        );
+        return ok(PagedModel.of(services, pageMtd, links));
     }
 
     @Operation(summary = "Send test notification to service")

@@ -40,7 +40,9 @@ public class DomainUpdateDtoAssembler implements AbstractUpdateDtoAssembler<Doma
             "endpoint",
             "header",
             "headers",
-            "timeout"
+            "timeout",
+            "httpPort",
+            "httpsPort"
     );
 
     private static final Set<String> REQUIRED_FIELDS_FOR_PATH = Set.of(

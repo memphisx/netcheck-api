@@ -34,12 +34,15 @@ public class WebhookConfig {
 
     private final String endpoint;
 
+    private final Integer port;
+
     private final Set<String> notifyOnlyFor;
 
-    public WebhookConfig(Boolean enabled, String baseUrl, String endpoint, Set<String> notifyOnlyFor) {
+    public WebhookConfig(Boolean enabled, String baseUrl, String endpoint, Integer port, Set<String> notifyOnlyFor) {
         this.enabled = Optional.ofNullable(enabled).orElse(false);
         this.baseUrl = baseUrl;
         this.endpoint = endpoint;
+        this.port = port;
         var acceptableEntries = Set.of("HTTP","HTTPS","CERTIFICATE");
         if (Optional.ofNullable(notifyOnlyFor).isEmpty() || notifyOnlyFor.isEmpty()) {
             this.notifyOnlyFor = acceptableEntries;
@@ -71,5 +74,9 @@ public class WebhookConfig {
 
     public String getEndpoint() {
         return endpoint;
+    }
+
+    public Integer getPort() {
+        return port;
     }
 }

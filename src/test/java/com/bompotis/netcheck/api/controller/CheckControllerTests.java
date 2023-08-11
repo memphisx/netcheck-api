@@ -1,5 +1,6 @@
 package com.bompotis.netcheck.api.controller;
 
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 @AutoConfigureMockMvc
 @SpringBootTest
+@AutoConfigureEmbeddedDatabase
 public class CheckControllerTests {
     
     @Autowired
@@ -196,14 +198,14 @@ public class CheckControllerTests {
                 .andExpect(jsonPath("$.httpChecks[0].up").value(false))
                 .andExpect(jsonPath("$.httpChecks[0].errorMessage").isEmpty())
                 .andExpect(jsonPath("$.httpChecks[1].hostname").value("127.0.0.1"))
-                .andExpect(jsonPath("$.httpChecks[1].statusCode").isEmpty())
+                .andExpect(jsonPath("$.httpChecks[1].statusCode").value(404))
                 .andExpect(jsonPath("$.httpChecks[1].checkedOn").value(startsWith(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ROOT).format(LocalDateTime.now(ZoneOffset.UTC)))))
-                .andExpect(jsonPath("$.httpChecks[1].responseTimeNs").isEmpty())
+                .andExpect(jsonPath("$.httpChecks[1].responseTimeNs").isNumber())
                 .andExpect(jsonPath("$.httpChecks[1].dnsResolves").value(true))
                 .andExpect(jsonPath("$.httpChecks[1].ipAddress").isString())
                 .andExpect(jsonPath("$.httpChecks[1].protocol").value("HTTPS"))
                 .andExpect(jsonPath("$.httpChecks[1].up").value(false))
-                .andExpect(jsonPath("$.httpChecks[1].errorMessage").value("Unsupported or unrecognized SSL message"))
+                .andExpect(jsonPath("$.httpChecks[1].errorMessage").isEmpty())
                 .andExpect(jsonPath("$._links.self.href").value("http://localhost/api/v1/domains/127.0.0.1"))
                 .andReturn()
                 .getResponse();
