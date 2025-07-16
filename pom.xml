@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>org.wiremock</groupId>
 			<artifactId>wiremock</artifactId>
-			<version>3.0.0-beta-15</version>
+			<version>4.0.0-beta.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -116,27 +116,27 @@
 		<dependency>
 			<groupId>io.hypersistence</groupId>
 			<artifactId>hypersistence-utils-hibernate-62</artifactId>
-			<version>${hypersistence-utils.version}</version>
+			<version>3.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>${hibernate-validator.version}</version>
+			<version>8.0.1.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>${flyway.version}</version>
+			<version>9.21.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>${springdoc.version}</version>
+			<version>2.7.0-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-common</artifactId>
-			<version>${springdoc.version}</version>
+			<version>2.7.0-RC1</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>snakeyaml</artifactId>
